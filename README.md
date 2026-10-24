@@ -56,6 +56,15 @@
 
 ---
 
+### 📂 `docs/`：工业级实战研究与产品需求文档 (PRD & Feasibility)
+
+| 交付类型 | 文档路径 | 核心业务与技术架构亮点 |
+| :--- | :--- | :--- |
+| **商业与技术可行性调研** | [agent-skills-store-feasibility.md](./docs/research/agent-skills-store-feasibility.md) | **对标 Skillry.dev** 深度拆解面向研发 (Dev)、产品 (PM) 与股票量化 (Stock) 垂直赛道的可行性；含 TAM/SAM/SOM 空间测算、中美证券法（SEC 出版者豁免与中国证券法 120 条）、BYOK 金融数据架构、三年期财务模型（第 8 个月打平，Year 3 EBITDA $2.28M）与五大运营黄金军规。 |
+| **工业级标准 MVP PRD** | [agent-skills-store-mvp.md](./docs/prd/agent-skills-store-mvp.md) | **AI Agent 垂直技能交易市场 (SkillStore) 完整需求基线**：PostgreSQL 16 DDL (8张业务表)、OpenAPI 契约 (8个接口)、Docker Seccomp/AST 安全沙盒、4 套 Mermaid 图表、5 大场景 ASCII 线框图、11 套 BDD 验收用例、STRIDE 威胁模型、`skillstore.lock` 冲突协议、敏捷 Sprint 排期与 15 款种子技能字典。 |
+| **端侧 AI 语音伴侣 PRD** | [android-pixel10-voice-companion-mvp.md](./docs/prd/android-pixel10-voice-companion-mvp.md) | 针对 Google Pixel 10 (Tensor G5) 端侧离线全双工 AI 语音虚拟伴侣 (Her Pocket) MVP PRD；含 Oboe C++ AAudio AEC、Sherpa-onnx、Gemma-3-4B-IT、Kokoro-82M 低延迟管道与温控长续航防崩溃策略。 |
+
+---
 ## 🛠️ 快速上手路线：当你接到第一个产品任务时怎么用？
 
 1. **刚接到业务方/老板抛来的一个模糊想法时**：
