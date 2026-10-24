@@ -201,7 +201,6 @@ def evaluate_prd(content):
         s4 += 2.0
     if check_contains(r"(合规审核|免责确认|股票风控|投资免责)", content):
         s4 += 2.0
-
     edge_case_patterns = count_matches(r"(异常边界|Edge\s*Case|降级处理|异常分支|超时|网络中断|并发重复)", content)
     if edge_case_patterns >= 4:
         s4 += 2.0
@@ -280,8 +279,8 @@ def main():
         count_matches(r"(Then|那么|预期结果)", combined)
     )
 
-    # Placeholders penalty
-    placeholders = count_matches(r"(TODO|TBD|待确定|待补充|xxx)", combined)
+    # Placeholders penalty (use word boundaries to avoid matching JTBD as TBD)
+    placeholders = count_matches(r"(\bTODO\b|(?<!J)\bTBD\b|待确定|待补充|\bxxx\b)", combined)
     penalty = min(20.0, placeholders * 2.0)
 
     total_score = max(0.0, min(100.0, r_score + p_score - penalty))

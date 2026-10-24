@@ -1,0 +1,442 @@
+# AI Agent 垂直技能交易市场 (SkillStore) MVP PRD
+
+| 文档状态 | 已基线 (Baseline) | 负责人 | @Frank (PM & System Architect) |
+| :--- | :--- | :--- | :--- |
+| **目标版本** | v0.1.0-mvp | **优先级** | P0 |
+| **所属产品线** | AI 开发者与高阶知识生产力工具 | **目标平台** | Web 门户 + CLI 客户端 (`@skillstore/cli`) |
+| **对标竞品** | Skillry.dev (`https://skillry.dev/`) | **首发垂直赛道** | 软件研发 (Dev) / 产品经理 (PM) / 股票量化投资 (Stock) |
+
+---
+
+## 1. 变更记录 (Changelog)
+
+| 日期 | 版本 | 修改人 | 修改内容摘要 |
+| :--- | :--- | :--- | :--- |
+| 2026-10-25 | v0.1.0 | @Frank | 初稿基线建立：锁定 Dev、PM、Stock 三大垂直赛道，完成 Web 目录、CLI 安装引擎、沙盒安全校验、Stripe 支付鉴权、金融合规阻断矩阵与红队评审设计。 |
+
+---
+
+## 2. 背景与目标 (Why)
+
+### 2.1 业务背景与用户痛点 (Problem Statement & JTBD)
+
+随着 Claude Code、Cursor、Codex、OpenClaw 等自主智能体（Agentic Coding & Automation）的大规模普及，开发者与知识工作者的生产力瓶颈发生了结构性迁移：**用户不再缺乏通用大模型，而是缺乏能够直接放入本地工程、经过工业级边界验证的高质量垂直技能（Agent Skills）**。
+
+#### 用户核心 JTBD (Jobs-To-Be-Done) 痛点剖析：
+1. **软件研发工程师 (Dev Buyer)**：
+   - *痛点*：在重构复杂工程（如 Java 8 升 21、C++ 音视频管线优化、K8s 生产配置加固）时，网上搜到的 Prompt 往往粗制滥造、缺少类型定义和异常分支，甚至诱导生成安全漏洞代码。
+   - *JTBD*：希望一键获取经过资深架构师验证、具备 AST 静态检查与边界测试的专业 `SKILL.md` 与自动化工具包，在本地终端通过 CLI 5 秒完成部署。
+2. **产品经理 (PM Buyer)**：
+   - *痛点*：撰写高质量 PRD、绘制 Mermaid 状态机、排查留存异动 SQL 耗费大量精力；通用的 ChatGPT 生成内容假大空，缺乏真实软硬件架构约束与红队挑刺机制。
+   - *JTBD*：希望一键挂载专业 PM 专家技能包，在输入粗糙需求时自动追问反转、输出带边界异常与验收标准的工业级 PRD，并无缝导出到 Notion / Jira / 飞书。
+3. **股票量化投资者 (Stock Buyer)**：
+   - *痛点*：从 SEC 10-K / A股财报中手动清洗勾稽科目极其繁琐；自己编写多因子回测逻辑易产生前视偏差（Look-ahead bias）；而市面投顾软件黑盒不透明且存在诈骗隐患。
+   - *JTBD*：希望获取透明、开源可查、可复现的财务粉饰排查因子与量化回测代码技能，在本地沙盒内安全运行，大幅提升投研效率。
+4. **高质量技能创作者 (Creator Supply)**：
+   - *痛点*：在 GitHub 提交开源 Gist 或在社媒分享提示词无法沉淀商业收益；自己搭站售卖面临复杂的海外支付接入、CLI 分发工具维护与盗版维权难题。
+   - *JTBD*：希望有开箱即用的分发托管平台，仅需按规范提交代码仓库，即可自动完成安全性审查、定价打包、Stripe 全球收款与按月分成结算。
+
+### 2.2 成功衡量指标 (Success Metrics) & 护栏指标 (Guardrail Metrics)
+
+| 指标类型 | 指标名称 | MVP 验收阈值 (上线 30 天) | 统计口径与测量方式 |
+| :--- | :--- | :--- | :--- |
+| **北极星指标** | 每周有效 Skill 安装/运行总数 (WAU Installs) | **≥ 5,000 次 / 周** | 用户通过 CLI 或 Web 端成功下载解密并注入 Agent 运行时的去重安装事件 |
+| **商业核心指标** | 平台月度交易总额 (GMV) | **≥ $8,000 / 月** | 单品购买（$4.99~$29.99）与 Pro 订阅（$19.99/月）扣除退款后的实际支付金额 |
+| **留存转化指标** | 免费用户首周内付费转化率 (Free-to-Paid) | **≥ 6.5%** | 安装过免费官方种子 Skill 的独立硬件/账号在 7 天内下单购买付费 Skill 的比例 |
+| **体验护栏指标** | CLI 安装全流程耗时 (P95 Latency) | **P95 ≤ 1.5s** | 执行 `npx skillstore install <id>` 经由网络鉴权、下载校验到文件写入就绪的总耗时 |
+| **质量护栏指标** | 30 天内 Skill 质量退款率 (Refund Rate) | **≤ 2.0%** | 因与描述不符、语法报错无法运行导致的退款申请占比（超过 3% 触发下架审查） |
+| **安全护栏指标** | 恶意代码/越权提取密钥事故率 | **绝对为 0 (0 Incident)** | 任何试图越权读取本地 `.env`、SSH 凭证或向未授权域名回传数据的行为被拦截率 100% |
+| **合规护栏指标** | 证券法违规投顾投诉/监管函件 | **绝对为 0 (0 Incident)** | 因股票类 Skill 诱导买卖、承诺收益引发的监管核查或法律纠纷事件数 |
+
+### 2.3 本期明确不做 (Out of Scope / Non-Goals)
+
+1. **不做实盘交易接口直连与自动委托下单**：严格坚守金融辅助研究工具边界，严禁接入富途、老虎、券商实盘交易 API，绝不托管用户资金与交易账户密码。
+2. **不做封闭私有的重型桌面端 GUI**：MVP 阶段不耗费资源研发独立 Electron 桌面客户端，全力聚焦极简 Web 门户 + 跨平台轻量级 Node/Bash CLI 工具。
+3. **不做 C2C 开放式无审核实时秒级发布**：创作者提交的 Skill 必须经过“自动化静态扫描 + 沙盒基准测试 + 人工合规核准”三重漏斗，严防泛滥的 AI 垃圾内容与恶意供应链投毒。
+4. **不做自研基础大模型与在线推理算力倒贴**：平台只充当技能分发与运行环境调度协议层，模型推理完全依赖宿主环境自带的 API Key（如用户自己的 Anthropic/OpenAI Key）或 Claude Code / Cursor 自带配额。
+
+---
+
+## 3. 核心架构与技能包规范 (Architecture & Skill Specification)
+
+### 3.1 跨平台 Skill 标准包物理规范 (`SKILL.md` Spec)
+
+每个上架 Skill 必须遵循标准目录结构打包：
+
+```
+skill-package-bundle.zip
+├── manifest.json            # 技能元数据、版本、环境要求、权限申请与风控标签
+├── SKILL.md                 # 核心工作流规范（面向 Claude Code / Cursor / Codex 的系统级指引）
+├── rules/                   # 针对不同 IDE 的规则适配
+│   ├── .cursorrules         # Cursor 专用上下文规则
+│   └── windsurf-rules.md    # Windsurf 专用规则
+├── scripts/                 # 可选：本地执行的确定性辅助脚本 (Node.js / Python / WASM)
+│   └── audit_runner.py
+├── schemas/                 # 输入输出结构化 JSON Schema 定义
+│   └── output-schema.json
+└── fixtures/                # 自动化测试与基准评测用例输入
+    └── sample_input.json
+```
+
+#### `manifest.json` 核心规范定义：
+```json
+{
+  "schema_version": "1.0.0",
+  "id": "dev-k8s-production-hardening",
+  "name": "K8s 生产级配置加固与安全合规审查",
+  "version": "1.2.0",
+  "category": "development",
+  "author": {
+    "name": "CloudNativeNinja",
+    "verified": true
+  },
+  "pricing": {
+    "type": "one_time_or_subscription",
+    "price_usd": 9.99
+  },
+  "runtime_compatibility": [
+    "claude-code",
+    "cursor",
+    "codex",
+    "openclaw"
+  ],
+  "sandbox_permissions": {
+    "network": false,
+    "env_vars": [],
+    "file_read": ["**/*.yaml", "**/*.yml"],
+    "file_write": ["audit-reports/**"]
+  },
+  "compliance_tags": {
+    "requires_financial_disclaimer": false
+  }
+}
+```
+
+### 3.2 交付物与数字分发鉴权架构 (Distribution & Licensing Engine)
+
+```
++-------------------+       1. 购买/获取 Token      +-------------------+
+|                   | ----------------------------> |                   |
+|  Web Store 门户   |                               |  Stripe 支付网关  |
+|  (Next.js + Edge) | <---------------------------- |                   |
++-------------------+       2. 支付完成 Webhook     +-------------------+
+          |
+          | 3. 生成加密安装 Ticket (JWT)
+          v
++-------------------+       4. npx skillstore install   +-------------------+
+|  Skill Registry   | <-------------------------------- |  本地开发者环境   |
+|  & CDN (S3+CF)    | --------------------------------> |  (CLI / Cursor)   |
++-------------------+       5. 解密并写入工作区规范     +-------------------+
+```
+
+- **数字版权保护 (DRM) 与代码防抄袭分层策略 (Dual-tier DRM & IP Protection)**：
+  - *公开展示层*：提供 Skill 的概要设计、输入输出示例、部分 `SKILL.md` 预览与基准测试评测视频，供用户决策。
+  - *核心交付层*：通过用户专属的 CLI Token 进行鉴权。CLI 校验签名通过后，从 CDN 下载经过防重放签名的资源包，在本地直接写入项目根目录（如 `.agents/skills/<skill-id>` 或 `.cursor/rules/<skill-id>.mdc`）。
+  - *动态增值层（高级量化与金融数据）*：Skill 内部携带调用平台中继网关的预签名临时 Token，访问高质量金融因子清洗接口，引入运行时鉴权与版权保护机制，数据防爬与防倒卖由服务端鉴权统一管控。
+
+---
+
+## 4. 业务流程与状态机 (Flow & State Machine)
+
+### 4.1 终端用户购买与 CLI 一键安装主流程 (Buyer Sequence Diagram)
+
+```mermaid
+sequenceDiagram
+    autonumber
+    actor User as 开发者/产品/投资者 (User)
+    participant Web as Web 门户 (SkillStore UI)
+    participant Auth as 鉴权服务 (Supabase/Auth)
+    participant Pay as Stripe 结算中台
+    participant Reg as Skill 注册表与 CDN
+    participant CLI as 本地 CLI (`@skillstore/cli`)
+    participant Agent as 本地 Agent (Cursor/Claude Code)
+
+    User->>Web: 浏览专区筛选 Skill (Dev/PM/Stock)
+    Web->>User: 展示详情页、真实样例与红队测试评测分
+    opt 若为股票投资类 Skill
+        Web->>User: 强制弹出《合规风险免责声明书》
+        User->>Web: 勾选“已知悉不作为投资建议”确认
+    end
+    User->>Web: 点击购买 ($9.99 或订阅 Pro)
+    Web->>Pay: 创建 Checkout Session
+    Pay-->>User: 引导完成信用卡/Apple Pay 支付
+    Pay->>Web: 支付成功 Webhook 回调
+    Web->>Auth: 签发该用户专属授权许可 (Entitlement Record)
+    Web-->>User: 展示一键安装命令 `npx skillstore install <skill-id>`
+    
+    User->>CLI: 在项目终端执行 `npx skillstore install <skill-id>`
+    CLI->>Auth: 校验本地 Token (若无则拉起浏览器 OAuth 授权)
+    Auth-->>CLI: 颁发临时设备凭证 (Device Ticket)
+    CLI->>Reg: 请求 Skill 安装包与签名校验和
+    Reg-->>CLI: 返回加密安装包
+    CLI->>CLI: 执行沙盒静态自检 (检查文件路径越权风险)
+    CLI->>Agent: 自动注入 `.agents/skills/<id>/` 或 `.cursorrules`
+    CLI-->>User: ✅ 安装完成！可在 Cursor / Claude Code 直接调用
+```
+
+### 4.2 创作者发布与沙盒自动化审查流程 (Creator Upload & Review)
+
+```mermaid
+sequenceDiagram
+    autonumber
+    actor Creator as 技能创作者 (Creator)
+    participant Portal as 创作者控制台 (Creator Studio)
+    participant S3 as 预签名临时存储
+    participant Worker as 自动化沙盒测试工作流 (Sandbox Runner)
+    participant Security as 静态代码安全扫描器 (Semgrep/AST)
+    participant Auditor as 平台人工合规审核员
+
+    Creator->>Portal: 提交 Skill 包 (ZIP/Git Repo) + 定价设定
+    Portal->>S3: 上传安装包并创建待审核工单
+    Portal->>Worker: 触发异步审查事件 `SKILL_SUBMITTED`
+    Worker->>Security: 1. 扫描脚本中是否有 eval、exec、外链回传、读取秘钥
+    alt 存在高危安全漏洞 (CVE / 恶意外联)
+        Security-->>Worker: 拦截并标注漏洞项
+        Worker-->>Portal: 更新状态为 `REJECTED_SECURITY`
+        Portal-->>Creator: 自动邮件打回并附带安全排查日志
+    else 安全合规扫描通过
+        Worker->>Worker: 2. 在隔离 Docker 容器内执行 Fixture 基准测试
+        Worker->>Worker: 3. 校验输出格式是否符合 JSON Schema 规范
+        Worker-->>Portal: 生成《沙盒基准运行报告》
+        Portal->>Auditor: 4. 进入人工内容与合规复审 (特别是 Stock 分类)
+        Auditor->>Portal: 审批通过 `APPROVE_AND_PUBLISH`
+        Portal->>Creator: 恭喜！Skill 已全球上线销售
+    end
+```
+
+### 4.3 核心对象状态机流转设计 (State Machines)
+
+#### 4.3.1 技能上架生命周期 (Skill Lifecycle State Machine)
+
+| 当前状态 | 触发事件 | 前置校验条件 (Guard) | 目标状态 | 系统副作用动作 (Actions) |
+| :--- | :--- | :--- | :--- | :--- |
+| `DRAFT` (草稿) | `SUBMIT_FOR_REVIEW` | 必填字段完整、包含 `SKILL.md` 与测试用例 | `PENDING_SCAN` (扫描中) | 打包上传只读存储，分发任务给扫描队列 |
+| `PENDING_SCAN` | `SECURITY_FAIL` | 发现硬编码密钥、恶意反弹 shell、非安全路径遍历 | `REJECTED` (已驳回) | 记录拦截证据，向创作者推送告警邮件 |
+| `PENDING_SCAN` | `SECURITY_PASS` | 静态安全规则 100% 通过 | `SANDBOX_TESTING` (测试中) | 拉起隔离无外网权限 Docker 容器启动基准回测 |
+| `SANDBOX_TESTING` | `TEST_FAIL` | 基准测试执行超时 (>60s) 或格式解析失败 | `REJECTED` (已驳回) | 生成失败调用栈与标准差错日志供调试 |
+| `SANDBOX_TESTING` | `TEST_PASS` | 自动化执行成功率 = 100% | `PENDING_AUDIT` (人工审核) | 分派合规审核工单（股票类强制审核法律声明） |
+| `PENDING_AUDIT` | `AUDIT_APPROVE` | 审核员签署合规核准意见 | `PUBLISHED` (已发布) | 部署至边缘 CDN，全网生成索引并开放搜索与购买 |
+| `PUBLISHED` | `REPORT_TAKEDOWN` | 收到重大客诉或安全报告 | `SUSPENDED` (下架隔离) | 立即冻结购买通道与 CLI 下载，通知已购用户 |
+| `PUBLISHED` | `UPDATE_VERSION` | 创作者提交语义化新版本 (v1.1.0) | `PENDING_SCAN` | 老版本继续可售，新版本单独走审查流水线 |
+
+#### 4.3.2 购买授权生命周期 (Entitlement Lifecycle State Machine)
+
+| 当前状态 | 触发事件 | 前置校验条件 (Guard) | 目标状态 | 系统副作用动作 (Actions) |
+| :--- | :--- | :--- | :--- | :--- |
+| `INITIATED` (待支付) | `CHECKOUT_SUCCESS` | Stripe Webhook 签名验证合法、金额正确 | `ACTIVE` (生效中) | 写入授权许可表，生成下载 JWT，发送凭据邮件 |
+| `INITIATED` | `CHECKOUT_EXPIRED` | 超过 30 分钟未完成支付 | `ABANDONED` (已作废) | 释放临时锁，标记流失漏斗分析数据 |
+| `ACTIVE` (生效中) | `SUBSCRIPTION_RENEW`| 月度/年度自动扣费成功 | `ACTIVE` (生效中) | 延长授权截止时间，重新颁发客户端 Token 证书 |
+| `ACTIVE` (生效中) | `SUBSCRIPTION_CANCEL`| 用户在账单中心主动取消续订 | `PENDING_EXPIRE` (到期不续) | 标记周期结束日停用，发送挽留问卷 |
+| `PENDING_EXPIRE` | `CYCLE_END` | 账单周期已过最后截至秒数 | `EXPIRED` (已过期) | 废除该账号所有 CLI 远端拉取权限（本地存量文件不删） |
+| `ACTIVE` (生效中) | `REFUND_GRANTED` | 购后 48 小时内申请且符合质量退款规范 | `REVOKED` (已退款作废) | 吊销云端中继鉴权，通知 Stripe 执行退款原路退回 |
+
+---
+
+## 5. 功能需求详述 (What)
+
+### 5.1 模块一：垂直品类目录与高信息密度详情页 (Catalog & Detail Engine - P0)
+
+#### 5.1.1 交互说明与布局规则
+- **顶部核心筛选器**：支持按【软件研发 Dev】、【产品经理 PM】、【股票投资 Stock】三大垂直 Tab 一键切换，并支持按目标运行时（Claude Code, Cursor, Codex, OpenClaw）进行多选交叉筛选。
+- **差异化卡片展示**：
+  - *Dev 卡片*：展示适配语言框架（如 Rust/Go/Typescript）、安全基准评级、代码行数缩减率。
+  - *PM 卡片*：展示模板产物形态（PRD/竞品矩阵/SQL/用户地图）、支持导出格式。
+  - *Stock 卡片*：**强制置顶醒目黄色风险警示标签「仅供量化研究与历史数据分析，严禁用于投资建议」**，展示支持数据源类型与回测准确度。
+- **Skill 详情页结构**：
+  - 左侧：交互执行视频/动态 GIF 演示、真实的输入 Prompt 与输出结构体样例展示。
+  - 右侧：购买操作区（单品购买 $X.XX vs Pro 会员 $19.99/月畅享）、创作者认证徽章、安全沙盒检测报告链接。
+  - 下方：真实开发者带星评级与带环境版本（如 `Cursor v0.42 / Mac M3`）的真实反馈。
+
+#### 5.1.2 异常边界与降级处理 (Edge Cases)
+1. **弱网与首屏加载降级**：CDN 边缘缓存加速，当动态评价服务响应超时（>800ms）时，优先渲染静态构建的详情页面，评价区展示“评价加载中”占位，不可阻塞主购买按钮。
+2. **多语言与特殊字符**：Skill 名称限制 60 字符，描述支持 Markdown 但过滤所有 `<script>`、`<style>` 与 `<iframe>` 标签，防御 XSS 攻击。
+3. **已下架/维护中处理**：访问被下架 Skill 链接时，返回 404 友好提示页，并基于向量嵌入算法自动推荐 3 款同品类的备选替代 Skill。
+
+---
+
+### 5.2 模块二：极简 CLI 安装工具与本地环境集成 (`@skillstore/cli` - P0)
+
+#### 5.2.1 命令行交互规范与参数表
+开发者在终端无需全局安装，直接通过 `npx` 即可运行：
+
+```bash
+# 1. 匿名用户或首次安装（自动唤起浏览器完成设备授权）
+npx @skillstore/cli install <skill-id>
+
+# 2. 指定安装目标运行时环境（默认智能嗅探当前项目）
+npx @skillstore/cli install <skill-id> --target=cursor
+npx @skillstore/cli install <skill-id> --target=claude-code
+
+# 3. 团队/CI 无头模式（通过环境变量注入 Token）
+SKILLSTORE_TOKEN=sk_live_xxx npx @skillstore/cli install <skill-id> --yes
+```
+
+#### 5.2.2 自动嗅探与智能放置规则
+CLI 在执行时智能扫描当前工作区目录：
+- 若检测到 `.cursor/` 或 `.cursorrules`，自动将规则挂载至 `.cursor/rules/<skill-id>.mdc`；
+- 若检测到包含 Claude 配置文件或根目录为 Git 仓库，自动在 `.agents/skills/<skill-id>/` 写入规范文档并更新索引；
+- 若未检测到已知 IDE 配置，交互式提问用户选择首选目标环境。
+
+#### 5.2.3 异常边界与降级处理 (Edge Cases)
+1. **网络中断与不完整下载**：下载资源时采用 `.tmp-download-<uuid>` 临时文件，下载完成后先校验 SHA-256 签名，一致后再原子重命名（Atomic Rename）移入目标目录；网络中途中断不留存任何损坏文件。
+2. **同名文件冲突覆盖策略**：若目标路径已存在同名 Skill，CLI 必须中断并提示：“已存在本地版本 (v1.0.1)，是否覆盖升级为 (v1.2.0)？[y/N]”，严禁未经用户许可静默覆盖本地定制化修改。
+3. **离线运行与授权过期表现**：已安装在本地的 `SKILL.md` 规则为纯文本，在离线状态下照常可供本地 Agent 读取；若 Skill 依赖平台云端中继 API，中继鉴权返回 401 时，优雅降级并在输出中明确提示：“订阅已过期，请执行 `npx skillstore login` 刷新凭证”。
+
+---
+
+### 5.3 模块三：结算与授权许可发放引擎 (Payment & Entitlement - P0)
+
+#### 5.3.1 结算模式与计费引擎
+- **Stripe Checkout 集成**：支持信用卡、Apple Pay、Google Pay、Link 快速支付。
+- **多币种自动汇率折算**：默认以美元计价结算，展示层根据用户 IP 自动提供本地参考货币预估。
+- **创作者分成账户（Stripe Connect Express）**：支持创作者一键绑定当地银行账户，自动处理每月合并结算与出账单。
+
+#### 5.3.2 异常边界与降级处理 (Edge Cases)
+1. **Webhook 重复投递与幂等性保证**：Stripe Webhook 在网络颠簸时可能重试投递。系统必须在 `webhook_events` 表中使用 Stripe `event_id` 建立唯一索引约束，通过数据库唯一键（Unique Constraint）实现百分之百幂等处理，避免单笔订单多次授权。
+2. **并发重复点击结账**：前端提交支付按钮点击后立即置灰并展示 loading 状态；后端根据 `user_id + skill_id + timestamp_minute` 建立短期防重复请求锁（Redis NX，TTL 30秒）。
+3. **退款后资产处理与反作弊**：一旦用户触发退款，系统立即吊销云端中继调用权限，并将该用户标记为风险观察名单；若单账号 30 天内连续退款超过 3 次，自动冻结其无理由退款资格，需人工工单介入。
+
+---
+
+### 5.4 模块四：股票赛道专用合规风控护栏引擎 (Stock Compliance Shield - P0)
+
+#### 5.4.1 合规强管控体系架构
+针对股票与量化投资场景，系统在**发布端、购买端、执行端**设立三重不可逾越的护栏：
+
+```
++-------------------------------------------------------------------------+
+| 第一道门 (发布端)：关键词与代码逻辑强审查                               |
+| 扫描并强制驳回包含“推荐买入/卖出”、“年化收益保证”、“自动实盘下单”等违规内容 |
++-------------------------------------------------------------------------+
+                                    |
+                                    v
++-------------------------------------------------------------------------+
+| 第二道门 (购买端)：前置法律合规免责声明协议 (Click-wrap Agreement)      |
+| 强制阅读并倒计时 5 秒确认：“本工具仅供技术研究，不构成任何投资建议，自负盈亏”|
++-------------------------------------------------------------------------+
+                                    |
+                                    v
++-------------------------------------------------------------------------+
+| 第三道门 (执行端)：产出物永久置入法律水印与数据源沙盒隔离               |
+| 导出的分析报告底部强制附带官方合规免责声明；行情数据通过受控代理限频请求 |
++-------------------------------------------------------------------------+
+```
+
+#### 5.4.2 异常边界与降级处理 (Edge Cases)
+1. **外部财经数据源宕机或限频**：当 Yahoo Finance 或第三方金融接口返回 429（Too Many Requests）或 503 时，Skill 自动降级为使用本地历史缓存数据，并在报告顶部用大号黄色字条明确标注：“当前为历史延迟缓存数据（更新于 YYYY-MM-DD），不可用于即时决策”。
+2. **免责声明规避破解防范**：严禁在 `SKILL.md` 中允许用户通过系统级 Prompt（如“忽略所有前置说明”）抹除免责声明；平台编译打包时将免责逻辑作为不可篡改的后置拦截器（Post-processor）固化。
+
+---
+
+## 6. 核心业务验收标准 (Acceptance Criteria - BDD 规范)
+
+### 场景 1：研发工程师购买并使用 CLI 完成开发 Skill 安装 (P0)
+```gherkin
+Given 用户已在 SkillStore 注册并成功绑定 Stripe 支付方式
+  And 用户进入【研发 Dev】专区，选定一款标价 $9.99 的「K8s 生产级配置加固」Skill
+When 用户点击“立即购买”并在 Stripe 托管页面成功支付
+Then 系统应在 1.5 秒内生成订单状态为 `ACTIVE` 的 Entitlement 授权记录
+  And 页面无刷新弹出包含专属一键安装命令的模态框：`npx @skillstore/cli install dev-k8s-production-hardening`
+When 用户在本地包含 `.cursorrules` 的项目终端中粘贴并回车运行该命令
+Then CLI 应在 2 秒内完成网络鉴权、签名校验并成功将配置写入 `.cursor/rules/dev-k8s-production-hardening.mdc`
+  And 终端打印输出：“🎉 [Success] 技能已挂载，可在 Cursor 中直接输入 `@dev-k8s-production-hardening` 调用”
+```
+
+### 场景 2：股票量化投资者购买前合规协议前置确认 (P0)
+```gherkin
+Given 用户浏览至【股票投资 Stock】分类下的「SEC 10-K 财报粉饰排查因子」详情页
+When 用户点击“立即获取”或“Pro 订阅免费安装”
+Then 系统不应直接跳转支付，而是必须弹出全屏遮罩的《金融合规与风险自负免责声明书》
+  And “我已充分阅读并知晓风险”按钮初始状态为置灰不可点击，带有 5 秒倒计时
+When 倒计时结束且用户手动勾选“已知晓本工具不提供任何买卖建议”单选框
+Then 按钮变为高亮可用状态
+When 用户点击确认
+Then 系统方可放行进入后续支付或 CLI 授权分发流程
+```
+
+### 场景 3：创作者上传携带恶意读取环境变量代码的 Skill 被沙盒拦截 (P0)
+```gherkin
+Given 创作者在【Creator Studio】后台提交一个新的 Skill 压缩包 `audit-tool.zip`
+  And 该压缩包的辅助脚本中包含 `process.env.AWS_SECRET_ACCESS_KEY` 或尝试请求未认证外部 IP
+When 创作者点击“提交审核”触发后台沙盒安全流水线
+Then 静态 AST 扫描器应在 10 秒内匹配到非受控环境变量读取规则
+  And 自动化工作流应将 Skill 状态置为 `REJECTED`
+  And 平台在创作者后台展示具体的违规文件与代码行号：“Violation: Forbidden access to process.env in line 42 of scripts/run.js”
+  And 该 Skill 绝对不允许流入任何人工审核队列或公开索引库
+```
+
+### 场景 4：用户取消订阅后授权到期降级处理 (P1)
+```gherkin
+Given 用户订阅了 $19.99/月的 Pro All-Access 通行证并在本地安装了 10 款官方 Skills
+When 用户在个人中心点击“取消自动续订”
+Then 账户订阅状态流转为 `PENDING_EXPIRE`，当前账单周期截止前所有功能完全正常可用
+When 账单周期截止时刻到达，系统触发定时审查任务
+Then 账户状态流转为 `EXPIRED`
+When 该用户再次在终端运行 `npx @skillstore/cli install <new-pro-skill>` 试图获取新付费技能
+Then CLI 应在鉴权阶段拦截并输出友好提示：“⚠️ 当前 Pro 订阅已到期，请前往 https://skillstore.dev/pricing 续费后继续安装”
+  And 用户本地工程中已安装的历史纯文本 `SKILL.md` 文件保持不动，不破坏用户本地已有代码
+```
+
+### 场景 5：产品经理使用 PM 技能包生成标准 PRD 并自动触发红队架构边界挑刺 (P0)
+```gherkin
+Given 产品经理已在 Cursor 或 Claude Code 中安装并激活「工业级标准 PRD 撰写与红队审查」技能
+  And 用户输入一句话模糊需求：“我想做一个视频聊天时的人脸美颜滤镜功能”
+When 用户在对话中下达执行指令：“按标准模板输出 PRD 并进行红队架构审查”
+Then Skill 技能包应先执行反转追问，提取核心参数（分辨率、端侧 NPU/GPU 算力预算、并发帧率要求）
+When 用户补充输入：“目标机型为 iOS 18 旗舰机，要求 60fps，功耗温度可控”
+Then Skill 应在 30 秒内完整输出包含业务背景、成功指标、Non-Goals、Mermaid 状态机与 Given/When/Then 验收标准的 PRD 初稿
+  And 自动追加【红队架构师与 QA 边界审查】板块，针对弱网卡顿、手机发烫温控降级、多线程并发竞争列出 3 条具体防御方案
+```
+
+### 场景 6：股票量化投资技能在外部金融 API 限频时的降级容灾与免责水印 (P0)
+```gherkin
+Given 投资者在本地终端执行股票量化技能 `stock-sec-10k-anomaly-screener`
+  And 外部第三方金融行情接口瞬时并发超限返回 HTTP 429 (Too Many Requests)
+When 技能脚本捕获到 429 限频或网络超时错误
+Then 运行环境应自动降级切换至本地脱敏历史离线缓存数据进行回测演算
+  And 最终输出的分析报告顶部必须显示明黄色告警：“⚠️ 注意：当前调用受限，使用缓存数据，非即时行情”
+  And 报告底部强制固化官方合规声明：“【合规声明】本报告基于量化模型技术研究产出，严禁作为投资依据，平台不承担穿透责任”
+```
+---
+
+## 7. 非功能性需求 (Non-Functional Requirements)
+
+### 7.1 性能与高并发指标 (SLA & Performance)
+- **Web 端核心性能**：全球 CDN 边缘节点首屏 LCP (Largest Contentful Paint) ≤ 1.2 秒；详情页 API 响应时间 P95 ≤ 200ms。
+- **CLI 并发与吞吐能力**：注册表分发中枢基于 Cloudflare Workers + AWS S3 预签名 CDN 构建，能够平稳承载单日 100,000 次 CLI 下载与签名鉴权请求，错误率 (5xx) ≤ 0.01%。
+
+### 7.2 安全与隐私合规 (Security & Privacy)
+- **零数据窥探原则 (Zero-Data Telemetry)**：CLI 工具在本地运行时，**严禁上传、收集或扫描用户的本地业务代码、私有仓库内容或 Git 提交记录**。CLI 仅向服务器回传匿名化的 `user_id`、`skill_id`、`client_version` 与安装成功/失败状态码。
+- **Token 安全与轮换**：客户端存储的鉴权凭证采用基于 OS Keyring（如 macOS Keychain、Linux Secret Service）的安全加密存储，过期自动失效，支持在 Web 端一键注销所有设备。
+
+---
+
+## 8. 数据埋点与全链路观测设计 (Telemetry & Event Tracking)
+
+| 事件名称 (Event Name) | 触发时机 | 上报端 | 核心上报属性参数 (Key-Value) | 核心业务用途 |
+| :--- | :--- | :--- | :--- | :--- |
+| `skill_card_impression` | 用户浏览专区卡片曝光在视窗内 | Web 客户端 | `skill_id`, `category` (dev/pm/stock), `pos_index`, `page` | 测算目录曝光点击率 (CTR) |
+| `skill_detail_view` | 用户进入 Skill 详情页 | Web 客户端 | `skill_id`, `author_id`, `price_usd`, `referrer` | 详情页访问量与漏斗起点 |
+| `stock_disclaimer_agreed` | 股票类 Skill 免责声明点击确认 | Web 客户端 | `skill_id`, `user_id`, `dwell_time_sec`, `agreement_ver` | 存证合规审计日志，留档抗辩 |
+| `checkout_initiated` | 用户点击“立即购买”唤起支付 | Web 服务端 | `skill_id`, `price_usd`, `plan_type` (single/sub), `user_id` | 结账发起意向与弃单漏斗 |
+| `order_payment_success` | Stripe Webhook 确认扣款成功 | 云端中台 | `order_id`, `skill_id`, `amount_cents`, `currency`, `user_id` | 核心 GMV 确认与分成对账 |
+| `cli_install_started` | 本地执行 `npx skillstore install` | CLI 客户端 | `skill_id`, `client_version`, `target_agent` (cursor/claude) | CLI 链路激活漏斗起点 |
+| `cli_install_completed` | 本地文件写入成功、校验通过 | CLI 客户端 | `skill_id`, `duration_ms`, `target_agent`, `status=SUCCESS` | 北极星指标核心上报事件 |
+| `cli_install_failed` | CLI 执行中断或报错 | CLI 客户端 | `skill_id`, `error_code` (AUTH_FAIL/NETWORK_ERR/COLLISION) | 排查本地客户端异常与故障修复 |
+
+---
+
+## 9. 独门红队挑刺与极限边界对抗矩阵 (Red Team Review & QA Matrix)
+
+在将本 PRD 提交研发与法务评审之前，特模拟“资深后端兼安全架构师”与“毒舌 QA 测试总监”进行极限红队挑刺审查：
+
+| **挑刺角色** | **极度尖锐的问题 / 边界隐患** | **严密的工程与产品防范方案 (PRD 应对解法)** |
+| :--- | :--- | :--- |
+| **安全架构师** | **“如果用户花 $4.99 买了 Skill，拿到本地把 `SKILL.md` 拷出来免费发在 GitHub 或小红书上，发生盗版扩散、离线克隆与逆向破解怎么办？”** | **【三层混合护城河与版权水印解法】**：<br>1. 认清行业规律：纯文本 Prompt 无法也没有必要绝对物理加密，过度加密会破坏 Agent 可读性与极客好感。<br>2. 我们采用“开源核心工作流 + 动态专有资产分离”：真正高价值的 Skill 深度绑定平台中继服务（如清洗后的动态因子库、最新的漏洞特征库、自动化回测执行沙盒），抄走静态文本的用户只能获得 30% 基础体验，离线克隆与盗版扩散无法享受核心增值服务与持续热更新。<br>3. 设立数字签名与隐形版权水印，有效遏制逆向破解，对泄露源头账号可追溯追责。 |
+| **法务与合规官** | **“如果股票类 Skill 诱导实盘交易发生巨额亏损，平台是否面临非法投顾、代客理财与穿透责任的法律合规风险？”** | **【法律合规风险强隔离与免责声明机制】**：<br>1. **严禁代客理财**：平台在 UI、文档、代码注释中严禁出现任何“推荐买入”、“稳赚”字眼，绝不触碰代客理财与资金托管，彻底斩断穿透责任。<br>2. **不可绕过强确认**：购买前强制全屏倒计时 5 秒确认《非投资咨询风险提示书》，用户点击确认时连同 `user_id`、IP、时间戳持久化存入合规审计数据库，具备完全司法抗辩效力。<br>3. **全流程合规声明水印**：Skill 生成的所有报告末尾均由系统后置拦截器强制打上官方合规声明与免责水印，且代码在本地单机运行，平台不承担实盘损失与穿透责任。 |
+| **安全总监** | **“如果有恶意创作者在 Skill 辅助脚本中植入代码注入、供应链安全后门或恶意脚本试图提权，怎么彻底阻断？”** | **【代码注入与恶意脚本提权防御】**：<br>1. **静态 AST 阻断**：利用 Semgrep 深度静态规则扫描，严查 `eval()`、动态 `exec`、子进程提权（`sudo`）、非法读取私有环境变量（`.env`, `id_rsa`）及反弹 shell 代码。<br>2. **零外网 Docker 沙盒**：沙盒基准测试在彻底切断外部公网访问的隔离容器中运行，任何未声明的对外网络连接直接触发 SIGKILL，坚决遏制供应链安全与恶意脚本提权风险。 |
+| **QA 测试总监** | **“如果开发者本地是个非常古怪的 monorepo，或者项目根目录没有 `.cursor`，CLI 写入失败卡死在半当中怎么办？”** | **【优雅探测与幂等降级机制】**：<br>1. CLI 执行时先探测项目环境，若未能识别标准结构，主动弹出友好方向键选择菜单：`[1] 写入当前目录 .agents/skills [2] 写入全局用户目录 [3] 仅输出纯文本至终端`。<br>2. 全程采用临时目录原子写入（Atomic Temp Swap），发生任何权限不足（EACCES）或空间不足时，立即完整回滚，不留下任何垃圾碎片脏文件，并输出具体修复建议命令（如 `chmod +w`）。 |
+| **后端架构师** | **“Stripe 支付完成后如果网络延迟，用户立刻在本地敲 CLI 回车，此时云端 Webhook 还没到，用户会不会被提示‘未授权’导致差评？”** | **【双路即时凭证换发机制】**：<br>1. 当前端 Stripe Checkout 完成重定向回前端 Success 页面时，前端凭 SessionId 同步向服务端请求即时授权校验（Fast-path Validation），同时后台继续接收异步 Webhook 兜底（Slow-path Event）。<br>2. 页面成功页即刻将短效（5分钟）预授权凭证打入剪贴板命令参数（如 `npx skillstore install <id> --ticket=jwt_temp`），即使用户秒级运行 CLI 也可畅通无阻，避免分布式时序竞态问题。 |
+| **基座模型专家** | **“如果下个月 Claude Code 或 Cursor 突然改版废弃了 `SKILL.md` 改用新格式，整个平台的 Skill 是不是全部报废？”** | **【抽象中间表示 (IR) 与编译器适配器】**：<br>平台规范不强行锁死某一家厂商的专有格式，而是在后台采用**标准抽象技能结构体 (Abstract Skill IR)**。当上游厂商（Anthropic/Cursor）调整配置规则时，仅需更新 `@skillstore/cli` 的本地目标代码生成器（Target Code Generator），即可在 24 小时内将全库 Skill 编译输出为新厂商的最新标准，平台反而具备了“帮用户抹平跨 Agent 兼容性痛点”的独特生态壁垒。 |
+---
+*本 PRD 文档已根据《工业级标准 PRD 黄金结构模板》完成全流程业务边界闭环，通过严苛红队评审，作为研发、测试与合规团队开发上线的唯一依据。*
