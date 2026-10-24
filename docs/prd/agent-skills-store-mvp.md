@@ -55,6 +55,18 @@
 3. **不做 C2C 开放式无审核实时秒级发布**：创作者提交的 Skill 必须经过“自动化静态扫描 + 沙盒基准测试 + 人工合规核准”三重漏斗，严防泛滥的 AI 垃圾内容与恶意供应链投毒。
 4. **不做自研基础大模型与在线推理算力倒贴**：平台只充当技能分发与运行环境调度协议层，模型推理完全依赖宿主环境自带的 API Key（如用户自己的 Anthropic/OpenAI Key）或 Claude Code / Cursor 自带配额。
 
+### 2.4 核心目标用户画像与同理心地图 (User Personas & Empathy Maps)
+
+为确保产品功能与交互细节精准契合真实场景，确立 4 个典型用户画像：
+
+| 画像维度 | **Persona 1: Alex (研发买家)** | **Persona 2: Sarah (产品买家)** | **Persona 3: David (量化买家)** | **Persona 4: Liam (供给创作者)** |
+| :--- | :--- | :--- | :--- | :--- |
+| **职业与背景** | 30岁，资深全栈架构师/独立开发者，日常重度使用 Cursor 与 Claude Code | 28岁，B2B SaaS 高级产品经理，日常使用 Figma、Linear 与 Notion | 35岁，科技公司研发总监/CFA持证人，业余自研美股/A股量化策略 | 33岁，资深 DevOps 专家/开源项目作者，在 GitHub 拥有 2k+ Stars |
+| **日常工作流** | 本地终端、Git、Docker、Kubernetes、重构老旧系统 | 收集客户反馈、撰写 PRD、评审会答辩、数据漏斗排查 | 研读 10-K 财报、计算因子、运行 Python 回测脚本 | 编写自动化脚本、沉淀架构规则规范、活跃于开发者社区 |
+| **最深痛点** | 网上 Prompt 缺少类型系统与边界处理，直接用容易引出生产事故 | 通用 AI 生成 PRD 空洞散文化，评审会上经常被研发问住边界漏洞 | 自己清洗 XBRL 财报极度耗时，害怕黑盒投顾诈骗与模型数值幻觉 | 自己写的高质量规则只能在 GitHub 免费开源，缺乏顺畅变现渠道 |
+| **核心恐惧** | 私有代码被第三方恶意扩展或插件扫描上传泄露 | PRD 出现逻辑死锁导致开发返工，需求评审会被架构师无情打回 | 盲信量化模型导致实盘资金严重亏损，触碰非法荐股合规风险 | 辛辛苦苦打磨的 Skill 被别人一键复制免费倒卖扩散 |
+| **付费触发器** | 能一键通过 CLI 将加固规则与 AST 补丁注入本地项目，节省 2 天时间 | 能通过反转追问输出带状态机与红队自检的工业级 PRD，评审一次过 | 能提供纯本地沙盒运行、带完整数学证明与回测验证的排查因子 | 看到平台提供 75% 极高分成，且有自动化沙盒保护与侵权存证保障 |
+
 ---
 
 ## 3. 核心架构与技能包规范 (Architecture & Skill Specification)
@@ -1050,6 +1062,21 @@ Then 运行环境仅在本地进程内存中解密该 Key 注入请求头，确�
 | **`StripeWebhookLagging`** | `histogram_quantile(0.95, webhook_duration_seconds) > 30` | **P0 (Critical)** | 5 分钟响应 | 检查 Postgres 连接池水位，临时开启双路即时凭证降级通道 |
 | **`HighSkillRefundRatio`** | `sum(refund_count{skill_id=X}[24h]) / sum(order_count{skill_id=X}[24h]) > 0.03` | **P2 (Medium)** | 2 小时响应 | 自动触发单品熔断隔离，暂停该 Skill 首页推荐并通知人工合规审查 |
 | **`StockDisclaimerBypassAttempt`** | `rate(stock_order_without_disclaimer_total[1m]) > 0` | **P0 (Critical)** | 即刻响应 (1m) | 立即封禁该请求来源 IP，并自动关闭股票专区结账通道进行代码巡检 |
+
+### 8.4 产品驱动增长 (PLG) 与裂变传播回路设计 (Product-Led Growth Viral Loops)
+
+为降低对付费广告投放的依赖，平台内置 3 套低成本病毒式传播循环（Viral Loops）：
+
+1. **Git 提交与 PR 审查签名自传播 (Git PR Viral Badge)**：
+   - 研发类 Skill（如 `dev-k8s-prod-hardening`）在生成代码重构或单测补丁并提交 PR 时，默认附带优雅轻量的 Markdown 脚注签名：
+     `> ⚡ Hardened with CIS Benchmark via [SkillStore](https://skillstore.dev/s/k8s)`；
+   - 团队内部其他代码审查员（Reviewer）在 GitHub PR 中点击该链接即可直达该 Skill 详情页，产生团队内同侪病毒扩散效应（K-factor 预期达到 0.35）。
+2. **创作者专属引流直链与超额分成 (Creator Affiliate Kickback)**：
+   - 每位认证创作者拥有专属推广短链（如 `skillstore.dev/@ninja/k8s`）；
+   - 凡是通过创作者专属外链直接引导注册并下单的用户，**平台仅抽取 15% 佣金，创作者净收益提升至 85%**，极大激发工程师在推特/X、技术播客、个人博客自发带货。
+3. **免费官方种子开源引流漏斗 (Open-Core Top-of-Funnel)**：
+   - 将 3 款通用基础 Skill（如基础 Git 分支工作流、基础 PRD 模板）完全开放为开源公开包；
+   - 开发者在终端执行 `npx @skillstore/cli install free-git-flow` 体验流畅且零摩擦，终端就绪提示时自然展示：“👉 发现同类精选进阶包：K8s 生产加固 / 慢 SQL 优化 (点击直达)”。
 
 ---
 ## 9. 独门红队挑刺与极限边界对抗矩阵 (Red Team Review & QA Matrix)
