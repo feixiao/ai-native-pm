@@ -134,9 +134,213 @@ skill-package-bundle.zip
   - *核心交付层*：通过用户专属的 CLI Token 进行鉴权。CLI 校验签名通过后，从 CDN 下载经过防重放签名的资源包，在本地直接写入项目根目录（如 `.agents/skills/<skill-id>` 或 `.cursor/rules/<skill-id>.mdc`）。
   - *动态增值层（高级量化与金融数据）*：Skill 内部携带调用平台中继网关的预签名临时 Token，访问高质量金融因子清洗接口，引入运行时鉴权与版权保护机制，数据防爬与防倒卖由服务端鉴权统一管控。
 
+### 3.3 生产级关系型数据库模型全量设计 (PostgreSQL DDL)
+为保障高并发结账、鉴权与合规审计，后端基于 PostgreSQL 16 设计 8 张核心数据表：
+
+```sql
+-- 1. 用户基础表
+CREATE TABLE users (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    email VARCHAR(255) UNIQUE NOT NULL,
+    github_username VARCHAR(100),
+    stripe_customer_id VARCHAR(100) UNIQUE,
+    is_pro_subscriber BOOLEAN DEFAULT FALSE,
+    pro_subscription_expires_at TIMESTAMPTZ,
+    created_at TIMESTAMPTZ DEFAULT NOW(),
+    updated_at TIMESTAMPTZ DEFAULT NOW()
+);
+
+-- 2. 创作者表
+CREATE TABLE creators (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    user_id UUID REFERENCES users(id) ON DELETE CASCADE,
+    display_name VARCHAR(100) NOT NULL,
+    bio TEXT,
+    stripe_connect_account_id VARCHAR(100),
+    payout_enabled BOOLEAN DEFAULT FALSE,
+    verified_badge BOOLEAN DEFAULT FALSE,
+    rating_avg NUMERIC(3, 2) DEFAULT 5.00,
+    created_at TIMESTAMPTZ DEFAULT NOW()
+);
+
+-- 3. 技能主表
+CREATE TABLE skills (
+    id VARCHAR(64) PRIMARY KEY, -- 如 'dev-k8s-prod-hardening'
+    creator_id UUID REFERENCES creators(id) ON DELETE RESTRICT,
+    category VARCHAR(32) NOT NULL CHECK (category IN ('development', 'product_management', 'stock_investment')),
+    name VARCHAR(120) NOT NULL,
+    short_description VARCHAR(255) NOT NULL,
+    full_markdown_description TEXT,
+    pricing_type VARCHAR(32) NOT NULL CHECK (pricing_type IN ('free', 'one_time', 'pro_included')),
+    price_cents INTEGER DEFAULT 0, -- 单位：分，如 999 = $9.99
+    current_version VARCHAR(32) NOT NULL DEFAULT '1.0.0',
+    status VARCHAR(32) NOT NULL DEFAULT 'DRAFT' CHECK (status IN ('DRAFT', 'PENDING_SCAN', 'SANDBOX_TESTING', 'PENDING_AUDIT', 'PUBLISHED', 'SUSPENDED', 'REJECTED')),
+    total_installs INTEGER DEFAULT 0,
+    rating_avg NUMERIC(3, 2) DEFAULT 5.00,
+    requires_compliance_disclaimer BOOLEAN DEFAULT FALSE,
+    created_at TIMESTAMPTZ DEFAULT NOW(),
+    updated_at TIMESTAMPTZ DEFAULT NOW()
+);
+CREATE INDEX idx_skills_category_status ON skills(category, status);
+
+-- 4. 技能发布版本历史表 (不可变包发布记录)
+CREATE TABLE skill_versions (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    skill_id VARCHAR(64) REFERENCES skills(id) ON DELETE CASCADE,
+    version VARCHAR(32) NOT NULL,
+    bundle_s3_key VARCHAR(255) NOT NULL,
+    bundle_sha256 VARCHAR(64) NOT NULL,
+    manifest_payload JSONB NOT NULL,
+    changelog TEXT,
+    sandbox_audit_status VARCHAR(32) NOT NULL DEFAULT 'PENDING',
+    created_at TIMESTAMPTZ DEFAULT NOW(),
+    UNIQUE(skill_id, version)
+);
+
+-- 5. 订单与支付交易表
+CREATE TABLE orders (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    user_id UUID REFERENCES users(id) ON DELETE RESTRICT,
+    skill_id VARCHAR(64) REFERENCES skills(id) ON DELETE RESTRICT,
+    order_type VARCHAR(32) NOT NULL CHECK (order_type IN ('single_purchase', 'pro_subscription')),
+    stripe_payment_intent_id VARCHAR(100) UNIQUE,
+    amount_cents INTEGER NOT NULL,
+    platform_fee_cents INTEGER NOT NULL,
+    creator_earnings_cents INTEGER NOT NULL,
+    status VARCHAR(32) NOT NULL DEFAULT 'INITIATED' CHECK (status IN ('INITIATED', 'ACTIVE', 'ABANDONED', 'REFUNDED')),
+    created_at TIMESTAMPTZ DEFAULT NOW(),
+    updated_at TIMESTAMPTZ DEFAULT NOW()
+);
+CREATE INDEX idx_orders_user_skill ON orders(user_id, skill_id);
+
+-- 6. 权益授权许可表 (Entitlements)
+CREATE TABLE entitlements (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    user_id UUID REFERENCES users(id) ON DELETE CASCADE,
+    skill_id VARCHAR(64) REFERENCES skills(id) ON DELETE CASCADE,
+    order_id UUID REFERENCES orders(id),
+    license_type VARCHAR(32) NOT NULL CHECK (license_type IN ('lifetime', 'subscription_active')),
+    status VARCHAR(32) NOT NULL DEFAULT 'ACTIVE' CHECK (status IN ('ACTIVE', 'EXPIRED', 'REVOKED')),
+    expires_at TIMESTAMPTZ, -- NULL 表示永久有效
+    created_at TIMESTAMPTZ DEFAULT NOW(),
+    UNIQUE(user_id, skill_id)
+);
+
+-- 7. 股票投资前置免责声明确认存证表 (合规司法抗辩核心)
+CREATE TABLE stock_compliance_agreements (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    user_id UUID REFERENCES users(id) ON DELETE CASCADE,
+    skill_id VARCHAR(64) REFERENCES skills(id) ON DELETE CASCADE,
+    agreement_version VARCHAR(32) NOT NULL,
+    client_ip VARCHAR(64) NOT NULL,
+    client_user_agent TEXT NOT NULL,
+    confirmed_at TIMESTAMPTZ DEFAULT NOW(),
+    UNIQUE(user_id, skill_id, agreement_version)
+);
+
+-- 8. 沙盒自动化安全审查日志表
+CREATE TABLE sandbox_audit_logs (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    skill_version_id UUID REFERENCES skill_versions(id) ON DELETE CASCADE,
+    static_scan_pass BOOLEAN NOT NULL,
+    violations_detected JSONB DEFAULT '[]'::jsonb,
+    benchmark_runtime_ms INTEGER,
+    benchmark_exit_code INTEGER,
+    inspector_notes TEXT,
+    created_at TIMESTAMPTZ DEFAULT NOW()
+);
+```
+
+### 3.4 核心 RESTful API 接口契约规范 (OpenAPI Spec)
+
+| 方法 | 接口路径 | 鉴权要求 | 功能说明与请求/响应要点 |
+| :--- | :--- | :--- | :--- |
+| `GET` | `/v1/skills` | 公开 | **目录检索**：支持 `category` (dev/pm/stock)、`target_agent`、`q` 查询；返回分页数据与简要卡片指标。 |
+| `GET` | `/v1/skills/:id` | 公开 | **详情获取**：返回完整描述、版本列表、代码预览片断、沙盒评测分、是否需合规免责确认。 |
+| `POST` | `/v1/checkout/create-session` | Bearer Token | **创建 Stripe 结账会话**：入参 `{ skill_id, plan_type }`；返回 `{ checkout_url, session_id }`。 |
+| `POST` | `/v1/compliance/agree-disclaimer` | Bearer Token | **签署股票合规协议**：入参 `{ skill_id, agreement_version }`；记录 IP 并写入司法证据库。 |
+| `POST` | `/v1/cli/auth/device-flow` | 公开 | **CLI 设备流认证**：CLI 申请临时验证码，拉起浏览器完成 OAuth 授权，换取持久化 Device Token。 |
+| `GET` | `/v1/cli/package/:id` | CLI Device Token | **拉取安装包**：校验该账号是否有 `entitlements` 权限；若合法返回 S3 预签名短期 CDN 下载链接与包 SHA256。 |
+| `POST` | `/v1/creator/skills/upload` | Creator Token | **创作者上传新版本**：提交包文件，返回 `skill_version_id` 并立即在后台调度沙盒审核工作流。 |
+| `GET` | `/v1/creator/earnings/summary` | Creator Token | **创作者结算看板**：查询当月累计销售额、分成金额与 Stripe Connect 提现状态。 |
+
+### 3.5 自动化沙盒隔离规范与 Docker Seccomp 安全策略
+为彻底阻断恶意脚本在平台审查与本地运行时的代码注入与提权攻击，平台沙盒审查引擎强制实施以下容器运行时安全策略：
+
+1. **容器资源配额限制 (Cgroups Quota)**：
+   - CPU: 限制最大 `1.0 vCPU`；
+   - 内存: 限制最大 `512 MB`，超出直接触发 OOM-Killer 终止；
+   - 执行超时: 严格限制最长 `30 秒`，超时触发 `SIGKILL`；
+   - 存储: 只读挂载根文件系统，仅开放 `/tmp` (最大 64MB 临时空间)。
+2. **网络隔离策略**：
+   - 执行沙盒默认配置 `--network=none`，切断所有外部 TCP/UDP 连接；
+   - 任何试图通过 `curl`、`fetch`、Python `requests`、`socket` 外发网络包的行为立即被 Linux 内核层直接拦截（EPERM）。
+3. **Seccomp 系统调用白名单过滤**：
+   - 明确禁用高危系统调用：`ptrace`, `sys_chroot`, `setuid`, `setgid`, `reboot`, `mount`, `init_module`；
+   - 仅放行基础标准 I/O（`read`, `write`, `stat`, `mmap`, `futex` 等必需调用）。
+4. **AST 语法树污点分析 (Static Taint Analysis)**：
+   - 对 Python 脚本利用 `ast` 模块解析语法树，拦截所有包含 `os.system`, `subprocess.Popen`, `eval`, `exec`, `__import__` 的调用；
+   - 对 JS/TS 脚本利用 `@babel/parser` 扫描，拦截所有读取 `process.env.*SECRET*`、`process.env.*KEY*` 的模式。
+
 ---
 
 ## 4. 业务流程与状态机 (Flow & State Machine)
+
+### 4.0 整体系统组件架构拓扑图
+
+```mermaid
+graph TD
+    subgraph Client_Tier["客户端与开发者工作区"]
+        CLI["@skillstore/cli (Node.js/Bash)"]
+        IDE["IDE 宿主 (Cursor / Windsurf / VS Code)"]
+        Agent["终端智能体 (Claude Code / OpenClaw)"]
+        Browser["Web 浏览器 (Storefront & Dashboard)"]
+    end
+
+    subgraph Gateway_Tier["边缘接入与分发中枢"]
+        CF["Cloudflare Edge Workers (路由与限频)"]
+        CDN["Cloudflare CDN (静态资源与加密包分发)"]
+    end
+
+    subgraph Service_Tier["核心微服务与外部平台"]
+        AuthSvc["鉴权与设备流服务 (Device OAuth)"]
+        CatalogSvc["技能检索与元数据服务"]
+        OrderSvc["订单与 Entitlement 授权服务"]
+        Stripe["Stripe 支付 & Connect 创作者结算"]
+        S3["AWS S3 (版本包安全只读存储)"]
+    end
+
+    subgraph Security_Tier["自动化审查与隔离执行沙盒"]
+        Worker["异步审核调度器 (BullMQ)"]
+        Docker["Docker 无公网隔离沙盒容器"]
+        AST["AST 污点分析器 (Semgrep/Babel)"]
+    end
+
+    subgraph DB_Tier["持久化与存证存储"]
+        PG[("PostgreSQL 16 (订单/权限/合规存证)")]
+    end
+
+    Browser -->|HTTPS 访问| CF
+    CLI -->|设备流鉴权 / 安装拉取| CF
+    IDE -.->|本地读取| CLI
+    Agent -.->|本地读取| CLI
+
+    CF --> CDN
+    CF --> AuthSvc
+    CF --> CatalogSvc
+    CF --> OrderSvc
+
+    OrderSvc --> Stripe
+    CatalogSvc --> S3
+    AuthSvc --> PG
+    OrderSvc --> PG
+    CatalogSvc --> PG
+
+    CatalogSvc -->|发布工单| Worker
+    Worker --> AST
+    Worker --> Docker
+    Worker --> PG
+```
 
 ### 4.1 终端用户购买与 CLI 一键安装主流程 (Buyer Sequence Diagram)
 
@@ -230,9 +434,127 @@ sequenceDiagram
 | `PENDING_EXPIRE` | `CYCLE_END` | 账单周期已过最后截至秒数 | `EXPIRED` (已过期) | 废除该账号所有 CLI 远端拉取权限（本地存量文件不删） |
 | `ACTIVE` (生效中) | `REFUND_GRANTED` | 购后 48 小时内申请且符合质量退款规范 | `REVOKED` (已退款作废) | 吊销云端中继鉴权，通知 Stripe 执行退款原路退回 |
 
+#### 4.4 技能自动化审查与发布状态流转图 (Mermaid StateDiagram)
+
+```mermaid
+stateDiagram-v2
+    [*] --> DRAFT: 创作者新建 Skill 并上传 ZIP
+    DRAFT --> PENDING_SCAN: 点击提交审核
+    PENDING_SCAN --> REJECTED_SECURITY: 发现硬编码密钥/eval/未受控环境变量
+    PENDING_SCAN --> SANDBOX_TESTING: 静态 AST 安全扫描 100% 通过
+    SANDBOX_TESTING --> REJECTED_BENCHMARK: 执行超时 (>30s) 或输出格式不符
+    SANDBOX_TESTING --> PENDING_AUDIT: Docker 容器回测与用例验证通过
+    PENDING_AUDIT --> REJECTED_COMPLIANCE: 涉及违规股票荐股或虚假收益率
+    PENDING_AUDIT --> PUBLISHED: 人工合规核准，全球 CDN 同步开放
+    PUBLISHED --> SUSPENDED: 收到严重安全漏洞举报或违规投诉
+    SUSPENDED --> PENDING_SCAN: 创作者提交修复版本
+    PUBLISHED --> [*]: 创作者主动下线归档
+```
 ---
 
 ## 5. 功能需求详述 (What)
+
+### 5.0 核心端到端交互界面与布局设计 (ASCII Wireframes)
+
+#### 视图 1：商城首页与垂直专区 Tab 切换器 (Storefront & Category Navigation)
+```text
++--------------------------------------------------------------------------------------------------+
+|  [SkillStore] 垂直 Agent 技能交易市场         [ 搜索技能名称、语言、模型... ]        [Pro 会员] [登录]  |
++--------------------------------------------------------------------------------------------------+
+|  [全部技能]    [🔥 软件研发 (Dev)]    [📋 产品经理 (PM)]    [📈 股票量化 (Stock)]    [按运行时筛选: Cursor ▾] |
++--------------------------------------------------------------------------------------------------+
+|  [精选推荐横幅]                                                                                   |
+|  专为自主智能体设计的可执行技能包：经过 AST 静态扫描、隔离沙盒回测与资深红队检验。支持 Claude/Cursor。   |
++--------------------------------------------------------------------------------------------------+
+|  [DEV 专区]                                    |  [STOCK 专区 - 附带黄色合规警示标签]              |
+|  +------------------------------------------+  |  +------------------------------------------+    |
+|  | K8s 生产级配置加固与安全合规 (v1.2.0)      |  |  | ⚠️ SEC 10-K 财报粉饰勾稽排查因子 (v1.0.0) |    |
+|  | 适配: Claude Code / Cursor / Windsurf    |  |  | 适配: Claude Code / Cursor               |    |
+|  | ⭐ 4.9 (128次安装) · 官方认证徽章         |  |  | ⭐ 5.0 (96次安装) · 纯本地沙盒回测        |    |
+|  | $9.99 买断 / Pro 会员免费                |  |  | $14.99 买断 / Pro 会员免费               |    |
+|  | [立即获取]  [代码样例预览]               |  |  | [立即获取]  [免责声明]  [回测示例]        |    |
+|  +------------------------------------------+  |  +------------------------------------------+    |
++--------------------------------------------------------------------------------------------------+
+```
+
+#### 视图 2：检索结果与多维度兼容性矩阵 (Search & Compatibility Filters)
+```text
++--------------------------------------------------------------------------------------------------+
+|  检索: "sql" 找到 14 个结果                     排序: [最受欢迎 ▾]          [重置所有筛选]       |
++---------------------------+----------------------------------------------------------------------+
+| [细分垂直]                |  +----------------------------------------------------------------+  |
+| [x] 软件研发 (Dev)        |  | 慢 SQL 索引重写与执行计划诊断 (dev-sql-query-optimizer)           |  |
+| [ ] 产品经理 (PM)         |  | 自动分析 EXPLAIN 输出，推荐复合索引，支持 PG 16 / MySQL 8.0 语法   |  |
+| [ ] 股票量化 (Stock)      |  | 运行环境: Claude Code, OpenClaw | 价格: $4.99 (Pro 免费)          |  |
+|                           |  | [查看详情] [复制一键安装命令: npx @skillstore/cli install ...]    |  |
+| [目标宿主 Agent]          |  +----------------------------------------------------------------+  |
+| [x] Cursor                |  +----------------------------------------------------------------+  |
+| [x] Claude Code           |  | 全自动漏斗与同期群留存 SQL 引擎 (pm-cohort-funnel-sql)            |  |
+| [ ] Windsurf              |  | 自然语言转化为 BigQuery/ClickHouse 高级留存窗口函数 SQL            |  |
+| [ ] Codex                 |  | 运行环境: Cursor, Claude Desktop | 价格: $9.99 (Pro 免费)         |  |
+|                           |  | [查看详情] [复制一键安装命令: npx @skillstore/cli install ...]    |  |
+| [价格模式]                |  +----------------------------------------------------------------+  |
+| (o) 全部  ( ) 免费  ( ) Pro|                                                                      |
++---------------------------+----------------------------------------------------------------------+
+```
+
+#### 视图 3：Skill 详情页与真实代码样例预览 (Skill Detail Page)
+```text
++--------------------------------------------------------------------------------------------------+
+|  < 返回 Dev 专区      K8s 生产级配置加固与安全合规 (v1.2.0)              [分享] [收藏 (42)]      |
++-------------------------------------------------------+------------------------------------------+
+| [功能概览 & 交互视频演示]                             | [右侧操作区]                             |
+| · 自动扫描 Helm Chart 与 K8s YAML 权限配置            | 价格: $9.99 一次性买断                   |
+| · 修复 `privileged: true`、缺省 resources limits 等   | 或加入 Pro 会员 ($19.99/月畅享全库)      |
+| · 输出符合 CIS Kubernetes Benchmark 的加固补丁        |                                          |
+|                                                       | [ 立即购买 (Stripe 担保支付) ]           |
+| [真实 Prompt 输入 / 输出对比预览]                     | [ Pro 会员一键免费安装 ]                 |
+| +---------------------------------------------------+ |                                          |
+| | 输入: @dev-k8s-prod-hardening audit deployment.yaml| | 创作者: CloudNativeNinja [官方认证徽章]  |
+| | 输出: ✅ 发现 3 处高危配置；生成安全补丁 diff        | 质量评分: ⭐⭐⭐⭐⭐ 4.9 (128 评价)      |
+| +---------------------------------------------------+ | 沙盒测试状态: ✅ 100% 通过 (0 漏洞)       |
+|                                                       | 包含: manifest.json, SKILL.md, 静态测试集|
+| [端到端安装指引]                                      +------------------------------------------+
+| 终端执行: `npx @skillstore/cli install dev-k8s-prod-hardening`                                   |
++--------------------------------------------------------------------------------------------------+
+```
+
+#### 视图 4：股票赛道强管控 5 秒倒计时免责弹窗 (Stock Disclaimer Modal)
+```text
++--------------------------------------------------------------------------------------------------+
+|                                 ⚠️ 金融合规与风险自负法律免责确认书                               |
++--------------------------------------------------------------------------------------------------+
+|                                                                                                  |
+|  尊敬的用户：                                                                                    |
+|  您正在获取的技能【SEC 10-K 财报粉饰勾稽排查因子】属于量化研究与公开信息检索辅助技术工具。       |
+|                                                                                                  |
+|  根据《中华人民共和国证券法》第一百二十条及美国《1940年投资顾问法》第 202(a)(11) 条：           |
+|  1. 本平台及本技能【严禁提供任何买卖推荐、具体点位买卖时机指导或承诺任何投资收益】；              |
+|  2. 所有计算逻辑、财务指标、量化回测因子均在您的本地设备上离线运算，计算结果不构成投资建议；     |
+|  3. 您需独立做出投资决策并完全承担资本盈亏风险，平台与创作者不承担任何连带穿透法律责任。         |
+|                                                                                                  |
+|  [ ] 我已逐条阅读并完全理解上述合规条款，确认本工具仅用于学术研究与辅助分析 (倒计时 5s)          |
+|                                                                                                  |
+|                   [ 取消返回 ]                 [ 我已知晓并同意协议 (5s) ]                       |
++--------------------------------------------------------------------------------------------------+
+```
+
+#### 视图 5：创作者后台与沙盒自动测试审查看板 (Creator Studio Dashboard)
+```text
++--------------------------------------------------------------------------------------------------+
+|  [Creator Studio] 我的技能资产看板       当月净分成: $1,428.50     [Stripe Connect: 已绑定提现]   |
++--------------------------------------------------------------------------------------------------+
+|  [ + 提交新技能包 (.zip / Git Repo) ]                                                            |
++----------------------------+---------+---------+------------+-------------+----------------------+
+| 技能名称 (ID)              | 赛道    | 版本    | 累计安装   | 审核状态    | 快捷操作             |
++----------------------------+---------+---------+------------+-------------+----------------------+
+| dev-k8s-prod-hardening     | Dev     | v1.2.0  | 128 次     | [已发布]    | [更新版本] [查看日志]|
+| pm-industrial-prd-gen      | PM      | v1.0.1  | 210 次     | [已发布]    | [更新版本] [查看日志]|
+| stock-sec10k-fraud-check   | Stock   | v1.0.0  | 96 次      | [已发布]    | [更新版本] [查看日志]|
+| dev-ast-unit-test-synth    | Dev     | v0.9.0  | 0 次       | [沙盒回测中]| [查看 30s 容器日志]  |
+| stock-arbitrage-test       | Stock   | v0.1.0  | 0 次       | [已驳回:R1] | [查看违规词: 推荐买入]|
++----------------------------+---------+---------+------------+-------------+----------------------+
+```
 
 ### 5.1 模块一：垂直品类目录与高信息密度详情页 (Catalog & Detail Engine - P0)
 
@@ -396,6 +718,39 @@ When 技能脚本捕获到 429 限频或网络超时错误
 Then 运行环境应自动降级切换至本地脱敏历史离线缓存数据进行回测演算
   And 最终输出的分析报告顶部必须显示明黄色告警：“⚠️ 注意：当前调用受限，使用缓存数据，非即时行情”
   And 报告底部强制固化官方合规声明：“【合规声明】本报告基于量化模型技术研究产出，严禁作为投资依据，平台不承担穿透责任”
+```
+
+### 场景 7：创作者结算周期到达，通过 Stripe Connect 自动完成分成划转 (P0)
+```gherkin
+Given 创作者已在平台绑定经过验证的 Stripe Connect Express 托管账户
+  And 创作者上架的「慢 SQL 索引优化器」当月产生 100 笔单品购买 ($4.99 × 100 = $499.00)
+When 每月 1 日 00:00 UTC 全局结算定时任务触发
+Then 财务结算引擎应扣除 25% 平台服务费 ($124.75) 与支付通道费 (~$15.00)
+  And 自动向 Stripe Connect API 派发转账请求，向创作者划转净收益 $359.25
+  And 创作者控制台账单流水标记为 `DISBURSED` 并向创作者邮箱推送电子结算单据
+```
+
+### 场景 8：CLI 智能识别异构 Monorepo 与智能落盘降级 (P1)
+```gherkin
+Given 开发者在一个包含前端 (Next.js) 与后端 (Go) 的多语言 Monorepo 根目录下
+  And 项目根目录同时存在 `.cursor/` 目录与 `.claude/` 配置
+When 开发者在终端执行 `npx @skillstore/cli install dev-go-deadlock-detector`
+Then CLI 应智能解析该技能声明的 `runtime_compatibility: ["cursor", "claude-code"]`
+  And 交互式列出候选安装位置供单选：
+      "👉 检测到多目标环境，请选择挂载路径：[1] Cursor (.cursor/rules) [2] Claude Code (.agents/skills) [3] 双端同时挂载"
+When 用户选择 `[3]`
+Then CLI 应以原子方式同时在两个配置目录下完成幂等写入，并打印成功就绪日志
+```
+
+### 场景 9：股票类技能本地注入用户个人金融 API Key (BYOK) 与动态验活 (P0)
+```gherkin
+Given 用户购买并安装了高级量化财报排查技能 `stock-sec10k-fraud-check`
+  And 该技能要求可选的高频实时接口，推荐用户配置个人 Polygon.io 或 FMP 的 API Key
+When 用户在本地终端首次运行 `npx @skillstore/cli config set POLYGON_API_KEY=pk_test_xxx`
+Then CLI 应调用操作系统的安全密钥环（macOS Keychain / Linux libsecret）安全存储该 Key
+  And 绝不向 SkillStore 云端服务器回传该密钥的任何明文内容
+When 技能在本地 Agent 中执行调用时
+Then 运行环境仅在本地进程内存中解密该 Key 注入请求头，确保金融数据调用的安全性与零平台成本
 ```
 ---
 
