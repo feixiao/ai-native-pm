@@ -282,6 +282,141 @@ CREATE TABLE sandbox_audit_logs (
    - 对 Python 脚本利用 `ast` 模块解析语法树，拦截所有包含 `os.system`, `subprocess.Popen`, `eval`, `exec`, `__import__` 的调用；
    - 对 JS/TS 脚本利用 `@babel/parser` 扫描，拦截所有读取 `process.env.*SECRET*`、`process.env.*KEY*` 的模式。
 
+### 3.6 三大垂直领域旗舰种子技能规范标准实现参考 (Flagship Seed Skills Reference Specs)
+
+为向开发者与创作者提供端到端的官方参考基准，本节给出三大赛道首发旗舰技能的完整 `SKILL.md` 架构定义与规则：
+
+#### 3.6.1 研发代表作：`dev-k8s-prod-hardening/SKILL.md` 核心规范
+```markdown
+---
+name: dev-k8s-prod-hardening
+description: 针对 Kubernetes 生产级 YAML 与 Helm Charts 进行 CIS Benchmark 安全合规加固与特权溢出审计
+version: 1.2.0
+author: SkillStore Official Security Team
+allowed-tools:
+  - read
+  - edit
+  - bash
+---
+
+# K8s 生产配置加固与安全审计规范
+
+## 1. 核心触发条件与输入
+当用户在对话中提供 K8s 部署清单（`deployment.yaml`, `statefulset.yaml`, `helm/`）并要求审查或加固时激活。
+
+## 2. 强制审查规则项 (CIS Kubernetes Benchmark v1.8)
+1. **Pod 安全上下文 (SecurityContext)**：
+   - 必须强制 `runAsNonRoot: true`；
+   - 必须设置 `readOnlyRootFilesystem: true`；
+   - 必须显式声明 `allowPrivilegeEscalation: false`；
+   - 必须执行 `capabilities.drop: ["ALL"]`，仅按需添加特权。
+2. **资源配额防御 (DoS Prevention)**：
+   - 容器必须同时定义 `resources.limits.cpu`、`resources.limits.memory` 与对应的 `requests`，严禁缺省无上限运行。
+3. **健康检查健全性**：
+   - 必须同时包含 `livenessProbe` 与 `readinessProbe`，且探测超时必须配置。
+
+## 3. 输出格式
+输出必须包含：① 发现的高危安全项清单（含具体行号）；② 生成符合 Git 规范的标准 Unified Diff 修复补丁；③ 加固后的安全等级评级 (A-F)。
+```
+
+#### 3.6.2 产品代表作：`pm-industrial-prd-gen/SKILL.md` 核心规范
+```markdown
+---
+name: pm-industrial-prd-gen
+description: 工业级标准 PRD 全流程生成器，采用反转追问（IoC）收敛业务边界，输出带状态机与 BDD 验收标准的规范 PRD
+version: 1.0.1
+author: SkillStore Official PM Studio
+allowed-tools:
+  - read
+  - write
+---
+
+# 工业级标准 PRD 生成流程与反转追问规范
+
+## 1. 交互第一阶段：反转追问收敛 (Inversion of Control Prompting)
+当用户仅输入模糊一句话需求时（如“做一个购物车批量结账功能”），**严禁直接生成 PRD 散文**。
+必须先针对以下 4 个架构核心问题反向追问用户：
+1. **目标客群与核心业务价值**：谁在什么场景下使用？预期提升哪项北极星指标？
+2. **并发与库存锁定机制**：多端同时下单时，是前置预占库存还是支付成功后扣减库存？
+3. **异常降级与网络边界**：网络丢包或第三方支付超时时，客户端如何展示？
+4. **明确不做的功能 (Non-Goals)**：第一期 MVP 绝对排除什么能力？
+
+## 2. 交互第二阶段：结构化工业级标准输出
+用户完成核心参数确认后，必须严格按照以下结构输出 Markdown：
+1. `文档元数据与 Changelog (v0.1.0 Baseline)`；
+2. `背景 (Why) 与用户 JTBD 剖析`；
+3. `成功指标 (Success Metrics) 与系统护栏指标 (Guardrails)`；
+4. `明确不做事项 (Out of Scope / Non-Goals)`；
+5. `Mermaid 端到端业务流程图与对象状态流转表`；
+6. `功能模块详述与 3+ 极端异常边界降级策略`；
+7. `Given/When/Then BDD 格式验收测试用例`；
+8. `数据埋点事件表 (Event, Timing, Attributes)`；
+9. `红队架构师与 QA 边界自检矩阵`。
+```
+
+#### 3.6.3 股票代表作：`stock-sec10k-fraud-check/SKILL.md` 核心规范
+```markdown
+---
+name: stock-sec10k-fraud-check
+description: 基于 SEC 10-K 公开财报 XBRL 数据，计算 Beneish M-Score 8 变量模型，排查财务粉饰与应收账款/存货异动预警
+version: 1.0.0
+author: SkillStore Quantitative Lab
+compliance:
+  sec_rule: 202-a-11-D-publisher-exemption
+  disclaimer_required: true
+allowed-tools:
+  - read
+  - bash
+---
+
+# SEC 10-K 财报粉饰排查模型规范
+
+## 1. 核心数学模型：Beneish M-Score (8-Variable Model)
+严格计算以下 8 个基本面异动指标：
+- **DSRI (应收账款天数指数)**: (本期应收 / 本期收入) / (上期应收 / 上期收入)
+- **GMI (毛利率指数)**: 上期毛利率 / 本期毛利率
+- **AQI (资产质量指数)**: [1 - (本期流动资产+固定资产)/本期总资产] / [1 - (上期流动资产+固定资产)/上期总资产]
+- **SGI (营收增长指数)**: 本期收入 / 上期收入
+- **DEPI (折旧率指数)**: 上期折旧率 / 本期折旧率
+- **SGAI (销售管理费用指数)**: (本期SGA / 本期收入) / (上期SGA / 上期收入)
+- **LVGI (杠杆指数)**: 本期总负债率 / 上期总负债率
+- **TATA (应计总额比率)**: (净利润 - 经营活动现金流) / 本期总资产
+
+综合得分判定公式：
+M-Score = -4.84 + 0.920*DSRI + 0.528*GMI + 0.404*AQI + 0.892*SGI + 0.115*DEPI - 0.172*SGAI + 4.037*TATA + 0.0327*LVGI
+*判定阈值*：当 M-Score > -1.78 时，模型标记为“存在较高财务数据粉饰预警倾向”。
+
+## 2. 绝对法律风控红线与输出后置水印
+1. **严禁包含买卖结论**：报告中绝对不得出现“建议卖出”、“避险割肉”或任何交易点位预测；
+2. **强制固化官方合规免责水印**：
+   报告末尾必须不可篡改地追加以下法律文本：
+   `【合规声明】本报告系基于公开披露财报计算的学术量化模型，仅供客观财务特征研究，绝不构成任何买卖建议。投资有风险，决策须独立，平台不承担任何连带穿透赔偿责任。`
+```
+
+### 3.7 CLI 命令行全量指令集与退出码契约规范 (`@skillstore/cli`)
+
+#### 3.7.1 核心命令参数对照表
+| 命令语法 | 适用场景 | 核心参数与选项 | 预期输出与副作用 |
+| :--- | :--- | :--- | :--- |
+| `npx @skillstore/cli install <id>` | 购买后安装或安装免费技能 | `--target=[cursor|claude-code|codex]`, `--yes`, `--force` | 鉴权、校验 SHA256，解包并更新 `skillstore.lock` |
+| `npx @skillstore/cli list` | 查看本地已安装的技能 | `--json` | 输出当前工程已挂载技能的 ID、版本、状态与路径 |
+| `npx @skillstore/cli update [id]` | 检查并升级技能到最新语义版本 | `--all` | 比对远程最新版本，执行原子替换升级并记录迁移日志 |
+| `npx @skillstore/cli remove <id>` | 卸载特定技能 | `--purge` | 清理本地规则文件并从 `skillstore.lock` 中注销 |
+| `npx @skillstore/cli verify` | 校验本地所有技能文件完整性 | 无 | 重新计算本地文件 SHA256，排查是否存在本地非授权篡改 |
+| `npx @skillstore/cli login` | 唤起浏览器完成设备授权绑定 | `--token=<sk_live>` | 保存设备凭证至 OS Keyring，换取本地会话缓存 |
+| `npx @skillstore/cli config set <k>=<v>`| 配置本地环境变量 (如金融 BYOK Key)| `--global` | 安全存入本地系统钥匙串，供特定 Skill 本地调用 |
+
+#### 3.7.2 CLI 标准系统退出码 (Exit Codes)
+为保障 CI/CD 自动化调用与脚本集成，CLI 严格遵循以下 POSIX 退出码规范：
+- `0`: **SUCCESS** (操作成功就绪)；
+- `1`: **GENERAL_ERROR** (未捕获异常或未知运行时故障)；
+- `2`: **AUTH_FAILED** (Token 失效、未购买授权或设备流认证超时)；
+- `3`: **CHECKSUM_MISMATCH** (下载包 SHA-256 校验和与平台元数据不匹配，疑为网络劫持)；
+- `4`: **CONFLICT_ABORTED** (本地文件已被手动修改且用户在交互提示中取消覆盖)；
+- `5`: **PERMISSION_DENIED** (目标目录写权限不足，如无权限写入系统配置目录)；
+- `6`: **COMPLIANCE_REJECTED** (股票类技能未在终端或 Web 端确认免责协议)；
+- `7`: **NETWORK_TIMEOUT** (边缘 CDN 连接超时或三次重试失败)。
+
 ---
 
 ## 4. 业务流程与状态机 (Flow & State Machine)
