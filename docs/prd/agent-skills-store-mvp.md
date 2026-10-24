@@ -764,9 +764,46 @@ Then 运行环境仅在本地进程内存中解密该 Key 注入请求头，确�
 - **零数据窥探原则 (Zero-Data Telemetry)**：CLI 工具在本地运行时，**严禁上传、收集或扫描用户的本地业务代码、私有仓库内容或 Git 提交记录**。CLI 仅向服务器回传匿名化的 `user_id`、`skill_id`、`client_version` 与安装成功/失败状态码。
 - **Token 安全与轮换**：客户端存储的鉴权凭证采用基于 OS Keyring（如 macOS Keychain、Linux Secret Service）的安全加密存储，过期自动失效，支持在 Web 端一键注销所有设备。
 
+### 7.3 全生命周期安全威胁建模 (STRIDE Threat Model & Defense Matrix)
+
+为防范供应链攻击、金融欺诈与提权漏洞，采用微软 STRIDE 模型进行全链路威胁建模与防御：
+
+| STRIDE 威胁分类 | 潜在攻击场景 (Attack Vector) | 影响面与危害 | 平台自动化纵深防御策略 (Mitigation) |
+| :--- | :--- | :--- | :--- |
+| **S (Spoofing) 身份伪造** | 攻击者伪造知名创作者名义上传恶意木马 Skill | 破坏平台信任，导致用户中招 | **创作者必须绑定 GitHub 账号并完成 Stripe 实名认证**；官方种子包带专属 Ed25519 签名。 |
+| **T (Tampering) 数据篡改** | CDN 缓存投毒或中间人攻击篡改分发的 `SKILL.md` | 在开发者本地注入后门命令 | **全量包计算 SHA-256 强哈希校验和**；CLI 下载后必须与数据库不可变元数据比对一致方可落盘。 |
+| **R (Repudiation) 抵赖** | 用户购买股票类 Skill 实盘巨亏后声称从未签署免责协议 | 恶意诉讼并向监管机构举报非法投顾 | **Click-wrap 司法存证系统**：将用户 ID、IP、User Agent、协议哈希与精确到毫秒的时间戳入库锁定。 |
+| **I (Info Disclosure) 信息泄露** | Skill 辅助脚本尝试扫描读取本地 `.env`、SSH 密钥 | 窃取开发者云端凭证与私有仓库代码 | **AST 静态污点分析 + Docker `--network=none` 隔离**；拦截一切向非白名单域名的网络发送。 |
+| **D (Denial of Service) 拒绝服务** | 恶意死循环脚本或递归生成文件撑爆本地磁盘与 CPU | 导致用户终端卡死、系统崩溃 | **沙盒强制设置 1.0 vCPU、512MB RAM 与 30 秒硬超时**；超出限制直接发送 `SIGKILL`。 |
+| **E (Elevation of Privilege) 特权提升** | 脚本中包含 `sudo`、`chown` 或调用宿主机 Docker Socket | 逃逸提权接管用户机器或平台审查节点 | **Linux Seccomp 禁用特权系统调用**，容器以非 root (nobody) 用户运行，挂载只读根目录。 |
+
+### 7.4 CLI 多技能版本冲突解决与锁定文件协议 (`skillstore.lock`)
+
+当用户在同一个工程中安装多个来自不同创作者的 Skill 时，可能产生规则冲突或依赖版本漂移。CLI 引入标准的锁定文件协议：
+
+1. **`skillstore.lock` 物理规范**：
+   ```json
+   {
+     "lockfile_version": "1.0.0",
+     "installed_skills": {
+       "dev-k8s-prod-hardening": {
+         "version": "1.2.0",
+         "resolved_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+         "target_path": ".cursor/rules/dev-k8s-prod-hardening.mdc",
+         "installed_at": "2026-10-25T14:30:00Z"
+       }
+     }
+   }
+   ```
+2. **原子更新与冲突消除算法**：
+   - 当新 Skill 试图覆盖已有规则文件时，CLI 会比对 `resolved_sha256`。若文件已被用户手动修改，则提示生成 `.diff` 补丁分支，绝不静默覆盖；
+   - 多个 Skill 的 MCP Server 配置合并时，CLI 执行深度 JSON 键合并（Deep Merge），出现同名服务名时自动添加命名空间前缀（如 `skillstore__dev_k8s__mcp`）。
+
 ---
 
 ## 8. 数据埋点与全链路观测设计 (Telemetry & Event Tracking)
+
+### 8.1 核心业务事件埋点表
 
 | 事件名称 (Event Name) | 触发时机 | 上报端 | 核心上报属性参数 (Key-Value) | 核心业务用途 |
 | :--- | :--- | :--- | :--- | :--- |
@@ -779,8 +816,20 @@ Then 运行环境仅在本地进程内存中解密该 Key 注入请求头，确�
 | `cli_install_completed` | 本地文件写入成功、校验通过 | CLI 客户端 | `skill_id`, `duration_ms`, `target_agent`, `status=SUCCESS` | 北极星指标核心上报事件 |
 | `cli_install_failed` | CLI 执行中断或报错 | CLI 客户端 | `skill_id`, `error_code` (AUTH_FAIL/NETWORK_ERR/COLLISION) | 排查本地客户端异常与故障修复 |
 
----
 
+### 8.2 定价弹性与转化率 A/B 实验设计 (Pricing Elasticity & Experimentation Framework)
+
+为探索最佳商业变现平衡点，平台在上线第 2 周开启首次商业化 A/B 实验：
+
+| 实验组别 | 流量配比 | 定价策略与交互呈现 | 观测核心目标 | 提前熔断与关停条件 |
+| :--- | :--- | :--- | :--- | :--- |
+| **对照组 (Control)** | 33.3% 流量 | 单品定价 **$9.99** 买断；Pro 会员入口作为次要按钮展示 | 建立基线转化率（预期详情页付费转化率 ~ 4.5%） | 转化率波动正常，作为基准参照 |
+| **实验组 A (Elasticity)** | 33.3% 流量 | 单品提价至 **$14.99** 买断；附赠 30 天官方更新保障 | 测试价格弹性：测算提价是否会导致订单量断崖下跌 | 若客单毛利提升但 GMV 环比下降超过 15%，立即终止回退 |
+| **实验组 B (Pro Push)** | 33.3% 流量 | 页面首屏强化 **$19.99/月 Pro All-Access**（支持免费试用首个单品） | 验证高粘性订阅制对 LTV 的拉升效果 | 若退款率超过 3.5% 或投诉率异常上升，立即关停 |
+
+- **统计显著性检验标准**：各组累积样本量达到 $N \ge 1,200$ 次独立详情页访问，双尾 $t$ 检验 $p < 0.05$ 时方可得出最终胜出结论。
+
+---
 ## 9. 独门红队挑刺与极限边界对抗矩阵 (Red Team Review & QA Matrix)
 
 在将本 PRD 提交研发与法务评审之前，特模拟“资深后端兼安全架构师”与“毒舌 QA 测试总监”进行极限红队挑刺审查：
