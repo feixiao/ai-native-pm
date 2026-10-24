@@ -799,6 +799,14 @@ Then 运行环境仅在本地进程内存中解密该 Key 注入请求头，确�
    - 当新 Skill 试图覆盖已有规则文件时，CLI 会比对 `resolved_sha256`。若文件已被用户手动修改，则提示生成 `.diff` 补丁分支，绝不静默覆盖；
    - 多个 Skill 的 MCP Server 配置合并时，CLI 执行深度 JSON 键合并（Deep Merge），出现同名服务名时自动添加命名空间前缀（如 `skillstore__dev_k8s__mcp`）。
 
+### 7.5 国际创作者税务与 Stripe Connect 跨国合规认证 (Tax Compliance & W-8BEN / 1099-K Integration)
+
+平台面向全球创作者开放分成，必须严格履行国际税收申报义务：
+1. **美国纳税人 (US Persons)**：当创作者年收益达到 $600 时，系统自动在 Stripe Connect 提示提交 W-9 表单，年底平台自动向 IRS 报送 1099-K 申报单；
+2. **非美国国际创作者 (Non-US Persons)**：
+   - 创作者在激活提现前必须在线签署电子版 **Form W-8BEN**（个人）或 **Form W-8BEN-E**（公司）；
+   - 系统自动根据申请者所属国别应用跨国税收协定（Tax Treaty Benefits），自动计算特许权使用费预扣税（Withholding Tax），并将完税凭据与年度 1042-S 表单同步至创作者控制台。
+
 ---
 
 ## 8. 数据埋点与全链路观测设计 (Telemetry & Event Tracking)
@@ -828,6 +836,17 @@ Then 运行环境仅在本地进程内存中解密该 Key 注入请求头，确�
 | **实验组 B (Pro Push)** | 33.3% 流量 | 页面首屏强化 **$19.99/月 Pro All-Access**（支持免费试用首个单品） | 验证高粘性订阅制对 LTV 的拉升效果 | 若退款率超过 3.5% 或投诉率异常上升，立即关停 |
 
 - **统计显著性检验标准**：各组累积样本量达到 $N \ge 1,200$ 次独立详情页访问，双尾 $t$ 检验 $p < 0.05$ 时方可得出最终胜出结论。
+
+### 8.3 核心运维监控与 Prometheus/Grafana 告警规则表 (Production Alerting Rules)
+
+生产环境配置 Prometheus 采集指标，并建立 4 级实时告警机制：
+
+| 告警标识 (Alert Rule Name) | 触发条件 (PromQL / Logic) | 告警级别 | 响应时效 (SLA) | 自动化应急预案 (Playbook) |
+| :--- | :--- | :--- | :--- | :--- |
+| **`CliInstallFailureSpike`** | `rate(cli_install_failed[5m]) / rate(cli_install_started[5m]) > 0.02` | **P1 (High)** | 10 分钟响应 | 自动验证 S3 CDN 签名服务与边缘解析状态；向值班运维推送告警 |
+| **`StripeWebhookLagging`** | `histogram_quantile(0.95, webhook_duration_seconds) > 30` | **P0 (Critical)** | 5 分钟响应 | 检查 Postgres 连接池水位，临时开启双路即时凭证降级通道 |
+| **`HighSkillRefundRatio`** | `sum(refund_count{skill_id=X}[24h]) / sum(order_count{skill_id=X}[24h]) > 0.03` | **P2 (Medium)** | 2 小时响应 | 自动触发单品熔断隔离，暂停该 Skill 首页推荐并通知人工合规审查 |
+| **`StockDisclaimerBypassAttempt`** | `rate(stock_order_without_disclaimer_total[1m]) > 0` | **P0 (Critical)** | 即刻响应 (1m) | 立即封禁该请求来源 IP，并自动关闭股票专区结账通道进行代码巡检 |
 
 ---
 ## 9. 独门红队挑刺与极限边界对抗矩阵 (Red Team Review & QA Matrix)
