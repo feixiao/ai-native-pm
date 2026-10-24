@@ -439,6 +439,31 @@ M-Score = -4.84 + 0.920*DSRI + 0.528*GMI + 0.404*AQI + 0.892*SGI + 0.115*DEPI - 
 | `stock-macro-supply-mapper` | `stock_investment` | $9.99 | 买断 / Pro 包含 | `["read", "write"]` | `true (强制 5s 弹窗)` |
 | `stock-form4-insider-track`| `stock_investment` | $9.99 | 买断 / Pro 包含 | `["read", "bash"]` | `true (强制 5s 弹窗)` |
 
+### 3.9 创作者本地开发体验 (DX) 与 CI/CD 自动化校验流水线 (Local Linter & GitHub Actions)
+
+为了降低创作者上传 Skill 被沙盒驳回的挫败感，提升生态供给质量，官方提供本地 Linter 与标准 GitHub Actions 工作流：
+
+1. **本地离线静态合规扫描器 (`@skillstore/cli lint`)**：
+   创作者在本地工程根目录执行 `npx @skillstore/cli lint`，工具将在 3 秒内完成：
+   - `manifest.json` 必填字段与 Schema 强校验；
+   - 敏感权限声明检测（检查是否包含未经声明的 `env_vars` 或 `file_write` 越权）；
+   - 股票类关键字合规初筛（识别是否包含 `BUY/SELL`、年化保证等违规词）；
+   - 本地 AST 语法树解析，定位潜在 `eval()` 或动态代码注入点。
+2. **官方提供的 GitHub Actions 预审工作流模板 (`.github/workflows/skill-audit.yml`)**：
+   ```yaml
+   name: SkillStore Pre-submission Audit
+   on: [push, pull_request]
+   jobs:
+     audit:
+       runs-on: ubuntu-latest
+       steps:
+         - uses: actions/checkout@v4
+         - uses: actions/setup-node@v4
+           with:
+             node-version: 20
+         - run: npx @skillstore/cli lint --strict
+   ```
+
 ---
 
 ## 4. 业务流程与状态机 (Flow & State Machine)
@@ -963,6 +988,27 @@ Then 运行环境仅在本地进程内存中解密该 Key 注入请求头，确�
 2. **非美国国际创作者 (Non-US Persons)**：
    - 创作者在激活提现前必须在线签署电子版 **Form W-8BEN**（个人）或 **Form W-8BEN-E**（公司）；
    - 系统自动根据申请者所属国别应用跨国税收协定（Tax Treaty Benefits），自动计算特许权使用费预扣税（Withholding Tax），并将完税凭据与年度 1042-S 表单同步至创作者控制台。
+
+### 7.6 多语言国际化 (i18n) 与多币种自适应结算架构 (Localization & Multi-Currency)
+
+平台首发聚焦中美及全球开发者生态，架构层原生支持双语与多币种自适应：
+1. **多语言呈现与降级策略**：
+   - Web 前端与 CLI 命令行支持简体中文 (`zh-CN`) 与英文 (`en-US`)；
+   - 默认根据客户端 `navigator.language` 或系统终端 `$LANG` 自动协商语言；
+   - 核心法律协议（《免责声明》、《创作者入驻协议》）具备完全同等法律效力的双语对照文本。
+2. **多币种定价与 Stripe 动态本币结算**：
+   - 平台核心计费单位统一定价为美元（USD），根据 Cloudflare GeoIP 检测用户所在国家/地区，在页面上实时展示本地参考货币（CNY、EUR、GBP、JPY 等）；
+   - 结账通道无缝支持微信支付（WeChat Pay）、支付宝（Alipay）、Apple Pay 以及全币种信用卡通道，消除海外支付摩擦。
+
+### 7.7 生产级容灾备份与业务连续性标准 (Disaster Recovery RPO / RTO)
+
+针对平台涉及资金结算、订单凭证与合规法律存证的严肃业务属性，确立严格的灾难恢复标准：
+
+| 容灾指标 | 目标阈值 (SLA) | 工程实现手段与技术保障 |
+| :--- | :--- | :--- |
+| **RPO (数据恢复点目标)** | **< 60 秒** | PostgreSQL 启用跨可用区 (Multi-AZ) 同步复制，结合 WAL 日志秒级连续归档至 S3 只读隔离存储桶。 |
+| **RTO (系统恢复时间目标)** | **< 15 分钟** | 全站无状态服务采用 Docker 容器化编排，在跨区域灾备集群中预热备用实例；Cloudflare DNS 秒级智能切流。 |
+| **合规存证永久防篡改** | **永久留存 (WORM)** | `stock_compliance_agreements` 免责确认记录每日打包生成 SHA-256 根哈希，转储至 AWS S3 Glacier 不可变锁定存储 (Object Lock)。 |
 
 ---
 
