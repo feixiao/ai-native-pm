@@ -417,6 +417,28 @@ M-Score = -4.84 + 0.920*DSRI + 0.528*GMI + 0.404*AQI + 0.892*SGI + 0.115*DEPI - 
 - `6`: **COMPLIANCE_REJECTED** (股票类技能未在终端或 Web 端确认免责协议)；
 - `7`: **NETWORK_TIMEOUT** (边缘 CDN 连接超时或三次重试失败)。
 
+### 3.8 官方首发 15 款核心技能元数据种子字典 (`manifest.json` Seeding Registry)
+
+为保障后端研发在 Sprint 1 中能直接执行数据库初始化数据注入（`db:seed`），整理全量 15 款技能的元数据定义：
+
+| 技能唯一标识 (ID) | 赛道分类 (Category) | 建议单品定价 | 授权模式 | 允许工具列表 (Allowed Tools) | 合规免责标签 (Disclaimer) |
+| :--- | :--- | :--- | :--- | :--- | :--- |
+| `dev-k8s-prod-hardening` | `development` | $9.99 | 买断 / Pro 包含 | `["read", "edit", "bash"]` | `false` |
+| `dev-react19-concurrency` | `development` | $4.99 | 买断 / Pro 包含 | `["read", "edit"]` | `false` |
+| `dev-ast-unit-test-synth` | `development` | $9.99 | 买断 / Pro 包含 | `["read", "edit", "bash"]` | `false` |
+| `dev-sql-query-optimizer` | `development` | $4.99 | 买断 / Pro 包含 | `["read", "write"]` | `false` |
+| `dev-go-deadlock-detector`| `development` | $9.99 | 买断 / Pro 包含 | `["read", "edit", "bash"]` | `false` |
+| `pm-industrial-prd-gen` | `product_management`| $9.99 | 买断 / Pro 包含 | `["read", "write"]` | `false` |
+| `pm-redteam-architect-qa` | `product_management`| $4.99 | 买断 / Pro 包含 | `["read", "write"]` | `false` |
+| `pm-unmet-needs-scraper` | `product_management`| $9.99 | 买断 / Pro 包含 | `["read", "write", "bash"]`| `false` |
+| `pm-cohort-funnel-sql` | `product_management`| $4.99 | 买断 / Pro 包含 | `["read", "write"]` | `false` |
+| `pm-user-interview-jtbd` | `product_management`| $4.99 | 买断 / Pro 包含 | `["read", "write"]` | `false` |
+| `stock-sec10k-fraud-check` | `stock_investment` | $14.99 | 买断 / Pro 包含 | `["read", "bash"]` | `true (强制 5s 弹窗)` |
+| `stock-fama-french-backtest`| `stock_investment` | $19.99 | 买断 / Pro 包含 | `["read", "bash"]` | `true (强制 5s 弹窗)` |
+| `stock-earnings-call-sent` | `stock_investment` | $9.99 | 买断 / Pro 包含 | `["read", "write"]` | `true (强制 5s 弹窗)` |
+| `stock-macro-supply-mapper` | `stock_investment` | $9.99 | 买断 / Pro 包含 | `["read", "write"]` | `true (强制 5s 弹窗)` |
+| `stock-form4-insider-track`| `stock_investment` | $9.99 | 买断 / Pro 包含 | `["read", "bash"]` | `true (强制 5s 弹窗)` |
+
 ---
 
 ## 4. 业务流程与状态机 (Flow & State Machine)
@@ -1058,6 +1080,20 @@ Then 运行环境仅在本地进程内存中解密该 Key 注入请求头，确�
    *答*：可以。在控制台修改定价后即时生效，新定价仅对后续购买者生效，已购买用户的权益不受任何影响。
 5. **问：如何获得官方「Verified 质量认证徽章」？**
    *答*：当您的 Skill 累计安装超过 50 次、评分保持在 4.8 分以上，且在沙盒自动化测试中保持 100% 稳定运行，系统将自动点亮官方认证金标并在分类页优先推荐。
+
+---
+
+## 13. 研发与上线最终验收签发单 (Launch Sign-Off Checklist & Acceptance Gate)
+
+在执行 Sprint 3 全量发布前，各职能负责人必须依据下述卡点清单逐项打勾核准（Gate Review）：
+
+| 验收维度 | 核心核准检查项 (Verification Items) | 验收标准 (Pass Criteria) | 核准人角色 |
+| :--- | :--- | :--- | :--- |
+| **合规法务 Gate** | 股票类技能全流程 5 秒倒计时 Click-wrap 免责确认与 IP 存证 | 存证数据完整写入 `stock_compliance_agreements` 表 | 法务总监 / 合规官 |
+| **安全防护 Gate** | Docker `--network=none` 隔离、Seccomp 策略与 AST 扫描拦截 | 注入反弹 shell / `.env` 读取测试包，100% 拦截并驳回 | 安全架构师 |
+| **支付交易 Gate** | Stripe Checkout、Connect 创作者划转与 Webhook 幂等性 | 并发重复投递 10 次 Webhook，单笔订单授权次数严格为 1 | 财务 TL / 支付架构师 |
+| **客户端体验 Gate**| `@skillstore/cli` 在 macOS / Linux / Windows 跨端安装走查 | 纯净环境执行 `npx` 安装 P95 耗时 $\le 1.5\text{s}$，零碎屑文件残留 | QA 测试总监 |
+| **灾备降级 Gate** | 自动化熔断开关与 Cloudflare CDN 一键回滚预案演练 | 触发模拟故障后，在 60 秒内无损降级回退至稳定 Baseline | SRE 运维总监 |
 
 ---
 *本 PRD 文档已根据《工业级标准 PRD 黄金结构模板》完成全流程业务边界闭环，通过严苛红队评审，作为研发、测试与合规团队开发上线的唯一依据。*
