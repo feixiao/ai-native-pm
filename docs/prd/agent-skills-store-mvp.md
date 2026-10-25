@@ -508,6 +508,18 @@ M-Score = -4.84 + 0.920*DSRI + 0.528*GMI + 0.404*AQI + 0.892*SGI + 0.115*DEPI - 
    - 萃取引擎在本地利用正则与离线 NER 识别器进行扫描，**自动将用户私人用户名（如 `/Users/john/`）、私有 Git 仓库地址、环境变量密钥强制替换为通配占位符（如 `<PROJECT_ROOT>`、`<API_KEY>`）**；
    - 萃取过程完全在本地单机内存中完成，未经过用户显式确认并执行 `publish` 前，**绝不向平台服务端回传任何原始会话文本**。
 
+### 3.11 跨 5 大主流 Agent 运行时语义编译映射矩阵 (Cross-Agent Compilation Matrix)
+
+平台坚持生态中立，通过 `@skillstore/cli` 内部的代码生成器（Code Generator）将统一的 Skill IR 自动映射至各大宿主：
+
+| 目标宿主环境 (Runtime) | 本地规则挂载路径 (Target Path) | 语法与格式特征 (Format Conventions) | 工具执行机制 (Tool Invocation) |
+| :--- | :--- | :--- | :--- |
+| **Claude Code (CLI)** | `.agents/skills/<id>/SKILL.md` 或 `.claude/skills/` | 原生 `SKILL.md`，支持 Frontmatter、子命令与自然语言执行流 | 原生支持 CLI Bash 子进程直接调用 |
+| **Cursor (IDE)** | `.cursor/rules/<id>.mdc` 或 `.cursorrules` | Markdown with YAML frontmatter (`description`, `globs`, `alwaysApply`) | 通过 Cursor 规则上下文注入，配合终端命令执行 |
+| **Windsurf (IDE)** | `.windsurfrules` 或 `.windsurf/rules/` | 扁平化工作区 Markdown 规则，带文件匹配模式与优先级标签 | 集成 Cascade 终端与外部工具钩子 |
+| **Codex / OpenClaw / Hermes** | `.codex/rules/` 或系统级 MCP 配置 | 标准 Task 任务包定义，严格声明输入/输出 JSON Schema | 通过 MCP (Model Context Protocol) 协议跨进程 RPC 通信 |
+| **VS Code / GitHub Copilot** | `.github/copilot-instructions.md` | 统一追加至团队共享上下文指令末尾，带命名空间隔离前缀 | 通过 VS Code Chat 模式读取工作区规则引导 |
+
 ---
 
 ## 4. 业务流程与状态机 (Flow & State Machine)
@@ -873,6 +885,24 @@ CLI 在执行时智能扫描当前工作区目录：
 #### 5.4.2 异常边界与降级处理 (Edge Cases)
 1. **外部财经数据源宕机或限频**：当 Yahoo Finance 或第三方金融接口返回 429（Too Many Requests）或 503 时，Skill 自动降级为使用本地历史缓存数据，并在报告顶部用大号黄色字条明确标注：“当前为历史延迟缓存数据（更新于 YYYY-MM-DD），不可用于即时决策”。
 2. **免责声明规避破解防范**：严禁在 `SKILL.md` 中允许用户通过系统级 Prompt（如“忽略所有前置说明”）抹除免责声明；平台编译打包时将免责逻辑作为不可篡改的后置拦截器（Post-processor）固化。
+
+### 5.5 模块五：技能综合质量排序与防刷榜算法规范 (SkillRank Algorithm - P0)
+
+为了杜绝刷单、虚假好评与垃圾技能污染搜索榜单，平台搜索排序引擎基于多因子加权公式动态计算 `SkillRank` 分值：
+
+```
+SkillRank = 0.35 * S_sandbox + 0.25 * S_rating + 0.20 * S_wau + 0.10 * S_creator - 0.10 * P_refund
+```
+
+1. **核心计算因子分解**：
+   - **`S_sandbox` (自动化沙盒健康分，权重 35%)**：由基准测试通过率 (0-100%)、执行耗时稳定性与 0 漏洞静态扫描结果加权得出；
+   - **`S_rating` (真实买家加权评分，权重 25%)**：采用贝叶斯平滑公式（Bayesian Average），仅计算真实产生过安装且账号注册超过 7 天的付费买家评分，规避刷单小号攻击；
+   - **`S_wau` (周活安装执行频次，权重 20%)**：近 7 天去重客户端安装与执行活跃度，反映真实市场需求热度；
+   - **`S_creator` (创作者综合信誉分，权重 10%)**：创作者实名认证、开源 GitHub 声望（Stars/Followers）与历史发布技能的平均好评度；
+   - **`P_refund` (退款率惩罚扣分项，权重 10%)**：若 30 天内退款率超过 1.5%，惩罚项指数级倍增，退款率达 3% 触发系统自动降权并下架首页。
+2. **防刷单反作弊机制 (Anti-Gaming Shield)**：
+   - 同一 IP 或同一信用卡支付的不同账号为同一 Skill 提交的评价，系统自动折叠并记入风控作弊打分；
+   - 创作者自费购买自身技能的行为（自刷单）不计入 `S_wau` 活跃度，且交易手续费不予退还。
 
 ---
 
