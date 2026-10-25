@@ -1272,6 +1272,27 @@ Then 结算中台应自动拦截向 Stripe Connect 的划转指令，并将该�
 When 创作者点击该通知并在 Stripe 托管页面完成电子签名提交
 Then 系统应在 10 分钟内自动解除冻结并恢复正常出账通道
 ```
+
+### 场景 12：普通外部用户尝试越权执行 CLI 发布被系统物理拦截阻断 (P0)
+```gherkin
+Given 外部普通用户下载了 `@skillstore/cli` 并在本地开发了一个新 Skill
+  And 该用户未持有站长管理员私钥 `SKILLSTORE_ADMIN_SECRET`
+When 用户在本地终端尝试执行 `npx @skillstore/cli publish`
+Then CLI 应在本地鉴权阶段立即终止网络上传请求
+  And 终端打印输出：“❌ [Access Denied] 仅官方站长具备技能发布权限。当前版本为自营官方精品店模式，第三方上传通道未开放”
+  And CLI 进程立即退出并返回标准错误退出码 `Exit Code 2 (AUTH_FAILED)`
+```
+
+### 场景 13：站长配置专属 Master Key 执行自动化打包与发布通过沙盒全球就绪 (P0)
+```gherkin
+Given 站长在本地安全密钥环中配置了合法的 `SKILLSTORE_ADMIN_SECRET=master_key_live_xxx`
+  And 站长完成了一款自研的新技能 `dev-go-deadlock-detector` (v1.0.1) 并通过本地 lint 校验
+When 站长在终端运行 `npx @skillstore/cli publish`
+Then CLI 应携带 Master Token 签名上传安装包至 S3 受控存储桶
+  And 触发云端 Docker 零网络沙盒自动化基准测试
+  And 在沙盒断言 100% 通过后，自动更新 Postgres `skills` 表状态为 `PUBLISHED`
+  And 终端打印输出：“🎉 [Success] 官方自研技能 dev-go-deadlock-detector v1.0.1 已全球发布，边缘 CDN 缓存已同步刷新”
+```
 ---
 
 ## 7. 非功能性需求 (Non-Functional Requirements)
