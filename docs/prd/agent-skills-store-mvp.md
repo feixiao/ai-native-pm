@@ -570,6 +570,20 @@ ON CONFLICT (id) DO UPDATE SET
 | **Codex / OpenClaw / Hermes** | `.codex/rules/` 或系统级 MCP 配置 | 标准 Task 任务包定义，严格声明输入/输出 JSON Schema | 通过 MCP (Model Context Protocol) 协议跨进程 RPC 通信 |
 | **VS Code / GitHub Copilot** | `.github/copilot-instructions.md` | 统一追加至团队共享上下文指令末尾，带命名空间隔离前缀 | 通过 VS Code Chat 模式读取工作区规则引导 |
 
+### 3.12 依赖供应链安全与漏洞披露响应协议 (Supply Chain Vulnerability & Patching Protocol)
+
+为防范类似 npm `event-stream` 或 Python PyPI 供应链投毒事件在 SkillStore 重演，平台建立三道自动化防御防线：
+
+1. **静态依赖深度锁定与 CVE 自动匹配**：
+   - 任何 Skill 在 `manifest.json` 中声明的依赖包（如 `requirements.txt` 或 `package.json`），必须锁死精确版本号（Pinning exact versions，严禁使用 `*` 或 `^`）；
+   - 平台每日自动拉取 GitHub Advisory Database 与 NIST NVD 漏洞库，针对全库已上架 Skill 执行依赖交叉比对。
+2. **高危漏洞 24 小时应急下架机制 (24-Hour Quarantine SLA)**：
+   - 若某款 Skill 声明的第三方依赖被披露存在 CVSS $\ge 7.5$ 的高危远程代码执行 (RCE) 漏洞，系统自动化触发静默隔离熔断，暂停公开检索与 CLI 下载；
+   - 系统自动向已安装该版本的活跃用户推送 CLI 安全告警与补丁升级指引。
+3. **社区负责任漏洞披露与白帽子奖励计划 (Vulnerability Bounty Program)**：
+   - 设立 `security@skillstore.dev` 官方安全应急响应中心 (SRC)；
+   - 任何安全研究员提交经过验证的沙盒逃逸漏洞或恶意包绕过漏洞，经确认后发放 $100 ~ $2,000 漏洞赏金并在安全名人堂致谢。
+
 ---
 
 ## 4. 业务流程与状态机 (Flow & State Machine)
@@ -986,6 +1000,21 @@ SkillRank = 0.35 * S_sandbox + 0.25 * S_rating + 0.20 * S_wau + 0.10 * S_creator
 2. **防刷单反作弊机制 (Anti-Gaming Shield)**：
    - 同一 IP 或同一信用卡支付的不同账号为同一 Skill 提交的评价，系统自动折叠并记入风控作弊打分；
    - 创作者自费购买自身技能的行为（自刷单）不计入 `S_wau` 活跃度，且交易手续费不予退还。
+
+### 5.6 模块六：离线回测数据置信度评分与告警协议 (Data Freshness & Confidence Engine - P0)
+
+针对股票量化投资赛道可能因行情网络延迟或使用缓存数据引发的决策误判，系统建立标准化数据置信度评分引擎：
+
+1. **数据时效性动态衰减评分公式 (Freshness Score)**：
+   ```
+   S_freshness = 100.0 * exp(-lambda * delta_hours)
+   ```
+   - 财报基本面数据：$\lambda = 0.001$（对时间衰减较钝化，90天内仍具备 90%+ 置信度）；
+   - 分笔成交与行情数据：$\lambda = 0.15$（对时间衰减极敏感，延迟 24 小时置信度衰减至 2.7%）。
+2. **多级警示呈现标准**：
+   - **绿色高置信度 ($S \ge 90$)**：报告页眉标记“实时数据检验通过 (T+0 数据源)”；
+   - **黄色中置信度 ($60 \le S < 90$)**：报告顶部显示明黄色横幅“⚠️ 存在历史延迟，仅供截面特征对照，不可用于日内交易”；
+   - **红色低置信度 ($S < 60$)**：强制阻断高频指标运算，仅允许输出历史学术回测图表，并要求用户二次确认已知悉时效衰减。
 
 ---
 
