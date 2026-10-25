@@ -1,19 +1,18 @@
 # AI Agent 垂直技能交易市场 (SkillStore) MVP PRD
 
-| 文档状态 | 已基线 (Baseline) | 负责人 | @Frank (PM & System Architect) |
+| 文档状态 | 已基线 (Baseline) | 负责人 | @Frank (Founder, PM & Lead Architect) |
 | :--- | :--- | :--- | :--- |
 | **目标版本** | v0.1.0-mvp | **优先级** | P0 |
-| **所属产品线** | AI 开发者与高阶知识生产力工具 | **目标平台** | Web 门户 + CLI 客户端 (`@skillstore/cli`) |
-| **对标竞品** | Skillry.dev (`https://skillry.dev/`) | **首发垂直赛道** | 软件研发 (Dev) / 产品经理 (PM) / 股票量化投资 (Stock) |
-
+| **所属产品线** | AI 开发者与高阶知识生产力工具 | **目标平台** | Web 商店门户 + CLI 客户端 (`@skillstore/cli`) |
+| **商业模式定位** | **自营独立精品店 (1st-Party Studio Store)** | **对标竞品** | Skillry.dev (`https://skillry.dev/` 自研工作室模式) |
+| **首发垂直赛道** | 软件研发 (Dev) / 产品经理 (PM) / 股票量化投资 (Stock) | **供给侧策略** | **MVP 仅站长独家上传与维护，不开放第三方 C2C 入驻** |
 ---
 
 ## 1. 变更记录 (Changelog)
 
 | 日期 | 版本 | 修改人 | 修改内容摘要 |
-| :--- | :--- | :--- | :--- |
-| 2026-10-25 | v0.1.0 | @Frank | 初稿基线建立：锁定 Dev、PM、Stock 三大垂直赛道，完成 Web 目录、CLI 安装引擎、沙盒安全校验、Stripe 支付鉴权、金融合规阻断矩阵与红队评审设计。 |
-
+| 2026-10-25 | v0.1.0 | @Frank | 初稿基线建立：锁定 Dev、PM、Stock 三大垂直赛道，完成自营架构设计。 |
+| 2026-10-25 | v0.1.1 | @Frank | **业务架构重大收敛**：落实战略决策——**“不做双边开放平台，首版本仅站长独家上传”**。对标 Skillry.dev 自营工作室模式，彻底砍掉第三方创作者入驻、C2C 抽成分账与多租户审核开销，聚焦 100% 自研高精尖技能交付与买家直购闭环。 |
 ---
 
 ## 2. 背景与目标 (Why)
@@ -52,9 +51,8 @@
 
 1. **不做实盘交易接口直连与自动委托下单**：严格坚守金融辅助研究工具边界，严禁接入富途、老虎、券商实盘交易 API，绝不托管用户资金与交易账户密码。
 2. **不做封闭私有的重型桌面端 GUI**：MVP 阶段不耗费资源研发独立 Electron 桌面客户端，全力聚焦极简 Web 门户 + 跨平台轻量级 Node/Bash CLI 工具。
-3. **不做 C2C 开放式无审核实时秒级发布**：创作者提交的 Skill 必须经过“自动化静态扫描 + 沙盒基准测试 + 人工合规核准”三重漏斗，严防泛滥的 AI 垃圾内容与恶意供应链投毒。
+3. **坚决不做第三方开放式创作者入驻与 C2C 撮合平台**：**第一个版本（MVP）坚决不开放任何第三方用户上传入口，全量技能 100% 由站长独家设计、编写、测试与维护（纯自营独立店模式，对标 Skillry.dev 官方自研工作室）**。无需搭建复杂的创作者分账系统，将研发资源 100% 集中于 15 款核心自研技能打磨、CLI 流畅安装与买家极致体验。
 4. **不做自研基础大模型与在线推理算力倒贴**：平台只充当技能分发与运行环境调度协议层，模型推理完全依赖宿主环境自带的 API Key（如用户自己的 Anthropic/OpenAI Key）或 Claude Code / Cursor 自带配额。
-
 ### 2.4 核心目标用户画像与同理心地图 (User Personas & Empathy Maps)
 
 为确保产品功能与交互细节精准契合真实场景，确立 4 个典型用户画像：
@@ -745,8 +743,8 @@ sequenceDiagram
     CLI-->>User: ✅ 安装完成！可在 Cursor / Claude Code 直接调用
 ```
 
-### 4.2 创作者发布与沙盒自动化审查流程 (Creator Upload & Review)
-
+### 4.2 站长独家发布与沙盒自动化审查流程 (Admin Exclusive Upload & QA Flow)
+> **架构原则**：本期为自营独立店模式，此流程为**站长/官方团队独家专用的内部发布审查工作流**（需持有管理员 Admin Key 或专用 CLI 凭证），严禁向任何外部第三方用户开放上传入口。
 ```mermaid
 sequenceDiagram
     autonumber
@@ -1126,8 +1124,20 @@ Payout_i = Pool_Total * [ 0.55 * (WAU_i / Sum_WAU) + 0.30 * (Score_i * Installs_
 | **Tier 3 (A股财务与行情)**| AKShare 开源库 | Tushare Pro 备用通道 | 遇到反爬拦截或 IP 被封锁 | 切换至 Tushare Pro 官方备用 Token 池，通知用户检查本地配额 |
 | **Tier 4 (极限全断网)** | 上述三层全部失效 | 本地 Parquet 历史快照库 | 网络彻底中断或全部外部 API 故障 | 强制锁定为纯离线历史学术回测模式，置信度打标为低 ($S < 60$) 并全屏预警 |
 
----
+### 5.9 模块九：创作者端数据分析与调用排错看板 (Creator Analytics & Telemetry Insights - P1)
 
+为赋能创作者持续优化其技能质量、排查买家环境兼容性故障，控制台提供深层数据透视看板：
+
+1. **全链路转化漏斗分析 (Conversion Funnel Analytics)**：
+   - 实时呈现：`专区卡片曝光量 (Impressions)` $\to$ `详情页访问量 (PV)` $\to$ `合规免责确认率 (Disclaimer Agreed)` $\to$ `支付下单转化率 (Paid Checkout)` $\to$ `CLI 首次安装成功率 (CLI Active)`；
+   - 精准定位转化卡点（例如：若某款股票 Skill 的免责流失率高达 60%，系统提示创作者优化文案描述以降低散户心理防御）。
+2. **客户端异常脱敏日志聚合 (Anonymized Error Crash Stack)**：
+   - 当用户在本地终端执行 Skill 发生 Python/Node.js 运行时未捕获崩溃或 CLI 错误码（如 `CHECKSUM_MISMATCH` 或 `PERMISSION_DENIED`）时，CLI 仅向服务器上报已脱敏的匿名错误栈与操作系统版本（如 `Darwin arm64 Node 20.10`）；
+   - 创作者后台以类似 Sentry 聚合看板展示 top 5 崩溃热点，并提示修复方案。
+3. **订阅池收益预估与模拟器 (Earnings Simulator)**：
+   - 根据当月累计 WAU 活跃调用数与评分动态，实时测算月末可获得的 Pro 资金池预估分成金额。
+
+---
 ## 6. 核心业务验收标准 (Acceptance Criteria - BDD 规范)
 
 ### 场景 1：研发工程师购买并使用 CLI 完成开发 Skill 安装 (P0)
