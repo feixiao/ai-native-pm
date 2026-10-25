@@ -906,6 +906,24 @@ sequenceDiagram
 +----------------------------+---------+---------+------------+-------------+----------------------+
 ```
 
+#### 5.0.1 前端设计系统规范与状态机层级 (Design Tokens & UI State Hierarchy)
+
+为保障 Web 门户与控制台具备工业级视觉体验，确立 Tailwind CSS 设计令牌 (Design Tokens) 与 6 级组件状态标准：
+
+1. **核心视觉令牌 (Design Tokens)**：
+   - **背景与表面色**：主底色 `bg-dark: #0B0F17`，卡片表面 `bg-surface: #111827`，边框 `border-subtle: #1F2937`；
+   - **主品牌色 (Emerald Tech)**：主按钮与高光 `brand-primary: #10B981` (悬浮 `hover: #059669`)；
+   - **警示与合规色 (Stock Amber)**：股票免责标签与倒计时 `compliance-warning: #F59E0B`；
+   - **字体家族**：代码与命令行采用 `JetBrains Mono, Menlo, monospace`，界面主文本采用 `Inter, system-ui, -apple-system`。
+2. **前端 6 级核心组件状态映射规范**：
+   - **State 1: 正常加载就绪态 (Default)**：卡片展示评分、作者认证金标、价格与一键操作区；
+   - **State 2: 弱网骨架屏占位态 (Loading Skeleton)**：在网络请求延迟 > 200ms 时，展示带有微光渐变（Shimmer Animation）的灰色占位卡片；
+   - **State 3: 零搜索结果空状态 (Empty State)**：当筛选无匹配时，展示友好插画并引导“找不到想要的技能？一键向官方或社区悬赏需求”；
+   - **State 4: 股票合规全屏阻断态 (Disclaimer Modal)**：全屏背景毛玻璃遮罩 (`backdrop-blur-md`)，锁定页面滚动，5 秒倒计时未结束严禁关闭；
+   - **State 5: 支付处理与即时就绪态 (Payment Instant Ready)**：Stripe 重定向回页面瞬间，展示动画勾选标记与高亮终端命令框（附带一键复制成功 Toast）；
+   - **State 6: 网络异常与接口熔断态 (Error Fallback)**：展示轻量级重试按钮，并自动从 Cloudflare 本地离线持久化存储中读取缓存数据兜底展示。
+
+---
 ### 5.1 模块一：垂直品类目录与高信息密度详情页 (Catalog & Detail Engine - P0)
 
 #### 5.1.1 交互说明与布局规则
