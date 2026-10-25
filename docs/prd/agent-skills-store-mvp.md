@@ -476,6 +476,38 @@ M-Score = -4.84 + 0.920*DSRI + 0.528*GMI + 0.404*AQI + 0.892*SGI + 0.115*DEPI - 
          - run: npx @skillstore/cli lint --strict
    ```
 
+### 3.10 创作者端智能萃取引擎技术规范 (`@skillstore/cli extract`)
+
+为彻底打破“Skill 难写、耗时”的供给瓶颈，CLI 内置自动化会话蒸馏引擎：
+
+```
+[开发者本地终端 / IDE 会话]
+         │
+         ▼
+[1. Session Parser: 过滤 ANSI 颜色、解析多轮交互记录与 Bash 执行状态]
+         │
+         ▼
+[2. PII & Secret Redactor: 自动脱敏绝对路径、个人 Token、企业私有域名]
+         │
+         ▼
+[3. Meta-Agent Distiller: 提炼目标定义、前置检查、状态机分支与断言规则]
+         │
+         ▼
+[4. Bundle Generator: 自动生成标准 SKILL.md、manifest.json 与基准测试用例]
+```
+
+1. **命令行调用参数与语法**：
+   ```bash
+   # 从最近一次成功的 Claude Code 或 Cursor 会话历史中自动萃取
+   npx @skillstore/cli extract --from-last-session --name="my-custom-refactor"
+
+   # 从当前 Git 仓库的某次指定 Commit 变更与测试修复中逆向生成
+   npx @skillstore/cli extract --from-commit=HEAD~1 --category=development
+   ```
+2. **隐私安全与合规脱敏强约束 (Zero-Leakage Guarantee)**：
+   - 萃取引擎在本地利用正则与离线 NER 识别器进行扫描，**自动将用户私人用户名（如 `/Users/john/`）、私有 Git 仓库地址、环境变量密钥强制替换为通配占位符（如 `<PROJECT_ROOT>`、`<API_KEY>`）**；
+   - 萃取过程完全在本地单机内存中完成，未经过用户显式确认并执行 `publish` 前，**绝不向平台服务端回传任何原始会话文本**。
+
 ---
 
 ## 4. 业务流程与状态机 (Flow & State Machine)
@@ -945,6 +977,17 @@ Then CLI 应调用操作系统的安全密钥环（macOS Keychain / Linux libsec
   And 绝不向 SkillStore 云端服务器回传该密钥的任何明文内容
 When 技能在本地 Agent 中执行调用时
 Then 运行环境仅在本地进程内存中解密该 Key 注入请求头，确保金融数据调用的安全性与零平台成本
+```
+
+### 场景 10：创作者使用 CLI 本地交互轨迹一键萃取并生成标准技能包 (P0)
+```gherkin
+Given 工程师在终端使用 Claude Code 成功排查并修复了一个复杂的「Go 内存泄漏与 Goroutine 悬挂」问题
+  And 本地终端保存了完整的交互会话记录（包含执行命令、报错堆栈与最终验证测试）
+When 工程师在项目根目录运行 `npx @skillstore/cli extract --from-last-session --name="go-leak-fixer"`
+Then CLI 应在本地 5 秒内解析会话，完成私人路径脱敏并自动提炼出 5 步排错 SOP
+  And 自动在本地当前目录生成完整包骨架：`./go-leak-fixer/{manifest.json, SKILL.md, fixtures/sample_test.go}`
+When 工程师进入该目录执行 `npx @skillstore/cli lint`
+Then 本地静态校验器输出：“✅ All 12 checks passed! 技能包已符合发布标准，可执行 npx @skillstore/cli publish 提交”
 ```
 ---
 
