@@ -403,6 +403,67 @@ M-Score = -4.84 + 0.920*DSRI + 0.528*GMI + 0.404*AQI + 0.892*SGI + 0.115*DEPI - 
    `【合规声明】本报告系基于公开披露财报计算的学术量化模型，仅供客观财务特征研究，绝不构成任何买卖建议。投资有风险，决策须独立，平台不承担任何连带穿透赔偿责任。`
 ```
 
+#### 3.6.4 研发进阶代表作：`dev-react19-concurrency/SKILL.md` 核心规范
+```markdown
+---
+name: dev-react19-concurrency
+description: 基于抽象语法树 (AST) 自动将 React 18 传统异步状态重构为 React 19 useActionState 与 useOptimistic 并发模式
+version: 1.0.0
+author: SkillStore Frontend Engineering Guild
+allowed-tools:
+  - read
+  - edit
+---
+
+# React 18 到 19 并发特性自动化迁移规范
+
+## 1. 触发条件
+扫描包含 `package.json`（React版本 < 19）的项目，并定位所有包含 `useState(false) // loading` 与 `try/finally` 传统表单提交组件。
+
+## 2. 自动化重构规则
+1. **`useActionState` 状态收敛**：
+   - 自动将冗余的 `const [loading, setLoading] = useState(false)` 与 `const [error, setError] = useState(null)` 剔除；
+   - 替换为 `const [state, formAction, isPending] = useActionState(serverAction, initialState)`；
+2. **`useOptimistic` 乐观更新插入**：
+   - 对点赞、待办添加、购物车加购等操作，自动插入 `useOptimistic` 状态缓冲，保障零感知即时渲染；
+3. **`useFormStatus` 解耦提取**：
+   - 识别嵌套提交按钮，将 `disabled={loading}` 改写为子组件内的 `const { pending } = useFormStatus()`。
+```
+
+#### 3.6.5 股票量化代表作：`stock-fama-french-backtest/SKILL.md` 核心规范
+```markdown
+---
+name: stock-fama-french-backtest
+description: Fama-French 五因子 (SMB/HML/RMW/CMA) 本地量化回测引擎，内置纯离线回归计算与最大回撤沙盒验证
+version: 1.0.0
+author: SkillStore Quantitative Lab
+compliance:
+  sec_rule: 202-a-11-D-publisher-exemption
+  disclaimer_required: true
+allowed-tools:
+  - read
+  - bash
+---
+
+# Fama-French 五因子量化回测引擎规范
+
+## 1. 核心回归数学公式
+多元线性回归模型：
+R_i - R_f = alpha_i + beta_i*(R_m - R_f) + s_i*SMB + h_i*HML + r_i*RMW + c_i*CMA + epsilon_i
+
+其中因子定义：
+- **SMB (Size)**: 小市值组合相对大市值组合的超额回报；
+- **HML (Value)**: 高账面市值比 (高 B/P) 相对低 B/P 的价值溢价；
+- **RMW (Profitability)**: 高盈利能力组合相对弱盈利能力的稳健溢价；
+- **CMA (Investment)**: 低资产投资率组合相对激进投资率的保守溢价。
+
+## 2. 纯本地沙盒与免责约束
+1. **严格禁止实盘买入建议**：模型输出仅展示统计显著性检验（t统计量、p值）与因子暴露系数，绝不提供目标买入价；
+2. **回测防过拟合检验**：代码执行前强制进行样本外（Out-of-Sample）滑动窗口校验；
+3. **强制后置免责声明水印**：输出末尾自动附加不可删除的法律合规免责条目。
+```
+
+---
 ### 3.7 CLI 命令行全量指令集与退出码契约规范 (`@skillstore/cli`)
 
 #### 3.7.1 核心命令参数对照表
