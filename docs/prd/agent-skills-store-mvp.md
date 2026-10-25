@@ -599,6 +599,17 @@ ON CONFLICT (id) DO UPDATE SET
    - 内部工程师只需在终端执行一行配置：`npx @skillstore/cli config set registry=https://skills.corp.internal`；
    - CLI 在执行 `install` 时直接读取内网私有 Skill 镜像库，完全隔绝公网数据泄漏风险。
 
+### 3.14 上游智能体宿主破坏性变更金丝雀巡检机制 (Upstream Host Canary Regression Protocol)
+
+随着 Anthropic (Claude Code)、Cursor、Windsurf 等厂商每周高频迭代 IDE 与命令行协议，平台建立自动化回归巡检中枢：
+
+1. **每日金丝雀回归测试集群 (Nightly Canary Matrix)**：
+   - 平台云端调度器在每天 02:00 UTC 自动拉取 Cursor 与 Claude Code 最新 Nightly / Pre-release 构建版本；
+   - 在隔离沙盒中全量回测全库已上架 Top 100 技能，执行输入样例比对与语法解析验证。
+2. **破坏性变更自动告警与热修复补丁 (Auto-Breaking Alert & PR)**：
+   - 若检测到上游格式变更（如 frontmatter 字段更名或规则文件路径迁移）导致执行失败率 $> 5\%$，系统立即标记该宿主环境兼容性警示；
+   - 平台代码生成器自动为受影响的 Skill 仓库推送自动化适配 Pull Request，创作者在控制台一键点击“接受适配并重新发布”即可秒级完成全库兼容性迁移。
+
 ---
 
 ## 4. 业务流程与状态机 (Flow & State Machine)
@@ -1064,6 +1075,17 @@ Payout_i = Pool_Total * [ 0.55 * (WAU_i / Sum_WAU) + 0.30 * (Score_i * Installs_
 2. **基尼系数防垄断与长尾扶持机制 (Anti-Monopoly Cap)**：
    - **单个创作者分成封顶 (Hard Cap 15%)**：任何单一创作者（或单一机构）当月从订阅池中获得的分成比例**严格不得超过总资金池的 15%**；
    - **长尾创作者最低保障兜底**：超出 15% 封顶上限的溢出资金，自动重新注入“长尾新兴创作者扶持池”，平均补贴给前 20% 评分 $\ge 4.8$ 但处于成长期的独立开发者，防止生态走向极少数巨头垄断，持续激发全球极客创新。
+
+### 5.8 模块八：金融数据源四级容灾与断路器降级矩阵 (Financial Data Circuit Breaker Matrix - P0)
+
+为保障股票量化类 Skill 在外部第三方财经接口波动时不发生崩溃，执行引擎内置基于断路器模式（Circuit Breaker）的四级容灾切换矩阵：
+
+| 数据优先级梯队 | 主选数据源 | 备用数据源 | 切换触发条件 (Threshold) | 降级行为与用户提示 |
+| :--- | :--- | :--- | :--- | :--- |
+| **Tier 1 (全美财报)** | SEC EDGAR (官方免费) | Financial Modeling Prep (FMP) | 连续 3 次 HTTP 429 限频或超时 > 5s | 自动无缝切至 FMP 镜像接口，并启用带 Jitter 的指数退避 (500ms~3000ms) |
+| **Tier 2 (实时美股行情)**| Polygon.io API | Yahoo Finance 备用解析器 | HTTP 503 宕机或网络丢包率 > 10% | 自动降级为 Yahoo Finance 延迟 15 分钟行情，输出顶部黄色警示 |
+| **Tier 3 (A股财务与行情)**| AKShare 开源库 | Tushare Pro 备用通道 | 遇到反爬拦截或 IP 被封锁 | 切换至 Tushare Pro 官方备用 Token 池，通知用户检查本地配额 |
+| **Tier 4 (极限全断网)** | 上述三层全部失效 | 本地 Parquet 历史快照库 | 网络彻底中断或全部外部 API 故障 | 强制锁定为纯离线历史学术回测模式，置信度打标为低 ($S < 60$) 并全屏预警 |
 
 ---
 
