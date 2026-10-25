@@ -719,6 +719,19 @@ ON CONFLICT (id) DO UPDATE SET
    - 普通开发者运行 `npx @skillstore/cli publish` 时，若本地环境未配置站长私钥 `SKILLSTORE_ADMIN_SECRET`，CLI 立即拦截并终止执行，终端输出：“❌ [Access Denied] 仅官方站长具备技能发布权限。当前版本为自营官方精品店模式，第三方上传通道未开放”；
    - 进程直接退出并返回标准退出码 `Exit Code 2 (AUTH_FAILED)`。
 
+### 3.17 客户端离线缓存自动失效与语义版本热更新协议 (Cache Invalidation & Hot-Update Protocol)
+
+为保障站长修复安全漏洞或发布新规则后，全球已安装用户能平滑无感升级，设计低开销的版本探活协议：
+
+1. **轻量级异步探活机制 (Lightweight Semantic Ping)**：
+   - 开发者在终端执行任何 `@skillstore/cli` 命令时，CLI 会在后台非阻塞发起异步 `HEAD /v1/cli/version-check?skill_id=X&current=1.2.0` 请求；
+   - 请求头携带本地文件的 `If-None-Match: <resolved_sha256>`；
+   - 若未发生变更，边缘 Cloudflare 节点直接秒级返回 `304 Not Modified`（响应耗时 $< 30\text{ms}$，零带宽开销）。
+2. **更新提醒与一键原子升级流**：
+   - 若站长发布了语义化新版本，返回 `200 OK` 并附带 `X-Latest-Version: 1.2.1` 与变更摘要头；
+   - CLI 在命令执行结束末尾打印高亮提示：“💡 检测到当前技能有安全更新 (v1.2.0 -> v1.2.1)，运行 `npx @skillstore/cli update <id>` 即可一键平滑升级”；
+   - 执行升级时采用先下载校验新包后原子重命名的策略，杜绝因网络中断留下损坏半成品。
+
 ---
 
 ## 4. 业务流程与状态机 (Flow & State Machine)
@@ -1429,6 +1442,18 @@ Then CLI 应携带 Master Token 签名上传安装包至 S3 受控存储桶
 | **RPO (数据恢复点目标)** | **< 60 秒** | PostgreSQL 启用跨可用区 (Multi-AZ) 同步复制，结合 WAL 日志秒级连续归档至 S3 只读隔离存储桶。 |
 | **RTO (系统恢复时间目标)** | **< 15 分钟** | 全站无状态服务采用 Docker 容器化编排，在跨区域灾备集群中预热备用实例；Cloudflare DNS 秒级智能切流。 |
 | **合规存证永久防篡改** | **永久留存 (WORM)** | `stock_compliance_agreements` 免责确认记录每日打包生成 SHA-256 根哈希，转储至 AWS S3 Glacier 不可变锁定存储 (Object Lock)。 |
+
+### 7.8 提示词注入与越狱对抗防御体系 (Prompt Injection & Jailbreak Defense Spec)
+
+为防范用户通过恶意提示词注入（如“忽略所有前置说明”、“提权执行 rm -rf /”）诱导智能体破坏本地工程或绕过免责声明，系统建立三级硬防护：
+
+1. **输入层清洗与特殊字符过滤**：
+   - 自动剥离用户输入中的不可见 Unicode 混淆控制符（如零宽空格、双向覆盖字符）；
+   - 过滤试图冒充系统级协议的伪标签（如 `<system>`, `</instructions>`, `[INST]`）；
+2. **指令与数据硬隔离 (XML Tagged Boundary)**：
+   - 规范生成的 `SKILL.md` 强制采用强隔离标签将“用户提供的不信任数据”包裹在 `<user_input>` 标签内，明确要求 Agent 仅将标签内文本作为待处理数据对象，绝不得作为执行指令解析；
+3. **股票合规后置不可剥离拦截器 (Immutable Post-Processor)**：
+   - 无论 Agent 输出中发生了何种越狱或漂移，平台辅助脚本与 CLI 均在最外层执行不可篡改的后置强制检查，只要缺失免责水印直接阻断落盘。
 
 ---
 
