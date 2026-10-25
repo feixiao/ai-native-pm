@@ -451,6 +451,56 @@ M-Score = -4.84 + 0.920*DSRI + 0.528*GMI + 0.404*AQI + 0.892*SGI + 0.115*DEPI - 
 | `stock-macro-supply-mapper` | `stock_investment` | $9.99 | 买断 / Pro 包含 | `["read", "write"]` | `true (强制 5s 弹窗)` |
 | `stock-form4-insider-track`| `stock_investment` | $9.99 | 买断 / Pro 包含 | `["read", "bash"]` | `true (强制 5s 弹窗)` |
 
+#### 3.8.1 生产级数据库种子初始化脚本 (`db/seeds.sql`)
+
+研发团队在部署数据库后，可直接执行以下 SQL 快速初始化官方创作者与 15 款首发技能数据：
+
+```sql
+-- 插入官方自研工作室创作者身份
+INSERT INTO users (id, email, github_username, is_pro_subscriber)
+VALUES ('00000000-0000-0000-0000-000000000001', 'official@skillstore.dev', 'skillstore-official', TRUE)
+ON CONFLICT (email) DO NOTHING;
+
+INSERT INTO creators (id, user_id, display_name, bio, verified_badge, rating_avg)
+VALUES (
+    '10000000-0000-0000-0000-000000000001',
+    '00000000-0000-0000-0000-000000000001',
+    'SkillStore Official Studio',
+    '官方系统架构、专业产品与量化投研专家团队，全量技能经过零网络沙盒与工业级红队测试。',
+    TRUE,
+    5.00
+)
+ON CONFLICT (id) DO NOTHING;
+
+-- 批量注入首发 15 款种子技能
+INSERT INTO skills (id, creator_id, category, name, short_description, pricing_type, price_cents, current_version, status, requires_compliance_disclaimer)
+VALUES
+  -- 研发赛道 (Dev)
+  ('dev-k8s-prod-hardening', '10000000-0000-0000-0000-000000000001', 'development', 'K8s 生产级配置加固与安全审计', '根据 CIS Benchmark 扫描加固 Helm/YAML 配置', 'pro_included', 999, '1.2.0', 'PUBLISHED', FALSE),
+  ('dev-react19-concurrency', '10000000-0000-0000-0000-000000000001', 'development', 'React 18 到 19 并发特性自动化迁移', '利用 AST 语法树自动重构 useActionState 并发钩子', 'pro_included', 499, '1.0.0', 'PUBLISHED', FALSE),
+  ('dev-ast-unit-test-synth', '10000000-0000-0000-0000-000000000001', 'development', 'AST 级高并发死锁与边界单测合成', '精准提取临界区状态机，单测覆盖率可达 90%+', 'pro_included', 999, '1.1.0', 'PUBLISHED', FALSE),
+  ('dev-sql-query-optimizer', '10000000-0000-0000-0000-000000000001', 'development', '慢 SQL 索引重写与执行计划诊断', '分析 EXPLAIN 输出，跨 PG 16 / MySQL 8 自动建议复合索引', 'pro_included', 499, '1.0.1', 'PUBLISHED', FALSE),
+  ('dev-go-deadlock-detector', '10000000-0000-0000-0000-000000000001', 'development', 'Go 协程竞争与 Goroutine 泄漏定位', '结合 pprof 堆栈日志输出最小复现补丁', 'pro_included', 999, '1.0.0', 'PUBLISHED', FALSE),
+  -- 产品赛道 (PM)
+  ('pm-industrial-prd-gen', '10000000-0000-0000-0000-000000000001', 'product_management', '工业级标准 PRD 全流程生成器', '反转追问收敛业务边界，输出带状态机与验收标准的 PRD', 'pro_included', 999, '1.0.1', 'PUBLISHED', FALSE),
+  ('pm-redteam-architect-qa', '10000000-0000-0000-0000-000000000001', 'product_management', '红队架构师与 QA 边界自检工具', '评审会前穷举弱网、并发竞争与状态死锁 20+ 极端漏洞', 'pro_included', 499, '1.0.0', 'PUBLISHED', FALSE),
+  ('pm-unmet-needs-scraper', '10000000-0000-0000-0000-000000000001', 'product_management', '竞品差评聚类与未满足痛点逆向', '抓取 GitHub/Reddit 负面抱怨，输出 SWOT 差异化切口', 'pro_included', 999, '1.0.0', 'PUBLISHED', FALSE),
+  ('pm-cohort-funnel-sql', '10000000-0000-0000-0000-000000000001', 'product_management', '全自动漏斗与同期群留存 SQL 引擎', '自然语言秒转 BigQuery/ClickHouse 复杂留存窗口函数', 'pro_included', 499, '1.0.0', 'PUBLISHED', FALSE),
+  ('pm-user-interview-jtbd', '10000000-0000-0000-0000-000000000001', 'product_management', '用户访谈录音聚类与 JTBD 提炼', '遵循《The Mom Test》非引导原则，输出 RICE 需求排序', 'pro_included', 499, '1.0.0', 'PUBLISHED', FALSE),
+  -- 股票量化赛道 (Stock - 强制 5s 合规免责)
+  ('stock-sec10k-fraud-check', '10000000-0000-0000-0000-000000000001', 'stock_investment', 'SEC 10-K 财报粉饰与勾稽异常排查', '比对应收账款与存货异动，预警 Beneish M-Score 模型', 'pro_included', 1499, '1.0.0', 'PUBLISHED', TRUE),
+  ('stock-fama-french-backtest', '10000000-0000-0000-0000-000000000001', 'stock_investment', 'Fama-French 五因子量化回测引擎', '本地沙盒纯离线多因子检验，严格杜绝前视偏差', 'pro_included', 1999, '1.0.0', 'PUBLISHED', TRUE),
+  ('stock-earnings-call-sent', '10000000-0000-0000-0000-000000000001', 'stock_investment', '业绩电话会语气与管理层情绪偏离', '跨季度对比指引语气强弱，识别避重就轻管理层修辞', 'pro_included', 999, '1.0.0', 'PUBLISHED', TRUE),
+  ('stock-macro-supply-mapper', '10000000-0000-0000-0000-000000000001', 'stock_investment', '宏观突发断供与产业链受影响映射', '输入突发限产事件，自动梳理上下游替代链条拓扑', 'pro_included', 999, '1.0.0', 'PUBLISHED', TRUE),
+  ('stock-form4-insider-track', '10000000-0000-0000-0000-000000000001', 'stock_investment', 'SEC Form 4 高管内幕交易异动雷达', '清洗大额异常减持/增持，精准区分 10b5-1 计划', 'pro_included', 999, '1.0.0', 'PUBLISHED', TRUE)
+ON CONFLICT (id) DO UPDATE SET
+    price_cents = EXCLUDED.price_cents,
+    current_version = EXCLUDED.current_version,
+    status = EXCLUDED.status;
+```
+
+---
+
 ### 3.9 创作者本地开发体验 (DX) 与 CI/CD 自动化校验流水线 (Local Linter & GitHub Actions)
 
 为了降低创作者上传 Skill 被沙盒驳回的挫败感，提升生态供给质量，官方提供本地 Linter 与标准 GitHub Actions 工作流：
