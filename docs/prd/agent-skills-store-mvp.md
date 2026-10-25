@@ -1419,10 +1419,20 @@ Then CLI 应携带 Master Token 签名上传安装包至 S3 受控存储桶
 
 ## 7. 非功能性需求 (Non-Functional Requirements)
 
-### 7.1 性能与高并发指标 (SLA & Performance)
-- **Web 端核心性能**：全球 CDN 边缘节点首屏 LCP (Largest Contentful Paint) ≤ 1.2 秒；详情页 API 响应时间 P95 ≤ 200ms。
-- **CLI 并发与吞吐能力**：注册表分发中枢基于 Cloudflare Workers + AWS S3 预签名 CDN 构建，能够平稳承载单日 100,000 次 CLI 下载与签名鉴权请求，错误率 (5xx) ≤ 0.01%。
+### 7.1 性能、高并发与 Lighthouse 性能预算 (SLA & Performance Budget)
 
+1. **Web 端核心性能与 Web Vitals 预算**：
+   - **LCP (最大内容渲染)**：全球 CDN 边缘节点 $\le 1.2$ 秒；
+   - **FCP (首次内容绘制)**：$\le 0.8$ 秒；
+   - **CLS (累积布局偏移)**：严格控制为 `0.00`（无抖动骨架屏占位）；
+   - **INP (交互到下一次绘制)**：$\le 50\text{ms}$；
+   - **Lighthouse 评分底线**：性能、无障碍、最佳实践、SEO 四项指标在 Chrome Lighthouse 移动端审计中全量达到 **$\ge 96$ 分**；
+   - **JS 传输体积预算**：首屏客户端总 JavaScript 体积严格控制在 **$< 80\text{KB}$ (Gzip)**，商品主目录采用 Next.js 15 Server Components (RSC) 纯服务端流式渲染，避免在客户端灌入重型框架运行时。
+2. **动态社交分享卡片与 SEO 结构化数据 (Dynamic OG Image & JSON-LD)**：
+   - 每个技能详情页通过 `@vercel/og` 边缘函数根据技能名称、分类、评分、安装量动态实时生成 1200×630 高清 OpenGraph 预览图，保障在 X (Twitter)、微信、Discord 中分享时的极佳卡片展现；
+   - 自动注入 Google 规范的 `SoftwareApplication` 与 `Product` 结构化 JSON-LD 标签，提升自然搜索排名与丰富摘要展现。
+3. **CLI 并发与吞吐能力**：
+   - 注册表分发中枢基于 Cloudflare Workers + AWS S3 预签名 CDN 构建，能够平稳承载单日 100,000 次 CLI 下载与签名鉴权请求，错误率 (5xx) $\le 0.01$%，详情页 API 响应时间 P95 $\le 200\text{ms}$。
 ### 7.2 安全与隐私合规 (Security & Privacy)
 - **零数据窥探原则 (Zero-Data Telemetry)**：CLI 工具在本地运行时，**严禁上传、收集或扫描用户的本地业务代码、私有仓库内容或 Git 提交记录**。CLI 仅向服务器回传匿名化的 `user_id`、`skill_id`、`client_version` 与安装成功/失败状态码。
 - **Token 安全与轮换**：客户端存储的鉴权凭证采用基于 OS Keyring（如 macOS Keychain、Linux Secret Service）的安全加密存储，过期自动失效，支持在 Web 端一键注销所有设备。
