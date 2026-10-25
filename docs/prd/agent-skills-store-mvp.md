@@ -463,6 +463,54 @@ R_i - R_f = alpha_i + beta_i*(R_m - R_f) + s_i*SMB + h_i*HML + r_i*RMW + c_i*CMA
 3. **强制后置免责声明水印**：输出末尾自动附加不可删除的法律合规免责条目。
 ```
 
+#### 3.6.6 产品数据代表作：`pm-cohort-funnel-sql/SKILL.md` 核心规范
+```markdown
+---
+name: pm-cohort-funnel-sql
+description: 全自动漏斗与同期群留存 SQL 引擎，自然语言秒级转化为支持 PostgreSQL / ClickHouse / BigQuery 窗口函数的生产级分析查询
+version: 1.0.0
+author: SkillStore Data Analytics Guild
+allowed-tools:
+  - read
+  - write
+---
+
+# 漏斗转化与同期群留存 SQL 生成规范
+
+## 1. 核心业务输入
+接收自然语言业务指标描述（如“统计 2026 年 Q3 注册用户在第 1 天、第 7 天、第 30 天的次日留存与交易漏斗流失率”）。
+
+## 2. 规范化 SQL 输出要求
+1. **窗口函数与递归 CTE 规范**：
+   - 强制使用 `DATE_TRUNC` 对齐时间周期，使用 `FIRST_VALUE` 或 `ROW_NUMBER() OVER (PARTITION BY user_id)` 锁定初始事件基准；
+   - 自动生成跨方言自适应语法（兼容 PostgreSQL 16 窗口聚合与 ClickHouse `retention()` 专有加速函数）；
+2. **性能与索引友好度保障**：
+   - 自动在查询末尾输出《执行性能优化建议》：说明需在 `user_actions` 表建立的复合索引 `(event_name, created_at, user_id)`。
+```
+
+#### 3.6.7 研发排错代表作：`dev-sql-query-optimizer/SKILL.md` 核心规范
+```markdown
+---
+name: dev-sql-query-optimizer
+description: 慢 SQL 执行计划诊断与自动索引重写器，解析 EXPLAIN ANALYZE 输出，自动消除全表扫描与隐式类型转换
+version: 1.0.1
+author: SkillStore Database Architecture Guild
+allowed-tools:
+  - read
+  - edit
+---
+
+# 慢 SQL 优化与执行计划诊断规范
+
+## 1. 核心诊断流水线
+1. **解析 EXPLAIN 输出**：定位 `Seq Scan` (全表扫描)、`Temporary B-Tree` (临时文件排序) 与 `Nested Loop` 笛卡尔积高开销节点；
+2. **重写优化策略**：
+   - 消除 `SELECT *`，仅投影必需字段以利用覆盖索引 (Covering Index)；
+   - 改写 `NOT IN (SELECT...)` 为 `NOT EXISTS` 或 `LEFT JOIN ... WHERE IS NULL` 防范 NULL 陷阱；
+   - 识别 `WHERE DATE(created_at) = '...'` 等对索引列执行函数调用的反模式，重写为范围区间扫描；
+3. **输出标准化 DDL 建议**：精准输出包含 `CONCURRENTLY` 关键字的无锁创建索引 DDL，并标注预估降载比例。
+```
+
 ---
 ### 3.7 CLI 命令行全量指令集与退出码契约规范 (`@skillstore/cli`)
 
