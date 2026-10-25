@@ -688,6 +688,39 @@ stateDiagram-v2
     SUSPENDED --> PENDING_SCAN: 创作者提交修复版本
     PUBLISHED --> [*]: 创作者主动下线归档
 ```
+
+### 4.5 创作者国际提现防洗钱 (AML) 与资金托管结算时序图 (Escrow Settlement Sequence Diagram)
+
+```mermaid
+sequenceDiagram
+    autonumber
+    actor Buyer as 终端买家 (Buyer)
+    participant Web as Web 结算收银台
+    participant Stripe as Stripe Connect 平台账户
+    participant Escrow as 平台托管延迟账期 (30天)
+    participant AML as 国际反洗钱 (AML) 与税表审查
+    participant Bank as 创作者本地银行账户 (CNY/EUR/USD)
+    actor Creator as 技能创作者 (Creator)
+
+    Buyer->>Web: 支付购买 Skill ($9.99)
+    Web->>Stripe: 扣款入账平台主账户
+    Stripe->>Escrow: 锁定买家资金进入 30 天质量争议观察期 (Escrow Hold)
+    Note over Escrow: 防范 48 小时恶意退款与未授权盗刷欺诈
+    opt 若买家在 48 小时内发起质量不符争议
+        Buyer->>Web: 申请无理由质量退款
+        Web->>Stripe: 原路退回买家信用卡，注销授权
+    end
+    Escrow->>AML: 账期结束 (每月1日)，触发全局自动结算任务
+    AML->>AML: 检查创作者 W-8BEN/W-9 电子税表与制裁名单
+    alt 创作者合规审查未签署 W-8BEN 税表
+        AML-->>Web: 冻结本次提现，向控制台推送《税表补全待办》
+        Web-->>Creator: 发送催促签署通知邮件
+    else 审查完全合规
+        AML->>Stripe: 划转 75% 创作者净收益至 Connect 账户
+        Stripe->>Bank: 本地原币种直连电汇清算
+        Bank-->>Creator: 资金到账通知短信/邮件
+    end
+```
 ---
 
 ## 5. 功能需求详述 (What)
@@ -1018,6 +1051,16 @@ Then CLI 应在本地 5 秒内解析会话，完成私人路径脱敏并自动�
   And 自动在本地当前目录生成完整包骨架：`./go-leak-fixer/{manifest.json, SKILL.md, fixtures/sample_test.go}`
 When 工程师进入该目录执行 `npx @skillstore/cli lint`
 Then 本地静态校验器输出：“✅ All 12 checks passed! 技能包已符合发布标准，可执行 npx @skillstore/cli publish 提交”
+```
+
+### 场景 11：创作者涉税信息未补全触发提现延迟冻结与合规通知 (P1)
+```gherkin
+Given 创作者本月销售收益达到 $850.00，但尚未在线提交 W-8BEN 跨国税收声明表
+When 每月 1 日 00:00 UTC 全局结算定时任务执行到该创作者账单时
+Then 结算中台应自动拦截向 Stripe Connect 的划转指令，并将该笔账单状态置为 `ESCROW_HOLD_TAX`
+  And 创作者后台首页展示顶部醒目警示条：“⚠️ 您有 $850.00 分成待发放，请在 7 日内签署 W-8BEN 税表以解除结算冻结”
+When 创作者点击该通知并在 Stripe 托管页面完成电子签名提交
+Then 系统应在 10 分钟内自动解除冻结并恢复正常出账通道
 ```
 ---
 
