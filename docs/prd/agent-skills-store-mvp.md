@@ -1451,6 +1451,25 @@ Then CLI 应携带 Master Token 签名上传安装包至 S3 受控存储桶
 | **Sprint 2 (第 3-4 周)**<br>交易与合规闭环 | 上线 Web 门户、Stripe 结账、合规存证与首发 15 款 Skills | - Next.js 15 详情页、筛选器与 ASCII 线框图前端还原<br>- Stripe Checkout & Webhook 幂等性处理<br>- 股票专区 5 秒倒计时 Click-wrap 合规存证入库<br>- 完成全量 15 款首发种子包制作与质量认证 | **48 SP** | 前端 TL + 业务后端 |
 | **Sprint 3 (第 5-6 周)**<br>沙盒安全与创作者后台 | 容器沙盒自动化测试上线、创作者分成看板与灰度放量 | - Docker `--network=none` 自动化基准测试调度器<br>- Semgrep AST 污点扫描规则链集成<br>- 创作者 Stripe Connect 提现绑定与数据看板<br>- 全链路 UAT 走查、灰度放量与压力测试 | **36 SP** | 安全工程师 + 架构师 |
 
+### 10.1 工程任务清单与 Linear / Jira Issue 颗粒度拆解
+
+为方便研发团队在下周一直接一键导入任务跟踪管理系统，将 3 个 Sprint 细化拆解为 12 张标准工程 Issue 卡片：
+
+| Issue Key | 归属模块 | 故事标题与核心交付目标 | 优先级 | 估算工时 (SP) | 核心验收标准 (Definition of Done) |
+| :--- | :--- | :--- | :--- | :--- | :--- |
+| **SKILL-101** | 数据库/后端 | 部署 PostgreSQL 16 数据库并执行 8 张表 DDL 迁移脚本 | P0 | 5 SP | 成功执行 `psql -f db/schema.sql`，表与索引完整就绪 |
+| **SKILL-102** | 数据库/后端 | 执行 `db/seeds.sql` 注入官方创作者与 15 款首发种子技能 | P0 | 3 SP | 数据库成功写入 15 款核心技能元数据且分类正确 |
+| **SKILL-103** | 鉴权/后端 | 实现 Supabase Auth 集成与 CLI 设备流 OAuth 颁发接口 | P0 | 8 SP | `POST /v1/cli/auth/device-flow` 跑通浏览器扫码授权 |
+| **SKILL-104** | CLI 客户端 | 构建 `@skillstore/cli` 核心解包、哈希验签与 Cursor/Claude 写入 | P0 | 13 SP | `npx @skillstore/cli install` 5 秒内将规范落盘至对应路径 |
+| **SKILL-105** | 自研内容 | 编写并调优前 6 款种子包（K8s加固、工业PRD、M-Score模型等） | P0 | 13 SP | 6 款技能在本地沙盒回测通过率达到 100% |
+| **SKILL-201** | 前端门户 | 基于 Next.js 15 + Tailwind 还原 5 大核心界面高保真线框图 | P0 | 13 SP | 完成首页 Tab 切换、详情页预览、搜索兼容性矩阵前端开发 |
+| **SKILL-202** | 支付结算 | 对接 Stripe Checkout 结账流与 Webhook 幂等性入账 | P0 | 8 SP | 完成信用卡付款并在 `entitlements` 表写入有效授权记录 |
+| **SKILL-203** | 合规风控 | 股票专区全屏毛玻璃 5 秒倒计时免责声明弹窗与司法存证 | P0 | 8 SP | 用户确认后将 IP、User Agent 与时间戳成功写入存证库 |
+| **SKILL-204** | 自研内容 | 完成剩余 9 款自研技能打包与全量 `manifest.json` 校验 | P0 | 11 SP | 全库 15 款技能打包上传至 AWS S3 受控存储桶 |
+| **SKILL-205** | 前端/客户端 | 实现 `skillstore.lock` 本地多技能依赖解析与版本防冲突 | P1 | 8 SP | 多规则合并时自动注入命名空间前缀，杜绝覆盖破坏 |
+| **SKILL-301** | 安全/沙盒 | 搭建 Docker `--network=none` 自动化基准测试执行沙盒 | P0 | 13 SP | 容器超时 30 秒硬中断与 Cgroups 内存 512MB 配额有效生效 |
+| **SKILL-302** | 安全/AST | 集成 Semgrep 规则链，拦截 `eval()`、私钥环境变量与反弹 shell | P0 | 8 SP | 恶意代码测试样本 100% 被静态 AST 扫描器拦截驳回 |
+
 ---
 
 ## 11. 灰度放量、特性开关与故障一键回滚策略 (Canary Rollout & Feature Flag Contingency)
