@@ -834,4 +834,20 @@ cd ./my-new-skill && npx @skillstore/cli publish
 - **工程完备度**：DDL、API、Seccomp 沙盒、seeds.sql、CLI 萃取引擎、12 张 Linear 任务卡与 126 SP 排期全部闭环，可即刻开工！
 
 ---
+
+## 18. 技术术语表与工程师思维模型映射 (Engineering Mental Model & Glossary)
+
+参考本仓库《01-pm-handbook/05-glossary.md》，将商业与产品层概念使用工程师熟悉的计算机系统概念进行精准映射类比：
+
+| 商业/产品术语 | 工程师熟悉的底层系统类比 | 技术原理与核心机制 |
+| :--- | :--- | :--- |
+| **Agent Skill** | **带运行时沙盒的有状态微服务 (Stateful Microservice)** | 不仅仅是提示词，而是融合了声明式配置、确定性脚本与输入输出 Schema 校验的独立可执行单元。 |
+| **`SKILL.md` 规范** | **Kubernetes 声明式清单 (Declarative YAML Spec)** | 告诉智能体“期望的目标状态 (Desired State)”与状态转移条件，由 Agent 自主调用工具循环收敛。 |
+| **Dual-tier DRM 分层** | **开源核心模型 (Open-Core Architecture)** | 基础提示词完全公开开源建立信任，高阶动态金融中继与自动化沙盒采用令牌桶鉴权网关。 |
+| **Click-wrap 免责存证**| **不可否认加密时间戳凭据 (Non-repudiation Timestamp)** | 将用户 ID、IP 地址与免责文书哈希结合毫秒级时间戳写入数据库，提供抵御证券诉讼的司法存证。 |
+| **BYOK 架构** | **客户端零知识密钥加密 (Zero-Knowledge Client Vault)** | 平台云端不触碰商业金融 API 私钥，完全由本地 OS Keyring 解密并在本地进程直接发起网络调用。 |
+| **Canary 灰度放量** | **基于 Envoy 的加权流量切分 (Weighted Traffic Routing)** | 从 1% 到 100% 阶梯式放量，异常率超出 2% 自动触发断路器熔断秒级回滚。 |
+| **`SkillRank` 算法** | **带时间衰减的抗作弊 PageRank** | 综合沙盒健康度、贝叶斯平滑评分与周活调用量，引入退款率惩罚因子杜绝刷榜。 |
+
+---
 *本可行性调研报告作为项目立项依据，已完成商业逻辑闭环核验与合规边界界定，建议立即推进 Phase 1 MVP PRD 细化与开发基线锁定。*

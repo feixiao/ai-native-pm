@@ -1535,4 +1535,87 @@ Then CLI 应携带 Master Token 签名上传安装包至 S3 受控存储桶
 | **灾备降级 Gate** | 自动化熔断开关与 Cloudflare CDN 一键回滚预案演练 | 触发模拟故障后，在 60 秒内无损降级回退至稳定 Baseline | SRE 运维总监 |
 
 ---
+
+## 14. 上线后运营指标监控数据字典与 SQL 查询模板 (Post-Launch SQL Analytics)
+
+参考本仓库《02-ai-skills/05-data-analysis.md》指南，为创始人与数据分析师提供开箱即用的 5 个生产级监控 SQL 查询：
+
+### 14.1 核心财务走势：每日 GMV、订单量与单品客单价 (AOV)
+```sql
+SELECT 
+    DATE_TRUNC('day', created_at) AS order_date,
+    COUNT(id) AS total_orders,
+    ROUND(SUM(amount_cents) / 100.0, 2) AS daily_gmv_usd,
+    ROUND(AVG(amount_cents) / 100.0, 2) AS aov_usd
+FROM orders
+WHERE status = 'ACTIVE'
+GROUP BY 1
+ORDER BY 1 DESC
+LIMIT 30;
+```
+
+### 14.2 留存核心：Pro 会员月度同期群留存率 (Cohort Retention Matrix)
+```sql
+WITH user_cohort AS (
+    SELECT 
+        id AS user_id,
+        DATE_TRUNC('month', created_at) AS cohort_month
+    FROM users
+    WHERE is_pro_subscriber = TRUE
+),
+monthly_activity AS (
+    SELECT 
+        o.user_id,
+        DATE_TRUNC('month', o.created_at) AS active_month
+    FROM orders o
+    GROUP BY 1, 2
+)
+SELECT 
+    c.cohort_month,
+    COUNT(DISTINCT c.user_id) AS cohort_size,
+    COUNT(DISTINCT CASE WHEN a.active_month = c.cohort_month + INTERVAL '1 month' THEN a.user_id END) AS m1_retention,
+    COUNT(DISTINCT CASE WHEN a.active_month = c.cohort_month + INTERVAL '2 month' THEN a.user_id END) AS m2_retention
+FROM user_cohort c
+LEFT JOIN monthly_activity a ON c.user_id = a.user_id
+GROUP BY 1
+ORDER BY 1 DESC;
+```
+
+### 14.3 细分专区表现：三大垂直赛道安装量与销售额交叉比对
+```sql
+SELECT 
+    s.category,
+    COUNT(DISTINCT s.id) AS total_skills,
+    SUM(s.total_installs) AS total_installs,
+    ROUND(SUM(o.amount_cents) / 100.0, 2) AS total_category_revenue_usd
+FROM skills s
+LEFT JOIN orders o ON s.id = o.skill_id AND o.status = 'ACTIVE'
+GROUP BY s.category
+ORDER BY total_category_revenue_usd DESC;
+```
+
+### 14.4 股票风控合规：免责协议签署率与转化漏斗排查
+```sql
+SELECT 
+    DATE_TRUNC('day', confirmed_at) AS log_date,
+    COUNT(DISTINCT user_id) AS users_agreed_disclaimer,
+    COUNT(id) AS total_disclaimer_clicks
+FROM stock_compliance_agreements
+GROUP BY 1
+ORDER BY 1 DESC
+LIMIT 14;
+```
+
+### 14.5 客户端健康度：CLI 安装报错排查与错误码分布
+```sql
+SELECT 
+    manifest_payload->>'category' AS category,
+    COUNT(id) AS total_audits,
+    COUNT(CASE WHEN static_scan_pass = TRUE THEN 1 END) AS pass_count,
+    COUNT(CASE WHEN static_scan_pass = FALSE THEN 1 END) AS rejected_count
+FROM sandbox_audit_logs
+GROUP BY 1;
+```
+
+---
 *本 PRD 文档已根据《工业级标准 PRD 黄金结构模板》完成全流程业务边界闭环，通过严苛红队评审，作为研发、测试与合规团队开发上线的唯一依据。*
