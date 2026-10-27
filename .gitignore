@@ -13,3 +13,4 @@ local_cockpit_memory.db*
 .DS_Store
 __pycache__/
 *.pyc
+.planning/
