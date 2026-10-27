@@ -1,0 +1,15 @@
+# Build artifacts
+poc/edge_audio_agent/edge_agent_poc
+*.o
+*.out
+
+# SQLite local databases and logs
+*.db
+*.db-shm
+*.db-wal
+local_cockpit_memory.db*
+
+# OS and Python artifacts
+.DS_Store
+__pycache__/
+*.pyc
