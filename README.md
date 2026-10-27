@@ -26,7 +26,7 @@
 | **03. 日常工作流** | [03-workflow.md](./01-pm-handbook/03-workflow.md) | PM 的一天/一周节奏、**需求全生命周期 7 步标准闭环**（含每阶段核心交付物）、跨角色协作避坑指南、如何在评审会上建立专业权威 |
 | **04. 方法论框架速查** | [04-frameworks.md](./01-pm-handbook/04-frameworks.md) | 像查设计模式一样查产品框架：**JTBD、5-Whys、RICE 优先级评分、Kano 模型、北极星指标、AARRR 海盗模型、漏斗与同期群分析** |
 | **05. 术语表（工程师版）** | [05-glossary.md](./01-pm-handbook/05-glossary.md) | **40+ 产品与商业核心术语**，全部使用工程师熟悉的分布式系统、网络协议与研发概念进行精准类比映射 |
-| **06. 产品工作的边界** | [06-product-boundaries.md](./01-pm-handbook/06-product-boundaries.md) | **产品工作的边界与权责划分**：以端侧 AI 语音伴侣与 Mock 车控为例，拆解 Why & What vs. How 禁飞区、范围蔓延防护、PM/设计/测试 RACI 矩阵与自检五问 |
+| **06. 产品工作的边界** | [06-product-boundaries.md](./01-pm-handbook/06-product-boundaries.md) | **产品工作的边界与权责划分**：以端侧 AI 语音伴侣与 Mock 车控为例，拆解 Why & What 禁飞区、范围防护、RACI 矩阵，以及全 AI 化出 PRD（含红队自检）与可交互原型（内置状态切换器）的边界守则 |
 
 ---
 
