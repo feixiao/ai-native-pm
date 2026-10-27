@@ -1,257 +1,172 @@
-# 端侧算力优先 AI 语音陪伴助手 (Edge-First AI Voice Companion & Agent) 产品需求文档 (PRD)
+# Pixel 10 端侧 AI 语音陪伴助手与 Mock 车控 PoC PRD
 
 ---
 
-## 1. 文档元数据与版本管理 (Metadata & Changelog)
+## 1. 文档元数据与版本管理
 
 | 属性 | 内容 |
 | :--- | :--- |
-| **文档编号** | PRD-EDGE-AUDIO-COMPANION-2026-V1.1 |
-| **产品定位** | **端侧算力优先 (Edge-First / Local-Compute-Dominant)** 的全双工 AI 陪伴助手（支持车机/移动端多态适配） |
-| **参考硬件平台** | **主力落地设备：Google Pixel 10 / 10 Pro (Tensor G5 SoC, 16GB RAM, Android 16)**<br>兼容环境：车机 8295 / Orin-X (NPU 16~30 TOPS, 专用可用 RAM 1.5~2.2 GB) |
-| **运行与验证范式** | **100% 端侧独立闭环**；无物理座舱总线时**降级为“AI 陪伴助手 + Mock 控车日志规范输出 (Simulated CAN/SOA Logging)”** |
-| **文档状态** | **Approved RC (已更新 Pixel 10 伴侣形态与 Mock 控车规范)** |
----
+| **文档编号** | PRD-PIXEL10-VOICE-COMPANION-2026 |
+| **产品定位** | Pixel 10 / 10 Pro 上运行的端侧语音陪伴助手；车控意图仅用于 Mock 日志演示 |
+| **目标设备** | Google Pixel 10 / 10 Pro，Android 16；其他设备不在本期验收范围 |
+| **运行模式** | 对话、推理与记忆在设备本地；本期不提供云端推理、实体车辆连接或车控执行 |
+| **文档状态** | Draft for PoC；性能与模型选型须经目标设备实测后冻结 |
+
+### 1.1 变更记录
+
+| 版本 | 修改摘要 |
+| :--- | :--- |
+| v1.1 | 收敛为 Pixel 10 端侧陪伴助手 PoC，车控改为 Mock 日志，删除实体座舱验收前提 |
 
 ## 2. 业务背景、核心价值与指标体系 (Why & ROI)
 
-### 2.1 战略背景与双模运行范式 (Dual-Mode Paradigm)
-1. **目标设备基准（Pixel 10 移动伴侣优先）**：
-   - 以 **Google Pixel 10 / 10 Pro (Tensor G5 SoC + 16GB RAM + Android 16)** 为核心运行环境，依托 MediaPipe/LiteRT 跑通本地小模型（Gemma-3-4B / Qwen2.5-3B INT4），具备低功耗、全天候兜里陪伴能力。
-2. **物理环境解耦：无座舱环境下的“AI 陪伴助手 + Mock 控车日志”**：
-   - **陪伴核心**：承载情感共情、倾诉对话、记忆检索、主动关怀与闲聊；
-   - **车控解耦**：车窗、空调、座椅等物理控制解耦为**标准结构化日志 (Mock CAN/SOA Log)** 输出，严格验证端侧分流、意图提取与安全拦截，无需依赖实体车辆总线。
-3. **端侧本地自闭环核心价值**：
-   - **绝对隐私 (Absolute Privacy)**：用户最私密的对话与家庭偏好数据 100% 留存在本地 SQLite 加密沙箱，绝不上云；
-   - **无网可用 (100% Offline)**：在弱网、飞行模式、地下停车场均保持毫秒级流畅响应；
-   - **确定性时延 (Sub-300ms)**：跳过蜂窝网络 RTT，提供类真人“电话粥”式的即时反馈。
+### 2.1 用户问题与本期目标
+- **目标用户**：希望在睡前、独处或步行等场景进行语音倾诉的 Pixel 10 用户。
+- **问题**：网络依赖会让对话在弱网时中断；缺少本地记忆会让陪伴体验缺乏连续性；长时间语音推理可能造成明显耗电、发热或后台中断。
+- **本期目标**：在 Pixel 10 上验证本地语音输入、对话生成、语音输出和本地记忆的端到端链路；识别为车控的输入只输出结构化模拟日志，不连接车辆设备。
 
-| 指标维度 | 指标项 | 目标值 (Target) | 统计口径与验收条件 |
-| :--- | :--- | :--- | :--- |
-| **性能 (Performance)** | **本地高频车控端到端时延** | **≤ 280ms** | 说话结束 (VAD Cut) 到 SOA/CAN 指令发出并触发首帧 TTS 发声 |
-| **体验 (Experience)** | **全双工打断触发时延 (Barge-in)**| **≤ 120ms** | 用户开始说话到当前播放 TTS 物理被硬件静音 (Mute) |
-| **自闭环 (Self-Sufficiency)**| **无网/断网任务执行成功率** | **≥ 99.8%** | 地库、无人区隧道等完全离线状态下，本地功能库执行闭环率 |
-| **隐私 (Privacy)** | **高敏记忆与原始音频出车率** | **0.00% (绝对禁止)** | 原始麦克风 PCM 帧及家庭私密记忆严禁上云，仅限车内 SQLite 加密库 |
-| **护栏 1 (Safety)** | **行车报警中断率** | **100% 绝对阻断** | 仪表/ADAS 发出 P0 报警时，Agent 强制静音，耗时 ≤ 30ms |
-| **护栏 2 (Stability)** | **端侧模型 72h 内存漂移** | **0 KB (零泄漏)** | 连续 72 小时压力测试，端侧常驻内存上限死锁在 2.0GB 以下 |
+### 2.2 指标与验收口径
+
+| 指标 | PoC 验收目标 | 测量口径 |
+| :--- | :--- | :--- |
+| 语音响应时延 | P50 ≤ 800ms，P95 ≤ 1150ms | 用户停止说话至首个 TTS 音频帧开始播放；记录设备、模型版本、温度与测试轮数 |
+| 打断时延 | ≤ 80ms | 检测到用户有效插话至当前音频停止播放 |
+| 离线闭环 | 断网下核心对话和已保存记忆可用 | 飞行模式启动并完成预定义场景；无网络请求依赖 |
+| Mock 车控 | 每条车控意图均恰好产生一条结构化日志，且不触发外部执行 | 检查 `timestamp`、`intent`、`slots`、`decision`、`reason`、`simulation` 字段及日志条数 |
+| 本地数据边界 | 对话、音频和记忆不离开设备 | 网络观察中无对应数据请求；检查本地存储与删除行为 |
+| 稳定性与热管理 | 20 分钟连续会话无崩溃或系统杀进程；温度、耗电、内存记录实测 | Pixel 10 实机测试；数值门槛在基线测量后确认 |
+
+以上时延值为 PoC 目标，不代表已在 Pixel 10 实测达成。功耗、温度、内存目标在实机基线完成前不作为已承诺指标。
+
+### 2.3 本期不做
+1. 不接入实体车辆、CAN/SOA 总线、车身控制器、ADAS、车载麦克风阵列或车载音频硬件。
+2. 不做云端推理、账号体系、跨设备同步或遥测上报。
+3. 不做系统级助理操作（短信、闹钟、通知读取）及非 Pixel 10 设备适配。
+4. 不承诺全天候后台监听；语音会话由用户明确启动和结束，并受 Android 权限及前台服务规则约束。
 
 ---
 
-## 3. 端侧算力优先系统架构与流水线 (Architecture & Pipeline)
+## 3. Pixel 10 端侧架构与会话流程
 
-### 3.1 端侧全闭环核心架构拓扑
+### 3.1 本地语音与 Mock 车控拓扑
 
 ```mermaid
 flowchart TD
-    subgraph CockpitAudioFront ["车规级硬件音频前端"]
-        MIC["4音区麦克风阵列"] --> AEC_BF["车载专用 AEC/波束成形"]
-        AEC_BF --> VAD["低延迟硬件 VAD"]
+    subgraph PhoneAudio ["Pixel 10 音频输入与输出"]
+        MIC["手机麦克风或已连接耳机"] --> AUDIO_IN["Android 音频输入"] --> VAD["VAD / 语音分段"]
+        TTS["本地 TTS"] --> AUDIO_OUT["听筒 / 耳机 / 扬声器"]
     end
-
-    subgraph EdgeComputeEngine ["车端本地算力中枢 Local Edge Compute - NPU/DSP/CPU"]
-        direction TB
-        
-        subgraph Stage1_ASR ["端侧极速语音识别"]
-            VAD --> FAST_ASR["端侧流式 Conformer ASR / RNN-T<br/>延迟 < 80ms, 内存 120MB"]
-        end
-
-        subgraph Stage2_Orchestrator ["端侧 Agent 决策与记忆调度中枢"]
-            FAST_ASR --> DUAL_ROUTER{"端侧意图与安全分流器"}
-            
-            DUAL_ROUTER -->|P0: 极速高频车控| RULE_ENGINE["本地规则与槽位抽取引擎<br/>耗时 < 5ms"]
-            DUAL_ROUTER -->|P1: 复杂复合车控/通用闲聊| EDGE_SLM["端侧轻量 SLM 大模型 1.5B/2B<br/>INT4 量化, NPU 承载, 延迟 < 180ms"]
-            
-            subgraph Edge_Memory ["端侧物理隔离记忆库 Local Encrypted DB"]
-                MEM_SQLITE[("端侧 SQLiteCipher<br/>AES-256 加密")]
-                MEM_VEC[("端侧超轻 HNSW 向量索引<br/>TopK 检索 < 10ms")]
-            end
-            
-            RULE_ENGINE <--> MEM_SQLITE
-            EDGE_SLM <--> MEM_VEC
-            EDGE_SLM <--> MEM_SQLITE
-        end
-
-        subgraph Stage3_Execution ["响应生成与执行分发"]
-            RULE_ENGINE --> CAN_SOA["车控模拟适配器 (Mock CAN/SOA 日志输出)"]
-            EDGE_SLM --> CAN_SOA
-            EDGE_SLM --> EDGE_TTS["端侧轻量神经 TTS 流式合成<br/>耗时 < 100ms"]
-        end
+    subgraph LocalPipeline ["Android 应用本地处理"]
+        VAD --> ASR["本地 ASR"] --> ROUTER{"本地意图路由"}
+        ROUTER -->|陪伴对话与记忆| LLM["本地对话模型"]
+        ROUTER -->|车控意图| PARSER["规则与槽位解析"]
+        LLM <--> MEMORY[("应用沙盒内本地记忆")]
+        LLM --> TTS
+        PARSER --> MOCK["Mock 车控结构化日志<br/>无外部副作用"]
     end
-
-    subgraph OptionalCloud ["可选云端扩展 (默认休眠 / 仅按需增强)"]
-        DUAL_ROUTER -.->|仅当联网且明确需要海量百科知识时| CLOUD_EXP[云端超大模型检索服务]
-    end
-
-    EDGE_TTS --> AUDIO_HAL["Pixel 10 听筒/耳机/扬声器 (Audio HAL / Oboe)"]
 ```
 
-### 3.2 4音区本地全状态机 (State Machine)
+模型、ASR/TTS 实现与加密存储方案属于 PoC 技术选型，须在 Pixel 10 实机验证后确定；本图不表示已实现 Tensor/NPU 加速或硬件安全隔离。
 
-| 当前状态 | 触发事件 | 校验条件 | 目标状态 | 本地动作与副作用 |
+### 3.2 本地语音会话状态机
+
+| 当前状态 | 触发事件 | 前置条件 | 下一状态 | 动作 |
 | :--- | :--- | :--- | :--- | :--- |
-| **IDLE (待机)** | VAD 能量触发 | 音区独立隔离，信噪比 SNR > 10dB | **LISTENING** | 开启 4 音区环形缓冲，预留 2MB 临时帧内存 |
-| **LISTENING** | 命中唤醒词或免唤醒词槽位 | 声纹或方位角判定通过 | **LOCAL_INFERENCE** | 压制 (Duck) 该音区背景媒体，仪表显示动效 |
-| **LOCAL_INFERENCE** | 命中端侧安全规则槽位 | 属于空调/车窗/座椅等舒适域 | **FAST_EXEC** | 直接下发本地 SOA，跳过端侧大模型，延时 < 80ms |
-| **LOCAL_INFERENCE** | 属于个性化复合意图 | 需组合记忆查询或条件推理 | **SLM_REASONING** | 唤醒端侧 1.5B INT4 模型，挂载本地 Memory 上下文 |
-| **SPEAKING** | 说话人本音区打断 (Barge-in) | 语义置信度 > 0.85 且非自身回声 | **ABORTING** | **硬件瞬时静音当前音区 TTS**，清空正在推理的 Token 队列 |
-| **ANY_STATE** | ADAS 紧急行车报警 | 底盘/辅助驾驶发出 P0 安全帧 | **EMERGENCY_SILENCE** | **全局强行静音，冻结 Agent 5秒**，优先保障行车生命安全 |
+| **STOPPED** | 用户启动会话 | 麦克风权限已授予，模型资源可用 | **LISTENING** | 启动会话与音频输入 |
+| **LISTENING** | 检测到用户语音 | 输入流正常 | **TRANSCRIBING** | 本地 ASR 处理音频；不持久化原始音频 |
+| **TRANSCRIBING** | 语音分段结束 | 得到有效文本 | **ROUTING** | 分类为陪伴对话、记忆操作、Mock 车控或拒绝处理 |
+| **ROUTING** | 陪伴对话或记忆查询 | 本地模型可用 | **GENERATING** | 读取必要的本地记忆并生成回应 |
+| **ROUTING** | 可解析的车控意图 | 槽位校验通过 | **MOCK_LOGGING** | 输出一条结构化日志，不调用外部控制 API |
+| **MOCK_LOGGING** | 日志写入完成 | 本地输出成功 | **LISTENING** | 返回监听状态；不代表车辆动作已执行 |
+| **GENERATING** | 首个 TTS 音频块就绪 | 输出设备可用 | **SPEAKING** | 开始播放本地语音 |
+| **SPEAKING** | 播放结束 | 无新输入 | **LISTENING** | 恢复等待用户输入 |
+| **GENERATING / SPEAKING** | 用户有效插话 | 输入流可用 | **LISTENING** | 取消当前生成并停止播放，处理新输入 |
+| **任意会话态** | 权限撤销、音频设备异常或资源不足 | 无法继续安全采集/播放 | **PAUSED** | 停止采集与播放并提示用户 |
+| **任意会话态** | 用户结束会话 | 无 | **STOPPED** | 关闭音频流并释放会话资源 |
 
 ---
 
-## 4. 详细功能规格：端侧自闭环个性化记忆系统 (Edge Memory Engine)
+## 4. 功能需求与验收准则
 
-### 4.1 核心设计：为什么端侧记忆必须摒弃云端方案？
-在“本地算力优先”原则下，**数据的主权、存储、提炼、检索必须 100% 发生在车端**。不能依赖云端算力跑后处理，也不允许将用户私密习惯上传。
+### 4.1 本地记忆
+1. 用户可明确要求记住一条偏好；系统应先展示或复述待保存内容，并在确认后写入应用沙盒中的本地存储。
+2. 用户可查看、修改和删除已保存记忆；删除后后续检索不得返回该条记忆。
+3. 普通对话不自动转为长期记忆。PoC 不得持久化原始麦克风音频；会话文本是否持久化须由用户可见的设置控制，默认关闭。
+4. 在加密存储与密钥管理方案完成评审前，只允许使用合成或非敏感测试数据，不得保存真实敏感个人记忆。
+5. 存储实现、加密方式和密钥管理在技术选型评审后确定；不得将普通 SQLite 描述为已加密或等同 TEE/Secure Enclave。
 
-### 4.2 本地双轨记忆引擎规格 (Local Dual-Track Memory Architecture)
+### 4.2 Mock 车控日志
+1. 车控意图只用于验证分类、槽位解析和拒绝逻辑，不得调用 Android 系统控制 API、网络服务或车辆接口。
+2. 每条车控意图恰好输出一条 JSON Lines 日志，字段为 `timestamp`、`intent`、`slots`、`decision`、`reason`、`simulation`；`timestamp` 使用 UTC RFC 3339，`slots` 为 JSON object，`decision` 只允许 `MOCK_ACCEPTED` 或 `MOCK_REJECTED`，`simulation` 必须为布尔值 `true`。日志不得包含原始转写文本或音频。
+3. 缺少必填槽位、值超出规则边界或命中危险指令时输出 `MOCK_REJECTED`，并写明原因；有效槽位输出 `MOCK_ACCEPTED`。日志不得被解释为真实车辆动作，用户反馈必须明确这是模拟结果。
 
-```mermaid
-flowchart LR
-    subgraph InputEvent ["车内事件"]
-        U_Speech["用户语音输入"]
-        U_Action["物理车控行为"]
-    end
-
-    InputEvent --> Processor["端侧轻量记忆提取器 (C++ Rule Engine + SLM INT4)"]
-
-    subgraph EdgeStorage ["端侧加密沙箱 (TEE / Secure Enclave)"]
-        direction TB
-        subgraph TrackA ["结构化槽位记忆库 (SQLiteCipher)"]
-            DB_KV[Key-Value 偏好表<br/>'wife_temp': 26<br/>'home_addr': POI_88]
-        end
-        subgraph TrackB ["语义情境轻量向量库 (Micro-Vector Index)"]
-            DB_VEC["端侧轻量 Mini-Embedding (64维)<br/>'讨厌烟味' -> [0.12, -0.45, ...]"]
-        end
-    end
-
-    Processor -->|高频车控与显式规则| TrackA
-    Processor -->|模糊偏好与常识语义| TrackB
-
-    TrackA --> Executor["端侧极速车控匹配 (耗时 < 2ms)"]
-    TrackB --> Reasoner["端侧 SLM 上下文注入 Prompt"]
-```
-
-### 4.3 端侧双轨数据存储格式与规范
-
-1. **结构化槽位库 (Deterministic Slot DB)**：
-   - 介质：车端 SQLiteCipher（基于 OpenSSL AES-256-CBC 单机文件加密）。
-   - 存储结构：
-     ```sql
-     CREATE TABLE local_user_memory (
-         profile_id VARCHAR(64) NOT NULL,    -- 绑定车机当前驾驶员/乘员 ID
-         memory_key VARCHAR(128) NOT NULL,   -- 如: "seat_heat_preference"
-         memory_val TEXT NOT NULL,          -- JSON: {"level": 2, "temp_trigger": 10}
-         confidence REAL DEFAULT 1.0,       -- 显式设定=1.0; 习惯统计=0.1~0.99
-         trigger_count INT DEFAULT 1,       -- 本地触发/确认次数
-         last_updated TIMESTAMP,
-         PRIMARY KEY (profile_id, memory_key)
-     );
-     ```
-2. **轻量语义向量库 (Micro-Vector Engine for Edge)**：
-   - 架构实现：纯 C++ 单头文件轻量 HNSW 索引（类似 sqlite-vec 裁剪版），**内存占用限制在 32MB 以内**。
-   - 维度控制：裁剪至 **64 维或 128 维微向量**，严禁使用 1536 维重型模型。
-   - 检索性能：Top-3 近邻余弦检索耗时 **≤ 8ms (CPU 单核即可完成)**。
-
-### 4.4 验收准则 (Acceptance Criteria - Gherkin)
-
+### 4.3 验收场景
 ```gherkin
-Scenario: 离线状态下端侧独立完成偏好学习与执行
-  Given 车辆处于完全无网的长隧道中 (Network: Disconnected)
-  And 主驾驶员发出指令："记住，我副驾上的朋友怕冷，以后她坐副驾自动把空调设为25度"
-  When 端侧 1.5B 模型在 180ms 内完成实体与意图抽取 [Target: Passenger, Action: AC_25C]
-  Then 端侧播报："已在本地为您记录，无网环境下也可生效。"
-  And 数据写入车端本地加密 SQLite 表，数据不发生任何公网传输
-  And 下一次副驾乘员落座时，本地系统直接从 SQLite 调取该规则并精准执行
+Scenario: 断网下保存并检索用户明确确认的记忆
+  Given Pixel 10 已启动应用且处于飞行模式
+  When 用户提出“记住我喜欢睡前听轻音乐”，查看待保存内容并确认
+  Then 该记忆保存在应用本地存储中
+  And 后续用户询问睡前偏好时，本地检索结果包含该记忆
+  And 应用未发起网络请求且未持久化原始音频
+
+Scenario: 删除记忆后不再检索到
+  Given 本地已保存一条用户偏好
+  When 用户在记忆管理界面删除该偏好
+  Then 本地存储中该条记录被删除
+  And 后续检索不再返回该偏好
+
+Scenario: 车控意图仅产生模拟日志
+  Given 应用处于断网状态
+  When 用户输入一个槽位完整且符合规则的空调调节意图
+  Then 输出一条包含 simulation=true 和 MOCK_ACCEPTED 的 JSON Lines 日志
+  And 不调用系统控制 API、网络服务或车辆接口
+
+Scenario: 危险或不完整的车控意图被模拟拒绝
+  Given 应用处于断网状态
+  When 用户输入危险车控意图或缺少必填槽位的车控意图
+  Then 输出一条包含 simulation=true 和 MOCK_REJECTED 的日志及拒绝原因
+  And 不执行任何外部动作
 ```
 
 ---
 
-## 5. 红队架构审查与极限 QA 边界自检 (Red-Team Audit)
+## 5. 红队边界自检
 
-> **审计视角**：座舱系统首席架构师 (System Architect) + 车规功能安全与 QA 总监 (Safety & QA Director)
+### 5.1 离线与模型不可用
+- **风险**：飞行模式下模型文件缺失、加载失败或内存不足，用户可能只看到无响应。
+- **要求**：启动前检查模型资源；失败时明确提示并保持会话关闭，不得隐式切换到云端。
+- **验收**：移除或损坏模型文件后启动，应用显示可理解的错误，未启动录音，也未发出网络请求。
 
-### 5.1 算力争抢与 NPU 资源饥饿 (Resource Starvation & Priority Inversion)
-* **红队发现 1：泊车/环视与语音 Agent 争抢端侧 NPU 引发语音爆音或卡死**
-  - **严重级**：**P0 (致命)**
-  - **真实场景**：用户在狭窄车位进行 360 APA 自动泊车，底盘与感知算法正以 30Hz 跑目标检测（占满 80% NPU）。此时驾驶员因紧张大喊：“立刻关掉所有车窗！”，语音助手的端侧 SLM 强行向 NPU 发起大算力推理请求，引发 NPU 显存交换调度抖动，导致车机显示帧率暴跌、车控延迟高达 3 秒甚至漏执行。
-  - **架构防线 (Architecture Defense)**：
-    1. **硬编码静态路由熔断 (Static Rule Fast-Path)**：
-       - 所有安全与舒适域高频车控（开关窗、开闭车门、空调调节）**严禁经过端侧 SLM 大模型**，必须通过 **0 算力依赖的 C++ 正则与静态槽位提取器** 处理，CPU 耗时 < 3ms，物理隔绝 NPU 负载。
-    2. **QoS 优先级调度锁定 (NPU Priority Pinning)**：
-       - 在底层 NPU 运行时（如 QNN / TensorRT）中，将自动驾驶感知设为 `PRIORITY_HIGH`，语音 SLM 设为 `PRIORITY_LOW`。当整车处于 R 挡或自动泊车激活时，语音助手自动降级为“纯轻量规则模式”，完全卸载 SLM。
-  - **QA 验收用例**：
-    - 台架运行 APA 自动泊车满载感知用例，同时向语音助手注入连续 50 条复杂指令，验证 APA 帧率不掉帧（≥ 29.5 FPS），车控指令延时严格小于 200ms。
+### 5.2 权限、音频路由与后台生命周期
+- **风险**：麦克风权限被撤销、耳机断开、系统回收后台进程时，录音或播放可能继续处于错误状态。
+- **要求**：每次启动会话检查权限和音频设备；异常时停止采集与播放并进入 PAUSED，恢复前需用户明确操作。
+- **验收**：会话中撤销权限或断开输出设备，系统停止音频并展示状态；重新授予权限后不得自动恢复录音。
 
----
+### 5.3 打断与并发请求
+- **风险**：连续插话可能造成两个生成任务同时运行、旧回复继续播放或响应顺序错乱。
+- **要求**：同一会话最多一个有效生成任务；新输入取消旧任务，旧任务产生的文本和音频不得继续输出。
+- **验收**：生成和播放期间连续插话，只有最后一条有效输入产生后续回复，且旧音频停止。
 
-### 5.2 闪存寿命与高频写穿 (eMMC Wear-Out & Write Amplification)
-* **红队发现 2：端侧本地频繁记录记忆导致车规级 eMMC 闪存提前报废**
-  - **严重级**：**P1 (重大硬件损耗)**
-  - **真实场景**：在端侧算力优先下，Agent 试图将每一次对话的转折、每一次微小的车速变化都作为短期情境记录到本地 SQLite 中。由于车规级 eMMC 闪存具有写入寿命（P/E Cycles），高频的单条小数据写入引发严重的写放大（Write Amplification），导致车机使用 2 年后车规芯片报废，车主启动黑屏。
-  - **架构防线 (Architecture Defense)**：
-    1. **内存 WAL 缓存与惰性落盘 (In-Memory WAL with Lazy Flush)**：
-       - 所有日常会话状态仅常驻在 Linux/QNX 系统的 `tmpfs` (RAM 内存盘) 中。
-       - 只有当用户发出显式指令（“记住这一条”）或统计算法聚类沉淀为高置信度偏好时，才进入落盘待写队列。
-    2. **整车熄火批量原子刷盘 (IGN_OFF Atomic Sync)**：
-       - 本地记忆写盘操作**仅在检测到车辆下电 (IGN_OFF) 的 5 秒安全延时窗口内统一触发一次批量写入**，全天行车过程中的单次行程落盘次数上限锁死为 ≤ 3 次。
-  - **QA 验收用例**：
-    - 挂载 I/O 监控工具（`iotop` / `blktrace`），执行持续 24 小时模拟行驶交互，要求语音服务对物理 eMMC 的总写盘量 **严格控制在 ≤ 5MB/天**。
+### 5.4 记忆数据状态与删除
+- **风险**：应用崩溃或删除失败可能让 UI 与持久化数据不一致；用户可能误以为已删除。
+- **要求**：写入、更新、删除操作有明确成功/失败结果；删除失败必须保留可见错误，不得显示成功。
+- **验收**：对保存、修改、删除分别验证正常路径与存储失败路径；重启后读取状态与操作结果一致。
 
----
+### 5.5 不可信输入与 Mock 安全边界
+- **风险**：模型生成内容或提示注入可能把模拟车控误导成外部动作。
+- **要求**：Mock 输出由应用内确定性路由和槽位校验生成；模型文本不得直接调用系统 API。日志中的每条动作标注 `simulation=true`。
+- **验收**：输入提示注入、危险动作和畸形槽位时，只能得到拒绝日志或普通文本回应，不能产生外部副作用。
 
-### 5.3 极端断电与内存死锁 (Cold Reboot & OOM Cascade)
-* **红队发现 3：端侧大模型加载时发生小电瓶断电，引发数据库死锁与重启循环**
-  - **严重级**：**P0 (导致系统瘫痪)**
-  - **真实场景**：端侧正在向加密 SQLite 写入新学到的偏好，此时车主断开蓄电池负极或低压小电瓶瞬间掉电。重新点火后，SQLite 的 journal/wal 日志损坏，语音启动服务在读取本地记忆时触发 SIGSEGV 崩溃，并被 Android/Linux 的 watchdog 反复拉起、反复崩溃，占满 CPU 导致整车座舱屏幕黑屏。
-  - **架构防线 (Architecture Defense)**：
-    1. **双备份原子置换 (A/B Double-Buffer Atomic Swap)**：
-       - 本地持久化文件采用双槽位设计（`user_memory_A.bin` 与 `user_memory_B.bin`）。
-       - 写入时始终写在非激活槽位，写入完成并计算 SHA-256 校验和正确后，才通过原子重命名指针完成切换。
-    2. **Watchdog 故障自愈熔断**：
-       - 若语音服务在 60 秒内连续 Crash 超过 2 次，自动触发“安全急救模式 (Safe Mode)”：**隔离并归档当前记忆数据库**，以出厂默认空白记忆体启动，优先恢复基础车控与语音导航功能，严禁整车瘫痪。
-  - **QA 验收用例**：
-    - 在自动化测试台架上，在端侧记忆写入与模型加载的高峰期，通过继电器模拟 500 次随机瞬时掉电（Cut Power），验证重启后语音服务 100% 能够自愈恢复正常工作。
+## 6. 本地验证与数据处理
 
----
+### 6.1 本地诊断数据
+- PoC 默认不上传埋点或诊断数据，不包含云端分析、灰度服务或远程开关。
+- 为性能验收可在设备本地记录时延、模型版本、设备温度和内存测量值；不得记录原始音频或默认保存完整对话文本。
+- 用户可清除会话和记忆数据；卸载应用后应用沙盒数据由 Android 管理删除。
 
-### 5.4 语音对抗与多音区声音劫持 (Acoustic Hijacking & Spoofing)
-* **红队发现 4：副驾或后排乘客通过刻意声波反射劫持主驾权限**
-  - **严重级**：**P1 (控制权越权)**
-  - **真实场景**：后排乘客通过将声音对着挡风玻璃反射，诱导麦克风阵列的波束成形 (Beamforming) 算法误判声源为主驾驶位置，从而执行“打开全车车窗”甚至影响整车安全的控制指令。
-  - **架构防线 (Architecture Defense)**：
-    1. **空间多点交叉校验 (Acoustic Multi-Zone Cross-Validation)**：
-       - 不能仅依靠单一麦克风的能量大小。端侧算法必须计算 4 个音区麦克风的时延差 (TDOA) 与相位差。若检测到主驾音区的能量与后排音区能量相差小于 3dB，判定为“反射杂散声波”，强行要求声纹二次核验。
-    2. **DMS 视觉唇动多模态辅助 (Lip-Motion Fusion)**：
-       - 当车速 > 80km/h 且涉及关键权限车控时，端侧视觉感知与语音进行轻量级时间戳对齐：如果主驾音区有声，但 DMS 摄像头显示驾驶员并未动嘴，直接丢弃该指令并记录安全防劫持日志。
-
----
-
-## 6. 数据埋点与灰度部署策略 (Telemetry & Rollout)
-
-### 6.1 端侧纯本地埋点脱敏规范
-- **原则**：所有上报数据**严禁包含原始文本、严禁包含原始音频**。
-- **埋点格式**：仅上报指标计数与延时性能，格式如下：
-  ```json
-  {
-    "event": "edge_inference_perf",
-    "timestamp": 1729839120,
-    "metrics": {
-      "asr_latency_ms": 78,
-      "nlp_router_latency_ms": 4,
-      "slm_ttft_ms": 142,
-      "tts_latency_ms": 95,
-      "total_latency_ms": 237,
-      "npu_peak_mem_mb": 1820,
-      "is_offline": true,
-      "memory_hit_type": "local_sqlite_deterministic"
-    }
-  }
-  ```
-
-### 6.2 灰度验证与质量门禁 (Canary Quality Gates)
-1. **Alpha 阶段 (实验室与台架测试 - 100% 算力压力验证)**：
-   - 在高通 8295 / Orin-X 样件台架上，施加 80% CPU + 70% NPU 背景负载，连续 72 小时发送 50,000 条车控与闲聊指令，**要求零 Crash、零 OOM、端到端 P99 延迟 ≤ 350ms**。
-2. **Beta 阶段 (50 台内部工程车实车路测 - 极端声学环境验证)**：
-   - 重点在长隧道（无网）、暴雨天气（高胎噪高风噪）、车内 85dB 大音量音乐播放等极端环境下进行打断与车控测试。
-3. **SOP 交付门禁**：
-   - 必须通过由独立红队工程师签发的《车规端侧算力鲁棒性与功能安全签署报告》。
+### 6.2 Pixel 10 验证门禁
+1. **功能门禁**：完成第 4.3 节全部场景，包括断网、记忆增删改查、Mock 接受与拒绝。
+2. **性能基线**：在目标 Pixel 10 实机记录至少 100 轮语音响应与打断数据，报告 P50/P95、模型版本、环境温度和电量变化；只有实测满足第 2.2 节目标才标记通过。
+3. **稳定性门禁**：连续会话 20 分钟，记录崩溃、系统进程回收、内存与电池温度；结果作为 PoC 基线，不外推为车规或长期量产结论。
+4. **隐私门禁**：飞行模式和联网状态分别观察应用网络行为；确认无云端推理、对话上传或后台遥测。
+5. 当前交付范围为 Pixel 10 本机 PoC，不包含工程车路测、车规认证、Canary 发布或量产交付门禁。
