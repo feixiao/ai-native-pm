@@ -27,6 +27,7 @@
 | **04. 方法论框架速查** | [04-frameworks.md](./01-pm-handbook/04-frameworks.md) | 像查设计模式一样查产品框架：**JTBD、5-Whys、RICE 优先级评分、Kano 模型、北极星指标、AARRR 海盗模型、漏斗与同期群分析** |
 | **05. 术语表（工程师版）** | [05-glossary.md](./01-pm-handbook/05-glossary.md) | **40+ 产品与商业核心术语**，全部使用工程师熟悉的分布式系统、网络协议与研发概念进行精准类比映射 |
 | **06. 产品工作的边界** | [06-product-boundaries.md](./01-pm-handbook/06-product-boundaries.md) | **产品工作的边界与权责划分**：以端侧 AI 语音伴侣与 Mock 车控为例，拆解 Why & What 禁飞区、范围防护、RACI 矩阵，以及全 AI 化出 PRD（含红队自检）与可交互原型（内置状态切换器）的边界守则 |
+| **07. 独立开发产品手册** | [07-independent-product.md](./01-pm-handbook/07-independent-product.md) | **独立开发者产品实战手册**：从个人约束选题、问题验证与证据分级，到薄切片 MVP、一人周循环、小范围发布、指标分层、红队自检与 30 天起步计划 |
 
 ---
 

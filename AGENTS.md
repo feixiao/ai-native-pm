@@ -60,7 +60,8 @@ pm/
 │   ├── 03-workflow.md        # 7 步需求生命周期与跨角色协同
 │   ├── 04-frameworks.md      # JTBD, 5-Whys, RICE, Kano, AARRR 速查
 │   ├── 05-glossary.md        # 40+ 产品术语（全技术概念类比版）
-│   └── 06-product-boundaries.md # 权责边界划分与 RACI 矩阵
+│   ├── 06-product-boundaries.md # 权责边界划分与 RACI 矩阵
+│   └── 07-independent-product.md # 独立开发者产品实战手册（选题/验证/MVP/发布/经营）
 ├── 02-ai-skills/             # 🤖 AI 全链路提效指南与工业级 Prompt 模板
 │   ├── 01-market-research.md # 市场扫描、竞品逆向与差评挖掘
 │   ├── 02-user-research.md   # 《The Mom Test》非引导访谈与痛点聚类
