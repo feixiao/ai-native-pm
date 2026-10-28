@@ -11,7 +11,7 @@
 本仓库不做空洞的理论堆砌，而是提供三套可直接用于日常工作的实用系统：
 1. **📘 第一部分：产品经理入门手册 (`01-pm-handbook/`)** —— 帮你完成从 `How to build` 到 `Why & What to build` 的底层心智切换，掌握 PM 核心工作流、方法论框架与行业语言。
 2. **🤖 第二部分：AI 赋能产品全流程技能指南 (`02-ai-skills/`)** —— 覆盖从市场调研、用户访谈、PRD 撰写与红队挑刺、15 分钟生成可交互原型，到自助 SQL/Python 数据分析的全套 SOP 与即插即用提示词模板。
-3. **⚡ 第三部分：内置可挂载的 AI Agent Skills (`.agents/skills/`)** —— 遵循 Antigravity / Claude Code 标准规范封装的 5 个自动化产品经理 Agent 技能包，在当前工作区对话时可自动激活执行。
+3. **⚡ 第三部分：内置可挂载的 AI Agent Skills (`.agents/skills/` & `.cursor/skills/`)** —— 遵循 Antigravity / Claude Code / Cursor 标准规范封装的 6 个自动化产品经理 Agent 技能包，在当前工作区对话时可自动激活执行。
 
 ---
 
@@ -43,18 +43,31 @@
 
 ---
 
-### ⚡ `.agents/skills/`：可直接触发的 AI Agent 技能插件
+### ⚡ `.agents/skills/` & `.cursor/skills/`：可直接触发的 AI Agent 技能插件
 
-本仓库已在 `.agents/skills/` 下配置好 5 个标准 Agent 技能包。当你在本仓库目录下使用 Antigravity CLI / IDE 时，直接用自然语言下达产品任务，Agent 会自动按专业 SOP 执行：
+本仓库已在 `.agents/skills/`（并软链接至 `.cursor/skills/`）配置好 6 个工业级标准 Agent 技能包，天然跨平台兼容 **Cursor**、**Claude Code** 与 **Antigravity / Codex** 等支持 `SKILL.md` 规范的 Agent 环境。无需手动配置提示词，直接用自然语言即可唤醒对应 SOP：
 
-| Skill 名称 | 配置文件路径 | 如何一句话触发使用 |
-| :--- | :--- | :--- |
-| **`pm-prd-copilot`** | [.agents/skills/pm-prd-copilot/SKILL.md](./.agents/skills/pm-prd-copilot/SKILL.md) | *“帮我写一份【实时音视频弱网自动降级】的 PRD，并做红队架构与 QA 边界审查”* |
-| **`pm-market-competitor`** | [.agents/skills/pm-market-competitor/SKILL.md](./.agents/skills/pm-market-competitor/SKILL.md) | *“联网调研【某竞品A与竞品B】的定价策略、核心架构边界和社区用户差评痛点”* |
-| **`pm-user-insight`** | [.agents/skills/pm-user-insight/SKILL.md](./.agents/skills/pm-user-insight/SKILL.md) | *“设计一份针对【海外直播运维】的非引导性用户访谈提纲”* 或 *“用 RICE 模型帮我给这几个需求排优先级”* |
-| **`pm-prototype-builder`** | [.agents/skills/pm-prototype-builder/SKILL.md](./.agents/skills/pm-prototype-builder/SKILL.md) | *“根据刚才的 PRD，帮我生成一个带【PM 多状态调试切换栏】的单文件可交互 HTML 原型”* |
-| **`pm-data-analyst`** | [.agents/skills/pm-data-analyst/SKILL.md](./.agents/skills/pm-data-analyst/SKILL.md) | *“帮我检验这组 A/B 测试数据是否显著”* 或 *“排查为什么今天首帧接通率下跌了 15%”* |
+| Skill 名称 | 解决的核心场景 | 对应常见 PM 自定义技能 | 如何一句话触发使用 |
+| :--- | :--- | :--- | :--- |
+| **`pm-prd-copilot`** | 5-Whys 需求校验、状态机推演与**架构/QA 红队边界挑刺** | `prd-generator` | *“帮我写一份【实时音视频弱网自动降级】的 PRD，并做红队架构与 QA 边界审查”* |
+| **`pm-market-competitor`** | 竞品逆向拆解、TAM/SAM/SOM 测算、定价策略与真实差评挖掘 | `competitor-teardown` | *“联网调研【某竞品A与竞品B】的商业模式、核心工作流、定价策略和差评痛点”* |
+| **`pm-user-insight`** | 《The Mom Test》非引导访谈提纲、原声痛点聚类、RICE/Kano 优先级排序 | `user-research-synthesizer` | *“设计一份针对【海外直播运维】的非引导性用户访谈提纲”* 或 *“用 RICE 模型帮我给这几个需求排优先级”* |
+| **`pm-prototype-builder`** | 15 分钟生成单文件可交互 HTML 原型，内置 **PM 状态调试切换栏** | `vibe-prototyping` | *“根据刚才的 PRD，帮我生成一个带【PM 多状态调试切换栏】的单文件可交互 HTML 原型”* |
+| **`pm-data-analyst`** | 指标体系设计（北极星/护栏）、A/B 实验显著性检验、留存/漏斗归因分析 | `csv-data-summarizer` | *“帮我检验这组 A/B 测试数据是否显著”* 或 *“排查为什么今天首帧接通率下跌了 15%”* |
+| **`pm-report-polisher`** | 成果导向高管周报/月报、STAR+OKR 晋升述职、双视角 Release Notes 与需求拒绝话术 | `pm-report-polisher` | *“根据这几条零散的工作日志，帮我生成一份成果导向的高管周报”* 或 *“用 STAR 法则帮我提炼本年度晋升述职报告”* |
 
+#### 🌐 推荐联动的通用开源生态技能 (Eco-Skills)
+在日常工作流中，本仓库的 6 大垂直 PM 技能可与以下通用生态技能协同组合：
+- **`brainstorming`**（头脑风暴与苏格拉底追问）：在调用 `pm-prd-copilot` 动笔前，让 AI 扮演挑剔总监连续反问，强制收敛业务闭环与边界。
+- **`ui-ux-pro-max`**（现代设计规范与组件库）：与 `pm-prototype-builder` 结合，确保生成的 Web 原型具备现代主流 SaaS / Mobile 审美与专业配色。
+- **`pptx`**（演示文稿生成）：配合 `pm-report-polisher`，将立项方案、季度规划或述职内容直接转换为标准的演示文稿交付物。
+- **`docx` / `xlsx` / `pdf`**（文档与表格处理）：自动读取客户原声工单表、导出指标计算结果，或一键生成排版规范的交付文档。
+
+#### 🔌 跨环境多 IDE 即插即用说明
+为避免不同工具对配置目录的差异，项目已做多端兼容映射：
+- **Cursor**：通过根目录 `.cursor/skills/` 软链接无缝生效。
+- **Claude Code / Codex / Antigravity**：通过根目录 `.agents/skills/` 原生加载生效。
+- **个人全局复用**：若需在其他本地项目中全局使用，可直接将对应技能软链接或拷贝至 `~/.cursor/skills/` 或 `~/.agents/skills/`。
 ---
 
 ### 📂 `docs/`：工业级实战研究与产品需求文档 (PRD & Feasibility)
@@ -76,5 +89,7 @@
    👉 调用 `pm-market-competitor` 或参考 [01-market-research.md](./02-ai-skills/01-market-research.md)，1 小时拿出有深度的竞品拆解与差异化切口。
 3. **准备动笔写 PRD 和画原型参加需求评审**：
    👉 调用 `pm-prd-copilot` 生成标准 PRD 并执行**「红队边界自检」**；随后调用 `pm-prototype-builder` 生成一个带状态切换栏的交互 HTML 原型带去评审会现场演示。
-4. **功能上线后验证效果与向老板汇报**：
-   👉 调用 `pm-data-analyst` 跑出漏斗、留存与 A/B 实验结论，再用 [06-collaboration.md](./02-ai-skills/06-collaboration.md) 生成结构化的成果周报与复盘报告。
+4. **功能上线后验证效果**：
+   👉 调用 `pm-data-analyst` 跑出漏斗、留存与 A/B 实验结论。
+5. **向上汇报与跨团队协同推进**：
+   👉 调用 `pm-report-polisher` 提炼成果周报、版本发布公告 (Release Notes) 或 STAR 述职报告，并在面对业务方插队时生成高情商拒绝话术。
