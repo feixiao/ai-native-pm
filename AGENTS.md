@@ -75,7 +75,8 @@ pm/
 │   ├── pm-user-insight/      # 非引导访谈设计与 RICE/Kano 优先级排序
 │   ├── pm-prototype-builder/ # 生成内置 PM 调试状态栏的单文件交互原型
 │   ├── pm-data-analyst/      # 指标体系、SQL 统计与 A/B 显著性分析
-│   └── pm-report-polisher/   # 成果导向周报/月报/述职与需求拒绝话术
+│   ├── pm-report-polisher/   # 成果导向周报/月报/述职与需求拒绝话术
+│   └── pm-solo-builder/      # 独立开发者全流程闭环：约束过滤/证据分级/一页契约/单问题周冲刺/红队自检
 ├── .cursor/                  # 🔌 Cursor 适配层（软链接到 .agents/skills）
 ├── docs/                     # 📂 交付级工业实战案例
 │   ├── prd/                  # 标准 PRD（AI 语音助手 MVP、SkillStore MVP 等）
@@ -90,7 +91,7 @@ pm/
 
 ## 四、 内置 Agent 技能库分工与触发 (Skills Ecosystem)
 
-Agent 在处理具体任务时，应主动调用或对齐以下 6 大内置垂直技能（位于 `.agents/skills/`）：
+Agent 在处理具体任务时，应主动调用或对齐以下 7 大内置垂直技能（位于 `.agents/skills/`）：
 
 | 技能名称 | 核心能力与适用场景 | 关键约束与输出标准 |
 | :--- | :--- | :--- |
@@ -100,6 +101,7 @@ Agent 在处理具体任务时，应主动调用或对齐以下 6 大内置垂�
 | **`pm-prototype-builder`** | 快速构建单文件可点击 Web 原型（Tailwind CDN + Vanilla/Alpine.js）。 | **强制内置顶部 `🛠️ PM 评审状态切换器`**（正常/空状态/加载中/弱网异常），可离线双击运行。 |
 | **`pm-data-analyst`** | 指标分层（北极星+护栏）、漏斗/留存生产级 SQL、A/B 显著性检验与指标异动归因。 | 指标设计必须包含反向护栏指标；SQL 考虑时区、去重与时间窗顺序；异常归因输出 4 层漏斗。 |
 | **`pm-report-polisher`** | 成果导向高管周报/月报、STAR+OKR 述职提炼、双视角 Release Notes 与需求拒绝话术。 | 拒绝流水账；TL;DR 结论前置；量化数据与未实测标注；拒绝伪需求遵循“共情-大局-绕行-门禁”。 |
+| **`pm-solo-builder`** | 独立开发者全流程闭环：个人约束过滤、事实证据评级 (Level 0~4)、一页 MVP 契约、单人周冲刺与 11 维红队压力测试。 | 坚守薄切片原则，严禁过早写重度架构代码；强制输出明确的继续/停止门禁与非目标清单。 |
 
 ### 生态技能联动建议 (Eco-Skills Collaboration)
 - 编写方案前：联动 `brainstorming` 进行苏格拉底追问与边界收敛。
