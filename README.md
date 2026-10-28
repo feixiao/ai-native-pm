@@ -66,7 +66,7 @@
 #### 🔌 跨环境多 IDE 即插即用说明
 为避免不同工具对配置目录的差异，项目已做多端兼容映射：
 - **Cursor**：通过根目录 `.cursor/skills/` 软链接无缝生效。
-- **Claude Code / Codex / Antigravity**：通过根目录 `.agents/skills/` 原生加载生效。
+- **Claude Code / Codex / Antigravity**：通过根目录 `.agents/skills/` 原生加载生效，并严格遵循根目录下的 [AGENTS.md](./AGENTS.md) 智能体准则与禁飞区红线。
 - **个人全局复用**：若需在其他本地项目中全局使用，可直接将对应技能软链接或拷贝至 `~/.cursor/skills/` 或 `~/.agents/skills/`。
 ---
 
