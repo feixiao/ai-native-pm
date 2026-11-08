@@ -31,7 +31,10 @@ Every prototype you generate **MUST** include a sleek, dark-themed sticky top ba
 - Modals, drawers, tabs, step wizards, and filter buttons must actually work when clicked.
 - Include subtle inline annotations or tooltips (`💡 PM 设计说明`) explaining key product rules or state transitions for engineers reviewing the page.
 
----
+### 4. 独立开发者极窄切片与自发酵分发原型 (Solo Builder Thin Slice & Distribution Hook)
+若用户为独立开发者或在执行 Solo MVP，原型定位直接演进为 **Slice 1 (骨架与状态机工程底座)**：
+- 零临时废代码：结构可直接复用为桌面挂件 (Wails) 或轻量 Web 的首个生产切片；
+- 原型必须内置 **「自发酵分发抓手 (Built-in Distribution Hook)」** 的模拟交互（如一键生成带水印的金句卡片、社区预设导入导出弹窗），提前验证传播机制。
 
 ## Execution Steps
 
