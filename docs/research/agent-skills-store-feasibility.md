@@ -44,7 +44,7 @@
 
 #### 1.3.1 为什么第一步必须上“已经有的、免费的、优质的 Skill”？
 1. **跨越供给冷启动鸿沟，零研发时延上线**：
-   - 开源社区与本仓库已经沉淀了大量经过实战检验的顶级免费技能（例如：本仓库自带的 5 款工业级 PM 技能 `pm-prd-copilot`、`pm-data-analyst`、`pm-market-competitor`、`pm-prototype-builder`、`pm-user-insight`，以及 Anthropic 官方 `anthropics/skills`、Cursor 社区高赞规则等）；
+   - 开源社区与本仓库已经沉淀了大量经过实战检验的顶级免费技能（例如：本仓库自带的 7 款工业级 PM 技能 `pm-prd-copilot`、`pm-prototype-builder`、`pm-solo-builder`、`pm-user-insight`、`pm-market-competitor`、`pm-data-analyst`、`pm-report-polisher`，以及 Anthropic 官方 `anthropics/skills`、Cursor 社区高赞规则等）；
    - 这些技能本身质量极高，但散落在各处 GitHub 仓库中。由站长统一遴选、做沙盒安全认证并标准化打包上架，第 1 天就能拿出极具说服力的全明星免费阵容。
 2. **消除早期用户的“信任摩擦”，引爆自然流量飞轮**：
    - 用户对一个新平台最大的防御心理不是“贵”，而是“我不知道这东西到底好不好用”。第一步全部开放免费优质 Skill（免登录、免绑卡一键获取），能把“访问 $\to$ 安装”转化率拉升 3~5 倍，快速积累首批高频活跃极客用户（WAU）。

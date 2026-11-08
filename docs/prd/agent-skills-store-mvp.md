@@ -785,7 +785,7 @@ ON CONFLICT (id) DO UPDATE SET
 
 ### 3.18 第一步免费优质 Skill 零摩擦上手与熟悉成本压缩规范 (Zero-Friction Onboarding & <30s TTFV Spec)
 
-为兑现**“第一步先上线已有的免费优质 Skill，必须最大程度减少用户熟悉时间成本”**的产品铁律，针对存量优质免费技能（如本仓库已沉淀的 5 款工业级 PM 技能 `pm-prd-copilot`、`pm-data-analyst`、`pm-market-competitor`、`pm-prototype-builder`、`pm-user-insight` 及开源社区严选规则），实施四大降本规范：
+为兑现**“第一步先上线已有的免费优质 Skill，必须最大程度减少用户熟悉时间成本”**的产品铁律，针对存量优质免费技能（如本仓库已沉淀的 7 款工业级 PM 技能 `pm-prd-copilot`、`pm-prototype-builder`、`pm-solo-builder`、`pm-user-insight`、`pm-market-competitor`、`pm-data-analyst`、`pm-report-polisher` 及开源社区严选规则），实施四大降本规范：
 
 #### 3.18.1 `manifest.json` 强制内嵌「30秒上手元数据结构 (`quickstart`)」
 严禁上架只有长篇说明却不知道怎么调用的“哑巴技能”。所有上架包必须在 `manifest.json` 中提供结构化的上手引导字段：
