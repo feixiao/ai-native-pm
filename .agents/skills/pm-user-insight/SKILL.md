@@ -52,3 +52,24 @@ When the user wants to prioritize a list of candidate features or requirements:
 2. **RICE Quantitative Ranking Table**:
    - Calculate $\text{RICE} = \frac{\text{Reach} \times \text{Impact} \times \text{Confidence}}{\text{Effort (Man-Weeks)}}$.
    - Sort the backlog from highest RICE score to lowest and recommend a clean **MVP Cut-line (V1.0 vs. V1.1)**.
+
+---
+
+## Mode D: 独立开发者事实证据定级与代偿行为审查 (Solo Builder Evidence Gate: Level 0~4)
+
+当独立开发者探索新产品、新交互形态或轻量工具时触发：
+
+1. **剥离假阳性与假设性赞美**：
+   - 过滤“这功能太棒了”、“如果做出来我一定用/买”等老妈式的客套赞美，严禁作为立项依据。
+2. **提取过去事实证据与代偿行为 (Compensatory Behaviors)**：
+   - 用户过去是否曾主动寻找过替代工具或在用极度笨拙的拼装方案代偿（如自言自语排查逻辑、频繁切屏复制粘贴、手工维护复杂的 Excel）？
+   - 确认代偿行为的发生频次与中断代价（时间损失、金钱消耗或心流挫败感）。
+3. **输出《证据定级卡 (Level 0~4)》**：
+   - **Level 0 (自嗨猜想)**：开发者主观假设，无外部真实用户验证。**→ 严禁写代码，退回做访谈。**
+   - **Level 1 (礼貌认同)**：口头表示支持，但过去未主动寻找替代方案。**→ 严禁立项，继续深挖。**
+   - **Level 2 (痛苦事实/明确代偿)**：存在明确的过去损失经历或正在忍受笨拙代偿。**→ 准许进入轻量验证或 <=4h 技术探针 (Spike Gate)。**
+   - **Level 3 (行为承诺/押金)**：交付真实测试数据、支付押金或签署试用意向。**→ 准许签立一页 MVP 契约。**
+   - **Level 4 (商业验证)**：次周自发高频回访、重复付费或自发口碑转介绍。**→ 准许规模化深耕。**
+4. **下一步行动门禁建议**：
+   - 若未达 Level 2：强制停止编码并给出 2 个继续挖掘代偿事实的建议；
+   - 若达到 Level 2+：针对涉及端侧 AI、实时音频或硬件底层等高危技术的项目，建议先执行 **`/solo spike` (<=4h 技术探针门禁)**；纯 Web/轻量 SaaS 则建议执行 **`/solo contract` (一页 MVP 契约)**。

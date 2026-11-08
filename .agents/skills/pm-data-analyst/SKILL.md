@@ -44,3 +44,13 @@ When a core metric suddenly drops:
 2. **Layer 2 (External/Seasonality)**: Holiday, regional ISP outage, or marketing campaign pause?
 3. **Layer 3 (Dimension Slicing)**: Slice by `Platform/App Version`, `Channel/New vs. Old Users`, `Region/ISP`, and `Funnel Sub-step` to isolate whether the drop is in the numerator or denominator.
 4. **Layer 4 (Executive Brief)**: Output a concise status update template for stakeholders.
+
+### 6. 独立开发者单客经济账核算与周决策门 (Solo Unit Economics & Decision Gate)
+当为独立开发者分析产品与财务数据时触发：
+1. **精算单客边际利润 (Unit Economics)**：
+   - 公式：$\text{单客净利} = \text{用户付费} - (\text{API Token 成本} + \text{服务器算力} + \text{客服支持耗时} \times \text{个人时薪基准})$；
+   - 揭示是否陷入“表面有收入、实则倒贴个人寿命”的支持黑洞；
+2. **两周止损门禁审计 (14-Day Drop-dead Audit)**：
+   - 审查完成核心价值闭环的独立去重用户数是否达到门槛；
+3. **五选一终审裁决**：
+   - 输出 [🟢 继续 / 🟡 缩小 / 🟠 转向 / ⏸️ 暂停 / 🔴 停止] 明确裁决，并锁定下周唯一允许做的事。

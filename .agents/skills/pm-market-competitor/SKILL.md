@@ -41,3 +41,10 @@ Conclude every report with concrete strategic recommendations:
 1. **Wedge Feature (破局切入点)**: What 10x better experience can we build as our initial wedge?
 2. **Pricing Counter-Strategy**: How can we structure pricing to attack the incumbent's weakest spot?
 3. **Top 3 Leap-of-Faith Assumptions**: What must we validate with real customers in the next 7 days before committing engineering resources?
+
+### Step 5: 独立开发者微利基扫描与机会卡过滤 (Solo Builder Micro-Niche Scan)
+若用户为独立开发者或在评估微 SaaS / 个人副业方向：
+1. **从百亿大盘切换为“微利基 (Micro-Niche)”**：避开大厂射程，不测算虚荣 TAM，聚焦测算“100 个铁粉 × $20/月”能否覆盖个人生活与算力成本；
+2. **专打大厂盲区**：寻找大厂因组织成本过高而战略放弃的垂直场景；
+3. **锁定既有寄生社区**：明确首批 20 个种子用户来自哪个已存在的开源生态 (GitHub / Reddit / Discord)；
+4. **直接输出《机会卡》与 Phase 1 需求商业红队审查报告**（联动 `pm-solo-builder` 的 Mode 1 约束过滤）。
