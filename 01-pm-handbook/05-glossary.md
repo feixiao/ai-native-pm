@@ -66,3 +66,18 @@
 | **Feature Flag** | 特性开关 | 代码已合入主干部署上线，但通过远端配置动态控制对哪些用户开放 | 线上动态配置中心（etcd / Apollo）控制的灰度路由开关 |
 | **A/B Testing** | A/B 对照实验 | 将同质流量随机分流到旧版（对照组）与新版（实验组），用统计学检验改动是否真的有效 | 生产环境双版本金丝雀对比测试（Canary Benchmarking） |
 | **UAT** | 用户验收测试 (User Acceptance Testing) | 上线前由 PM 或真实业务代表从端到端体验角度进行的最终走查 | 生产发布前的端到端集成冒烟测试（E2E Smoke Test） |
+
+---
+
+## 五、 独立开发者与 AI 原生特有术语类 (Solo Builder & AI-Native Terms)
+
+| 英文缩写 / 术语 | 中文名称 | 一句话产品释义 | 工程师技术概念类比 |
+| :--- | :--- | :--- | :--- |
+| **Thin Slice** | 纵向极致薄切片 | 贯通输入到价值产出的纵向最小闭环，拒绝先搭用户中心等横向积木 | 垂直贯通的端到端单探针 (End-to-End Ping / 最小可通电闭环) |
+| **Drop-dead Date** | 两周止损死线 | 立项时写死的 14 天退出门禁，无客观证据立即冷血归档，绝不沉没工时 | 带硬超时的看门狗定时器 (Watchdog Timer / Context Deadline) |
+| **Spike Gate** | 技术探针门禁 | 针对端侧 AI、音频或硬件等高危断点执行的 <= 4 小时孤立验证，探针不通不立契约 | 架构选型前用 <= 50 行代码写的最小可行探针 (Spike Proof-of-Concept) |
+| **Micro-Spec** | 阶梯式切片任务规格 | 将复杂需求拆为 Slice 1->2->3 增量下发给 Coding Agent，防范大提示词幻觉崩溃 | 分布式流水线的分步增量提交 (Staged Atomic Commits / Progressive Pipeline) |
+| **Compensatory Behavior** | 代偿行为 / 脆弱习惯 | 用户在缺乏成熟工具时，自发用极度笨拙的操作（频繁切屏/手工复制）拼装代偿 | 线上故障时运维临时手搓的应急兜底脚本 (Ugly Bash Workaround) |
+| **Distribution Hook** | 内嵌自发酵分发抓手 | 在产品核心路径中内嵌的零成本自然传播机制（如带水印金句卡片、预设生态） | 协议层自带的节点发现与广播机制 (Gossip Protocol / Self-Discoverable Header) |
+| **BYOK** | 自备密钥 (Bring Your Own Key) | 用户自备第三方 LLM/云服务 API Key，独立开发者个人零垫付 API 账单 | 客户端自承载凭证直连第三方网关 (Client-Side Credential Delegation) |
+| **Two-Phase Red-Team** | 双阶段解耦红队测试 | Phase 1 需求商业排雷前置 + Phase 2 架构支持把关，消除方案后置大返工 | 静态语法与安全检查 (Lint/SAST) 与准入集成压测 (E2E Benchmark) 的分阶段流水线门禁 |
