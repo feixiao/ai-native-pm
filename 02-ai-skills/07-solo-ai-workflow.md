@@ -143,12 +143,7 @@ PM 文档必须降维编译为：**包含确定性技术栈约束、端侧限流
 ⚠️ **防翻车铁律：严禁一次性大包生成（Anti-Monolithic Prompting）**！  
 将 MVP 强制拆解为 3~4 个可独立编译、单步提交、增量验收的阶梯切片（Slice 1 -> Slice 2 -> Slice 3）。每一步只喂给 Agent 对应切片规格，通过编译与验证后再递进下发下一张切片。
 
-### 3.2 实战 Prompt 4：Coding Agent 阶梯式切片任务规格生成器
-```markdown
-你现在是我的【AI 规格编译师】。请将我的《一页 MVP 契约》转译为可直接丢给 Claude Code / Cursor 的《Coding Agent 阶梯式切片任务规格》。
-必须严格遵守我的开发者长板栈（Go / Modern C++20 / Python / Android Kotlin+NDK / React+TS），严禁自由发挥或引入 Node.js/Vue 等违禁栈。
-必须将工程拆分为 3 个独立的阶梯切片（切片 1 搭建骨架与 UI 状态机，切片 2 接入单点信号流，切片 3 串联业务闭环与全双工打断），严禁一次性堆砌。
-```
+### 3.2 开发者技术基因与场景技术栈围栏
 
 > **开发者技术基因 (Profile)**：12 年工程深耕（2015-2026），底层技术主线为 **Go（go-zero / CloudWeGo Hertz & Kitex / 高并发微服务与分布式存储，精通 Redis/Codis、NSQ/RabbitMQ 消息队列与 Docker 容器化底座）**、**Modern C++20/C（FFmpeg/WebRTC/音视频管线/DSP/Linux 底层）**、**Python（AI Agent 架构/确定性 Harness 机制/LiteLLM/MCP/10x 效能）**、**Android 端侧与车载 (Kotlin / NDK C++ / Oboe / HardwareBuffer / AAOS)**、**前端 React + TypeScript (Vite + Tailwind CSS)** 与 **Go+Wails 跨平台桌面端**。
 
@@ -164,60 +159,59 @@ PM 文档必须降维编译为：**包含确定性技术栈约束、端侧限流
 
 ---
 
-### 3.3 实战 Prompt 4：将契约转译为 Coding Agent 任务规格
+### 3.3 实战 Prompt 4：Coding Agent 阶梯式切片任务规格生成器
 ```markdown
 你现在是我的【AI 规格编译师 (Spec Compiler)】。
-请将以下《一页 MVP 契约》降维编译为一份直接投喂给 Claude Code / Cursor Composer / Aider 的《Coding Agent 任务规格》。
-要求零歧义、杜绝任何过度工程，让 Coding Agent 能在半天到一天内单机手搓出可运行代码。
+请将以下《一页 MVP 契约》降维编译为一份直接投喂给 Claude Code / Cursor Composer / Aider 的《Coding Agent 阶梯式切片任务规格》。
+严禁一次性大包生成（Anti-Monolithic Prompting），必须将工程拆分为 3 个独立的阶梯切片（切片 1 骨架与 UI 状态机，切片 2 单点信号探针，切片 3 全双工业务闭环）。
 
 【开发者技术栈约束】（必须完全遵守，严禁自由发挥）：
-- 开发者背景基准：Frank (@feixiao) 技术栈
-  - Go: go-zero / CloudWeGo Hertz & Kitex / net/http
-  - C++: Modern C++20 (FFmpeg/WebRTC/DSP)
-  - Python: AI Agent Harness / LiteLLM / MCP
-  - Android: Kotlin (Jetpack Compose) + NDK C++20 + Oboe + HardwareBuffer + AAOS 14
-  - 前端: React + TypeScript (Vite + Tailwind CSS)
-- 目标产品形态：[场景 A: 轻量 Web / 场景 B: AI Agent / 场景 C: 音视频RTC / 场景 D: Android端侧车载 / 场景 E: Linux与机器人]
-- 选定主力栈：[例如：Go 1.22+ (go-zero 或 CloudWeGo Hertz) + SQLite WAL + 前端 Vite React + TS]
-- 严禁技术栈清单：严禁引入 Node.js 后端、严禁 Java/Spring、严禁 Vue/Angular；轻量切片避免非必要重依赖，复杂项目支持引入 Redis、NSQ/RabbitMQ 与 Docker。
+- 开发者背景基准：Frank (@feixiao) 技术栈 [Go / C++20 / Python / Android Kotlin+NDK / React+TS]
+- 选定场景与主力栈：[例如：场景 C 桌面伴侣，Go + Wails + React TS + sherpa-onnx + Qwen2.5-0.5B]
+- 严禁技术栈清单：严禁引入 Node.js 后端、严禁 Java/Spring、严禁 Vue/Angular。
 
 输入的一页 MVP 契约：
 """
 [粘贴上一步生成的 MVP 契约内容]
 """
 
-请严格按以下结构输出提示词规格（可直接复制给 Cursor/Claude Code）：
+请严格按以下结构输出阶梯式任务规格（可分步喂给 Cursor/Claude Code）：
 
-# Coding Agent 任务规格: [模块名] 垂直薄切片
+# Coding Agent 任务规格: [模块名] MVP 阶梯式切片
 
-## 1. 角色与目标
-你是一个高水平实战派工程师。你的唯一目标是用最少、最清晰的代码实现以下核心闭环，严禁任何过度设计。
-所有代码必须严格按照指定技术栈编写，严禁擅自引入未批准的第三方重型依赖。
-
-## 2. 约束技术栈与工程边界 (Tech Stack Guardrails)
-- **指定技术栈**:
-  - 后端/Native: [如：Go 1.22+ (go-zero / CloudWeGo Hertz / net/http) + SQLite (WAL) / Android Kotlin + NDK C++20]
-  - 前端/UI: [如：React 18/19 + TypeScript + Vite + Tailwind CSS / Jetpack Compose]
-- **严禁引入技术栈 (Negative List)**:
-  - ❌ 严禁引入 Node.js / Express / NestJS 后端（服务端统一采用 Go 或 Python）；
-  - ❌ 严禁引入 Java / Spring 全家桶、Vue、Angular；
-  - ❌ 严禁在 Android 端进行非必要 JNI 大内存深拷贝，音视频核心严禁纯 JS 软解；
-  - ⚠️ 依赖渐进原则：极窄首切片优先单机零依赖；在需要高并发缓存、异步任务队列与多服务联调的**复杂项目**中，**完全支持并推荐引入 Redis、NSQ / RabbitMQ 与 Docker Compose**。
+## 1. 总体目标与技术栈围栏 (Tech Stack Guardrails)
+- **指定技术栈**: [后端/Native + 前端/UI]
+- **严禁引入技术栈 (Negative List)**: [排除清单与依赖渐进原则]
 - **防破产与运行护栏**:
   - 单 IP / 单 Session 频率限制: 每分钟最多 [5] 次请求 (Rate Limit)。
   - 单用户每日 API/Token 调用配额: 达到 [上限] 友好提示 429 配额用尽。
-  - 内存硬顶: 后端进程内存 $\le$ [100MB]，避免内存泄漏拖垮 VPS。
+  - 内存硬顶: 进程内存 $\le$ [150MB]，避免内存泄漏拖垮系统。
 
-## 3. 输入、处理与输出数据契约
-- **输入**: [字段名、类型、边界校验规则与 TypeScript 接口 / Kotlin data class / Go struct 定义]
-- **处理流**: [核心处理逻辑与异常容错兜底]
-- **输出**: [确定性 JSON 响应、TypeScript 强类型契约与 React 渲染组件 / 原生渲染 Surface]
+## 2. 阶梯式切片任务推进清单 (Progressive Micro-Specs)
 
-## 4. 验收准则 (Acceptance Criteria)
-- [ ] 场景 1: 输入有效数据，[3] 秒内完成处理并展示结果。
-- [ ] 场景 2: 输入非法数据或超长文本，优雅报错，前端有友好提示，后端/Native 进程不崩溃。
-- [ ] 场景 3: 频繁连续发起请求，正确触发 Rate Limit 拦截（HTTP 429）。
-- [ ] 场景 4: 本地一键启动并构建（如前端 `pnpm build` 后由 Go `embed` 单二进制分发，或 `go run .` / `pnpm dev` 双命令一键启动，Android Gradle 极简一键 Run，原生 C++ 必带 ASan 验证）。
+### 🧩 切片 1 (Slice 1 - 骨架与确定性 UI 状态机)
+- **目标**: 0 外部重度依赖，搭建无边框窗口与基础状态机。
+- **输入契约**: 静态配置或 Mock 状态 (`idle`, `listening`, `thinking`, `speaking`)。
+- **处理核心**: React 纯前端状态组件渲染，原生透明穿透与鼠标拖拽。
+- **验收断言**:
+  - [ ] 场景 1.1: 启动后出现透明无边框窗口，点击按钮可在 4 种状态间顺畅切换。
+  - [ ] 场景 1.2: 窗口可自由拖动吸附屏幕边缘，无渲染闪烁。
+
+### 🧩 切片 2 (Slice 2 - 本地单点探针接入与信号流)
+- **目标**: 接入本地麦克风流式 VAD 检测，打通前后端实时通信。
+- **输入契约**: 麦克风 PCM 原始音频流。
+- **处理核心**: 后端调用轻量 VAD 检测人声起止，向前端推送状态更新。
+- **验收断言**:
+  - [ ] 场景 2.1: 用户对着麦克风说话，前端 100ms 内触发 `listening` 状态更新。
+  - [ ] 场景 2.2: 连续静音 500ms 后，切入 `thinking` 状态并打印日志。
+
+### 🧩 切片 3 (Slice 3 - 本地大脑与全双工打断闭环)
+- **目标**: 接入端侧小模型与本地 TTS 朗读，实现说话即打断。
+- **输入契约**: ASR 识别的纯文本字符串。
+- **处理核心**: 调用本地 SLM（如 Qwen2.5-0.5B）生成短句，驱动系统 TTS 播报；若检测到人声再次输入，瞬间静音 TTS。
+- **验收断言**:
+  - [ ] 场景 3.1: 正常问答在 1.5 秒内开始朗读短句回复。
+  - [ ] 场景 3.2: 朗读过程中用户开口说话，TTS 在 100ms 内被截断并重新进入倾听（打断验证）。
 ```
 
 ---
