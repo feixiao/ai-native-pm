@@ -112,7 +112,7 @@
 | **座舱系统级 Upmix 引擎 PRD** | [PRD_SMART_COCKPIT_SYSTEM_UPMIX_v1.0.md](./docs/prd/PRD_SMART_COCKPIT_SYSTEM_UPMIX_v1.0.md) | 底层全音源三维上混引擎；AudioAttributes 白名单过滤、原生空间声自动 Bypass、声场宽度控制、抗相位梳状滤波与 AEC 回声消除回采。 |
 | **座舱音效评估与质量门禁 PRD** | [PRD_SMART_COCKPIT_AUDIO_QUALITY_EVALUATION_v1.0.md](./docs/prd/PRD_SMART_COCKPIT_AUDIO_QUALITY_EVALUATION_v1.0.md) | 客观频响/失真 AP 扫频仪测量、ITU-R BS.1534 MUSHRA 金耳朵双盲评测规程、四工况动态路噪压测与 OTA 自动化阻断流水线。 |
 | **座舱多屏互动飞屏系统 PRD** | [PRD_SMART_COCKPIT_MULTI_SCREEN_INTERACTION_v1.0.md](./docs/prd/PRD_SMART_COCKPIT_MULTI_SCREEN_INTERACTION_v1.0.md) | 5 屏拓扑（仪表/中控/副驾/双后排）、三指飞屏流转协议、4 音区焦点仲裁、D 档防窥与行车安全阻断门禁、BDD 用例与红队报告。 |
-| **Pixel 10 桌面 AI 电子宠物 PRD** | [PRD_PIXEL10_DESKTOP_AI_PET_MVP_v1.0.md](./docs/prd/PRD_PIXEL10_DESKTOP_AI_PET_MVP_v1.0.md) | Pixel 10 桌面常驻 AI 情感陪伴宠物；端侧 SLM 离线推理、微表情状态机、触控/语音双工交互与低功耗保活策略。 |
+| **Pixel 10 桌面 AI 灵动宠伴 PRD** | [PRD_PIXEL10_DESKTOP_AI_PET_MVP_v1.0.md](./docs/prd/PRD_PIXEL10_DESKTOP_AI_PET_MVP_v1.0.md) | Pixel 10 桌面常驻 AI 宠伴与极速语音速记；兼容 Codex Pet 开源生态、<=4h 技术探针实测、内嵌自发酵传播抓手、双阶段解耦红队自检与阶梯式 Micro-Spec 冲刺排期。 |
 | **Pixel 10 交互与设计规范** | [UI_SPEC_AI_AUDIO_AGENT_PIXEL10.md](./docs/design/UI_SPEC_AI_AUDIO_AGENT_PIXEL10.md) | 端云协同 AI 语音伴侣交互设计规范；涵盖 4 种主形态（悬浮灵动球/沉浸对话/微表情/锁屏卡片）、状态转换动效与微交互规范。 |
 
 ---
