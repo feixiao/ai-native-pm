@@ -2,6 +2,6 @@
 set -euo pipefail
 
 # Canonical benchmark entrypoint for autoresearch
-# Evaluates Agent Skills Marketplace Feasibility Research & MVP PRD
+# Evaluates AI-Native Solo Builder PM Workflow Skill & Handbook
 
-python3 harness/evaluator.py
+python3 harness/solo_workflow_evaluator.py

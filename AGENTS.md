@@ -61,14 +61,16 @@ pm/
 │   ├── 04-frameworks.md      # JTBD, 5-Whys, RICE, Kano, AARRR 速查
 │   ├── 05-glossary.md        # 40+ 产品术语（全技术概念类比版）
 │   ├── 06-product-boundaries.md # 权责边界划分与 RACI 矩阵
-│   └── 07-independent-product.md # 独立开发者产品实战手册（选题/验证/MVP/发布/经营）
+│   ├── 07-independent-product.md # 独立开发者产品实战手册（选题/验证/MVP/发布/经营）
+│   └── 08-solo-builder-vs-corporate-pm.md # 独立开发者 PM 指南（自我仲裁与大厂协商异构）
 ├── 02-ai-skills/             # 🤖 AI 全链路提效指南与工业级 Prompt 模板
 │   ├── 01-market-research.md # 市场扫描、竞品逆向与差评挖掘
 │   ├── 02-user-research.md   # 《The Mom Test》非引导访谈与痛点聚类
 │   ├── 03-prd-writing.md     # 工业级 PRD 模板与架构/QA 红队挑刺
 │   ├── 04-prototyping.md     # 单文件带状态调试栏可交互原型设计
 │   ├── 05-data-analysis.md   # 漏斗/留存 SQL、A/B 检验与归因排查
-│   └── 06-collaboration.md   # 成果导向汇报与高情商拒绝话术
+│   ├── 06-collaboration.md   # 成果导向汇报与高情商拒绝话术
+│   └── 07-solo-ai-workflow.md # 独立开发者 AI-Native PM 工作流与实战 Prompt 模板库
 ├── .agents/skills/           # ⚡ 原生 Agent Skills（遵循跨平台 SKILL.md 规范）
 │   ├── pm-prd-copilot/       # PRD 自动化撰写与红队安全审查
 │   ├── pm-market-competitor/ # 竞品逆向拆解与商业模式调研
