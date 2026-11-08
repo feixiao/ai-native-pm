@@ -15,9 +15,63 @@ METRIC ai_native_score=<float 0.0-30.0>
 """
 
 import os
+import re
 import sys
 
-# Import both evaluators
+def validate_integrity():
+    checked_files = 0
+    broken_links = []
+    mermaid_blocks = 0
+    invalid_mermaids = []
+    
+    known_types = ["flowchart", "graph", "sequenceDiagram", "stateDiagram", "classDiagram", "gantt", "pie", "erDiagram", "journey", "gitGraph"]
+    
+    scan_dirs = ["01-pm-handbook", "02-ai-skills", ".agents", "docs"]
+    for s_dir in scan_dirs:
+        if not os.path.exists(s_dir):
+            continue
+        for root, dirs, files in os.walk(s_dir):
+            for f in files:
+                if f.endswith(".md"):
+                    checked_files += 1
+                    f_path = os.path.join(root, f)
+                    with open(f_path, "r", encoding="utf-8") as file:
+                        content = file.read()
+                        
+                        # 1. Check relative markdown links
+                        links = re.findall(r"\[([^\]]+)\]\(([^)]+)\)", content)
+                        for text, target in links:
+                            if target.startswith("http") or target.startswith("#") or target.startswith("mailto"):
+                                continue
+                            clean_target = target.split("#")[0]
+                            if not clean_target:
+                                continue
+                            target_path = os.path.normpath(os.path.join(root, clean_target))
+                            if not os.path.exists(target_path):
+                                broken_links.append((f_path, target))
+                        
+                        # 2. Check Mermaid blocks
+                        m_blocks = re.findall(r"```mermaid(.*?)```", content, re.DOTALL)
+                        for b in m_blocks:
+                            mermaid_blocks += 1
+                            stripped = b.strip()
+                            first_line = stripped.split("\n")[0].strip() if stripped else ""
+                            if not any(first_line.startswith(t) for t in known_types):
+                                invalid_mermaids.append((f_path, first_line))
+
+    if broken_links:
+        print(f"ERROR: Found {len(broken_links)} broken relative markdown links:", file=sys.stderr)
+        for bl in broken_links[:5]:
+            print(f"  {bl[0]} -> {bl[1]}", file=sys.stderr)
+        sys.exit(1)
+
+    if invalid_mermaids:
+        print(f"ERROR: Found {len(invalid_mermaids)} invalid Mermaid blocks:", file=sys.stderr)
+        for im in invalid_mermaids[:5]:
+            print(f"  {im[0]} -> {im[1]}", file=sys.stderr)
+        sys.exit(1)
+
+    return checked_files, mermaid_blocks
 from evaluator import read_file as read_file_corp, evaluate_research, evaluate_prd, RESEARCH_FILE, PRD_FILE
 from solo_workflow_evaluator import (
     read_file as read_file_solo,
@@ -69,6 +123,11 @@ def main():
     print(f"METRIC red_team_rigor={solo_details['red_team_rigor']:.2f}")
     print(f"METRIC guardrails_score={solo_details['guardrails_score']:.2f}")
     print(f"METRIC templates_score={solo_details['templates_score']:.2f}")
+
+    # 4. Run Link Integrity & Mermaid Validity Gate
+    checked_files, mermaid_blocks = validate_integrity()
+    print(f"METRIC link_integrity=100.00")
+    print(f"METRIC mermaid_validity=100.00")
 
     sys.exit(0)
 if __name__ == "__main__":
