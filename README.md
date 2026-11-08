@@ -84,7 +84,7 @@
 | **`pm-prototype-builder`** | 15 分钟生成单文件可交互 HTML 原型，内置 **PM 状态调试切换栏** | `vibe-prototyping` | *“根据刚才的 PRD，帮我生成一个带【PM 多状态调试切换栏】的单文件可交互 HTML 原型”* |
 | **`pm-data-analyst`** | 指标体系设计（北极星/护栏）、A/B 实验显著性检验、留存/漏斗归因分析 | `csv-data-summarizer` | *“帮我检验这组 A/B 测试数据是否显著”* 或 *“排查为什么今天首帧接通率下跌了 15%”* |
 | **`pm-report-polisher`** | 成果导向高管周报/月报、STAR+OKR 晋升述职、双视角 Release Notes 与需求拒绝话术 | `pm-report-polisher` | *“根据这几条零散的工作日志，帮我生成一份成果导向的高管周报”* 或 *“用 STAR 法则帮我提炼本年度晋升述职报告”* |
-| **`pm-solo-builder`** | 独立开发者全闭环：个人约束过滤、证据评级 (Level 0~4)、一页 MVP 契约、Prompt-to-Spec 代码转译、单周决策门与 11 维红队压力测试 | `solo-builder` | 支持快捷指令：`/solo filter [点子]` 或 `/solo contract [解法]` 或 `/solo spec [契约]` 或 `/solo sprint [周数据]` |
+| **`pm-solo-builder`** | 独立开发者全闭环：个人约束过滤、证据评级 (Level 0~4) 与代偿行为、≤4h 技术探针 (Spike Gate)、内嵌分发抓手的一页契约、阶梯式 Micro-Spec 代码转译、单周决策门与双阶段红队排雷 | `solo-builder` | 支持快捷指令：`/solo filter [点子]`、`/solo spike [棘刺]`、`/solo contract [解法]`、`/solo spec [契约]`、`/solo sprint [周数据]`、`/solo redteam [方案]` |
 
 #### 🌐 推荐联动的通用开源生态技能 (Eco-Skills)
 在日常工作流中，本仓库的 7 大垂直 PM 技能可与以下通用生态技能协同组合：
