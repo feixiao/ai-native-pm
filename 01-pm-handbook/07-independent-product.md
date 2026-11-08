@@ -368,7 +368,7 @@ MVP 可以是：
 * **挂载技能**：[`pm-solo-builder`](../.agents/skills/pm-solo-builder/SKILL.md)
 * **适用场景**：已签署一页 MVP 契约，准备直接投喂 Cursor Composer / Claude Code / Aider 生成首批可运行代码时。
 * **一句话唤醒词**：
-  > *“这是我的一页 MVP 契约：[粘贴契约内容]。我的技术背景是 Frank (@feixiao) 基准（Go: go-zero / CloudWeGo Hertz / net/http; C++: Modern C++20; Python; Android: Kotlin + NDK C++; 前端: React + TypeScript）。请挂载 `pm-solo-builder` 的 Mode 4，降维转译为一份直接可运行的《Coding Agent 任务规格》。必须强制锁定技术栈为 Go (go-zero/Hertz) 或 Python FastAPI + SQLite + 前端 React TS（或 Android 原生），白纸黑字禁止引入 Node/Java/Redis/多容器，并配置好端侧频率限制与单日 Token 预算熔断。”*
+  > *“这是我的一页 MVP 契约：[粘贴契约内容]。我的技术背景是 Frank (@feixiao) 基准（Go: go-zero / CloudWeGo Hertz / net/http; C++: Modern C++20; Python; Android: Kotlin + NDK C++; 前端: React + TypeScript）。请挂载 `pm-solo-builder` 的 Mode 4，降维转译为一份直接可运行的《Coding Agent 任务规格》。必须强制锁定技术栈为 Go (go-zero/Hertz) 或 Python FastAPI + SQLite + 前端 React TS（或 Android 原生），严禁引入 Node/Java/Vue；轻量切片避免非必要依赖，复杂项目支持引入 Redis、NSQ/RabbitMQ 与 Docker Compose，并配置好端侧频率限制与单日 Token 预算熔断。”*
 * **交付预期**：Agent 输出零歧义 Task Spec，白纸黑字钉死开发者绝对掌控的技术栈、单机启动命令、防破产配额护栏与 BDD 场景验收准则。
 
 ## 六、用一个人能承受的节奏构建产品
@@ -773,7 +773,7 @@ AI 可以减少独立开发者的切换成本，但不能代替真实用户和�
 > *“这是刚确定的一页 MVP 契约。我的技术背景是 Frank 基准（后端精通 Go 的 go-zero 与 CloudWeGo，系统与音视频熟悉 Modern C++20，移动端熟悉 Android Kotlin/NDK，前端首选 React + TypeScript）。请用 Mode 4 生成一份直接投喂 Cursor / Claude Code 的 Coding Agent 任务规格，帮我限制死技术栈与防破产护栏。”*
 > 
 > **Agent 输出重点**：  
-> 严格将技术栈锁死为：`Go 1.22+ (go-zero 或 CloudWeGo Hertz) + SQLite (WAL) + 前端 React + TypeScript (Vite + Tailwind CSS)`（移动端则对齐 Android Kotlin + NDK C++20），负面清单严禁引入 Node.js 后端、严禁 Java/Spring 全家桶、严禁 Redis/MQ、严禁 Docker 多容器；同时配置每分钟最多 5 次请求的端侧频率限制与单用户每日 Token 熔断上限。
+> 严格将技术栈锁死为：`Go 1.22+ (go-zero 或 CloudWeGo Hertz) + SQLite (WAL) + 前端 React + TypeScript (Vite + Tailwind CSS)`（移动端则对齐 Android Kotlin + NDK C++20），负面清单严禁引入 Node.js 后端、严禁 Java/Spring 全家桶；轻量验证优先单机，对于需要高并发缓存、异步任务队列与多服务部署的复杂项目，允许并推荐引入 Redis、NSQ/RabbitMQ 与 Docker 多容器编排；同时配置每分钟最多 5 次请求的端侧频率限制与单用户每日 Token 熔断上限。
 #### 轮次 5（第 3 周）：上线前排雷（唤醒 Mode 6）
 > **开发者输入**：  
 > *“我用单二进制文件 + 单文件前端跑通了薄切片，准备在 Product Hunt 和 V2EX 发帖公开发布。请用 Mode 6 对我发起 11 维红队压力测试，挑出最致命的坑。”*

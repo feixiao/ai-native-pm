@@ -155,11 +155,10 @@ flowchart LR
 
 ### 步骤 3.5：将契约编译为《Coding Agent 任务规格》（锁定技术栈与防破产护栏）
 独立开发者**不向任何人汇报，PRD 的第一消费对象是 Coding Agent**。必须将一页契约转译为包含极简技术栈、端侧限流与确定性验收断言的 Task Spec：
-- **锁死技术栈**：明确指定开发者专属栈（如 Frank 基准：Go 框架首选 go-zero 或 CloudWeGo Hertz / net/http，或 Python FastAPI + SQLite WAL；前端指定 React + TypeScript (Vite + Tailwind CSS)；移动/车载端指定 Android Kotlin + NDK C++20），白纸黑字写明严禁引入 Node.js 后端、严禁 Java/Spring、严禁 Redis/MQ；
+- **锁死技术栈**：明确指定开发者专属栈（如 Frank 基准：Go 框架首选 go-zero 或 CloudWeGo Hertz / net/http，或 Python FastAPI + SQLite WAL；前端指定 React + TypeScript (Vite + Tailwind CSS)；移动/车载端指定 Android Kotlin + NDK C++20），白纸黑字写明严禁引入 Node.js 后端、严禁 Java/Spring；首切片优先单机零依赖，但对于需要高并发缓存、异步削峰与容器编排的**复杂项目**，**完全支持并推荐引入 Redis、NSQ / RabbitMQ 与 Docker Compose**；
 - **防破产护栏**：强制加设单 IP 频率限制（Rate Limit，如 5次/分）与单用户每日 Token/API 调用硬顶，绝不让个人信用卡承担无限账单风险；
-- **单机一键启动**：严禁 Docker Compose 多容器集群，确保一行命令完成本地运行。
+- **单机一键启动与容器化**：首版确保一键本地构建运行，复杂多服务项目统一编写规范的 `docker-compose.yml`。
 
-```
 ### 步骤 4：单问题周冲刺与决策门
 把周期压缩到以“周”为单位，每周只验证一个假设：
 - **第 1 周主问题**：目标用户在不用任何说明书的情况下，能否在 60 秒内拿到可用结果？
