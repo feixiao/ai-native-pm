@@ -155,32 +155,57 @@ description: >-
 快捷指令：`/solo spec [契约]`
 
 ### 1. 规格降维转译原则 (Spec Direct Translation)
-- 将业务契约直接转译为 Coding Agent 可直接执行的、**零歧义任务提示词规格（Task Spec）**。
-- 强制包含：单文件或极简工程结构、输入输出数据契约、端侧 Rate Limit、Quota 熔断防护以及验收断言。
+- 将业务契约直接转译为 Coding Agent（Claude Code / Cursor / Aider / Codex）可直接执行的、**零歧义任务提示词规格（Task Spec）**。
+- **技术栈基因锁死铁律（Tech Stack Hard-Locking）**：**严禁使用通用泛化模板，严禁任由 AI 自由发挥技术栈！** 必须根据开发者的真实底层技术背景，将生成代码严格限制在其最具掌控力、能在一分钟内肉眼审计代码、排查并发/内存异常的核心长板之内。若 Coding Agent 擅自引入开发者不熟悉的技术栈（如在 Go/C++ 专长的工程师项目中输出重度 Node/NestJS/Java 依赖），会导致代码失控、后期调试黑洞与沉没维护成本。
+- 强制包含：工程形态、输入输出契约、防破产端侧限流与 Quota 熔断护栏、零外部重度中间件约束、确定性验收断言。
 
-### 2. 标准输出：AI Coding Agent 任务规格模板
+### 2. 开发者技术画像与基准技术栈矩阵 (Default Builder Profile: Frank @feixiao)
+
+> **开发者技术底座**：12 年（2015-2026）工程演进沉淀，核心技术主线为 **Go（go-zero / CloudWeGo Hertz & Kitex / 高并发微服务与分布式存储）**、**Modern C++20/C（FFmpeg/WebRTC/音视频管线/DSP/Linux 系统底座）**、**Python（AI Agent 架构/Harness 模式/LiteLLM/MCP/10x 效能矩阵）**、**Android 端侧与车载 (Kotlin / NDK C++ / Oboe / HardwareBuffer / AAOS)**、**前端 React + TypeScript (Vite + Tailwind CSS)** 与 **Go+Wails 跨平台桌面端**。
+
+当使用本技能生成《Coding Agent 任务规格》时，根据产品场景自动匹配以下**技术栈围栏**：
+
+| 产品场景 | 推荐主力技术栈 (Primary Stack) | 极窄切片工程形态 (Thin Slice) | 绝对禁飞区 (Strict Negative List) |
+| :--- | :--- | :--- | :--- |
+| **场景 A: 轻量 Web / 独立 Micro-SaaS** | **后端: Go（主力框架首选 go-zero 或 CloudWeGo Hertz；极简选 net/http 或 Chi）/ Python (FastAPI) + SQLite (WAL)**<br>**前端: React + TypeScript (Vite + Tailwind CSS)** | Go 单二进制直接内嵌 React TS 静态构建产物（`embed`），或极简前后端轻量分离 | ❌ 严禁 Node.js / NestJS 服务端<br>❌ 严禁 Java / Spring 全家桶<br>❌ 严禁 Vue / Angular / 复杂微前端<br>❌ 严禁 Redis / RabbitMQ / Docker 多容器 |
+| **场景 B: AI Agent / 本地自动化 / 知识库 RAG** | **核心: Python (FastAPI + LiteLLM + 自研确定性 Harness 机制)**<br>**网关/调度: Go (CloudWeGo Hertz / Kitex 高并发 MCP Server)**<br>**交互端: React + TypeScript (流式对话与调试面板)** | 本地 Markdown 索引 (Obsidian Vault) + SQLite / DuckDB，统一 MCP 协议 | ❌ 严禁黑盒无法单步调试的多 Agent 框架胶水层<br>❌ 严禁无配额保护的无限循环生成 |
+| **场景 C: 实时音视频 / 流媒体 / 全双工智能伴侣** | **桌面客户端: Go + Wails (前端 React + TypeScript)**<br>**流媒体与信令: Go (CloudWeGo / LiveKit / MediaMTX)**<br>**核心算子: Modern C++20 (FFmpeg/DSP)**<br>**实时流水线: Python (Pipecat)** | 端云双环（端侧极速快环 $\le 150\text{ms}$，云端慢环 $P50 \le 800\text{ms}$，全双工打断 $\le 80\text{ms}$），React TS 实时音波图谱渲染 | ❌ 严禁 Electron（臃肿吃内存，首选 Go + Wails + React TS）<br>❌ 严禁纯前端高负载软解 |
+| **场景 D: Android 端侧与车载 (AAOS / NDK / 音视频)** | **应用层: Kotlin (Jetpack Compose / 现代 Android 架构)**<br>**Native 底层: Modern C++20 / C, JNI 零拷贝, CMake**<br>**硬件音频: Oboe / AAudio / AudioEffect (AEQ)**<br>**图像渲染: HardwareBuffer (SharedTexture) / OpenGL ES 3.0**<br>**系统与通信: AAOS 14 / Binder IPC / AIDL / xHook (PLT Hook)** | 单 Activity / Compose 纵向贯通 Native Audio/Video 管线，构建强制开启 ASan / HWASan 地址消毒 | ❌ 严禁非必要重度 WebView 壳套原生音视频<br>❌ 严禁 JNI 跨层高频内存深拷贝（必须采用 HardwareBuffer / DirectBuffer 零拷贝）<br>❌ 严禁在音频实时处理回调（Audio Callback）中进行内存分配、锁等待或反射调用 |
+| **场景 E: Linux 系统级工具 / 机器人 / 硬件通信** | **核心算法: Modern C++20 (RAII, Zero-alloc, Concepts)**<br>**机器人通信: ROS 2 (DDS/RTPS, Composition)**<br>**系统交互: Linux POSIX / epoll / IPC**<br>**上位机/UI: React + TypeScript (Web / Wails)** | CMake 模块化工程，强制原生集成 AddressSanitizer (ASan) 内存检测 | ❌ 严禁无内存安全检测直接裸跑<br>❌ 严禁在实时控制回路中引入阻塞式 I/O |
+
+### 3. 标准输出：AI Coding Agent 任务规格模板
 ```markdown
 # Coding Agent 任务规格: [模块名] MVP 薄切片
 
 ## 1. 目标与角色定义
-你是一个高水平全栈工程师。你的唯一目标是用最少、最清晰的代码实现以下核心闭环，杜绝任何过度工程设计。
+你是一个高水平实战派工程师。你的唯一目标是用最少、最清晰的代码实现以下核心闭环，杜绝任何过度工程设计。
+所有代码实现必须严格遵循指定技术栈，严禁自行扩展未知依赖。
 
-## 2. 极简技术栈与工程约束
-- **架构模式**: [单文件 SPA / 轻量 Node 脚本 / FastAPI 单文件 / SQLite 本地存储]
-- **严禁引入**: [严禁引入 Redis、消息队列、微服务、用户权限中心、Docker Compose 复杂编排]
-- **防破产护栏**:
-  - 单 IP / 单 Session 限制: 每分钟最多 [5] 次请求 (Rate Limit)。
+## 2. 约束技术栈与工程边界 (Tech Stack Guardrails)
+- **开发者核心背景**: Frank (@feixiao) 基准 [Go: go-zero / CloudWeGo Hertz / net/http; C++: Modern C++20; Python; Android: Kotlin + NDK C++; 前端: React + TypeScript]
+- **指定技术栈**:
+  - 后端/原生: [如：Go 1.22+ (go-zero 或 CloudWeGo Hertz / net/http) + SQLite (WAL 模式) / Android Kotlin + NDK C++20]
+  - 前端/UI: [如：React 18/19 + TypeScript + Vite + Tailwind CSS / Jetpack Compose]
+- **严禁引入技术栈 (Negative List)**:
+  - ❌ 严禁引入 Node.js / Express / NestJS 后端（服务端统一采用 Go 或 Python）；
+  - ❌ 严禁引入 Java / Spring 全家桶、Vue、Angular；
+  - ❌ 严禁在 Android 端进行非必要 JNI 大内存深拷贝，音视频核心严禁纯 JS 软解；
+  - ❌ 严禁在 MVP 阶段引入 Redis、消息队列、微服务集群或 Docker Compose 复杂编排。
+- **防破产与运行护栏**:
+  - 单 IP / 单 Session 频率限制: 每分钟最多 [5] 次请求 (Rate Limit)。
   - 单用户每日 Token / API 配额上限: 超过 [阈值] 强制返回 429 配额用尽友好提示。
+  - 进程内存硬顶: 后端进程内存超过 [100MB] 主动释放并报警。
 
-## 3. 输入、处理与输出契约
-- **输入**: [明确数据结构与字段验证]
+## 3. 输入、处理与输出数据契约
+- **输入**: [明确数据结构、字段名与 TypeScript 接口 / Kotlin data class / Go struct / C++ struct 定义]
 - **处理核心**: [纯函数/核心业务流转，标注异常兜底返回]
-- **输出**: [确定性 JSON 或极简渲染卡片]
+- **输出**: [确定性 JSON 响应、TypeScript 强类型契约与 React 渲染组件 / 原生渲染 Surface]
 
 ## 4. 验收准则 (Acceptance Criteria)
-- [ ] 场景 1: 输入合法数据，能在 [3] 秒内返回有效结果并渲染。
-- [ ] 场景 2: 输入非法/空数据，返回清晰错误提示，不崩溃、不白屏。
-- [ ] 场景 3: 频繁连续点击 6 次，第 6 次触发 Rate Limit 拦截。
+- [ ] 场景 1: 输入有效数据，能在 [3] 秒内完成处理并正确渲染。
+- [ ] 场景 2: 输入非法/超长数据，优雅报错，前端有友好反馈，后端/Native 进程不崩溃、不挂死。
+- [ ] 场景 3: 频繁连续点击 6 次，第 6 次触发 Rate Limit 拦截（HTTP 429）。
+- [ ] 场景 4: 本地一键启动并构建（如前端 `pnpm build` 后由 Go `embed` 单二进制分发，或 `go run .` / `pnpm dev` 双命令一键启动，Android Gradle 极简一键 Run，原生 C++ 必带 ASan 验证）。
 ```
 
 ---
