@@ -2,6 +2,8 @@
 set -euo pipefail
 
 # Canonical benchmark entrypoint for autoresearch
-# Evaluates AI-Native Solo Builder PM Workflow Skill & Handbook
+# Evaluates Dual-Track Quality Gates:
+# 1. Corporate / Industrial TPM Track (Research & PRD)
+# 2. Solo Builder Track (AI-Native Workflow & Handbook)
 
-python3 harness/solo_workflow_evaluator.py
+python3 harness/dual_track_evaluator.py

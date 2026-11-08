@@ -84,7 +84,7 @@
 | **`pm-prototype-builder`** | 15 分钟生成单文件可交互 HTML 原型，内置 **PM 状态调试切换栏** | `vibe-prototyping` | *“根据刚才的 PRD，帮我生成一个带【PM 多状态调试切换栏】的单文件可交互 HTML 原型”* |
 | **`pm-data-analyst`** | 指标体系设计（北极星/护栏）、A/B 实验显著性检验、留存/漏斗归因分析 | `csv-data-summarizer` | *“帮我检验这组 A/B 测试数据是否显著”* 或 *“排查为什么今天首帧接通率下跌了 15%”* |
 | **`pm-report-polisher`** | 成果导向高管周报/月报、STAR+OKR 晋升述职、双视角 Release Notes 与需求拒绝话术 | `pm-report-polisher` | *“根据这几条零散的工作日志，帮我生成一份成果导向的高管周报”* 或 *“用 STAR 法则帮我提炼本年度晋升述职报告”* |
-| **`pm-solo-builder`** | 独立开发者全闭环：个人约束过滤、证据评级 (Level 0~4)、一页 MVP 契约、单人周冲刺与 11 维红队压力测试 | `solo-builder` | *“我有两个独立开发点子，每周可用 10 小时，用 Mode 1 帮我过滤约束并输出机会卡”* 或 *“对我的产品方案执行 Mode 5 独立开发红队自检”* |
+| **`pm-solo-builder`** | 独立开发者全闭环：个人约束过滤、证据评级 (Level 0~4)、一页 MVP 契约、Prompt-to-Spec 代码转译、单周决策门与 11 维红队压力测试 | `solo-builder` | 支持快捷指令：`/solo filter [点子]` 或 `/solo contract [解法]` 或 `/solo spec [契约]` 或 `/solo sprint [周数据]` |
 
 #### 🌐 推荐联动的通用开源生态技能 (Eco-Skills)
 在日常工作流中，本仓库的 7 大垂直 PM 技能可与以下通用生态技能协同组合：
@@ -112,6 +112,9 @@
 | **座舱 Audio Vivid 空间音频 PRD** | [PRD_SMART_COCKPIT_AUDIO_VIVID_v1.0.md](./docs/prd/PRD_SMART_COCKPIT_AUDIO_VIVID_v1.0.md) | 智能座舱 7.1.4 物理扬声器 Audio Vivid 三维声系统规范；声音对象与床子通道解析、Audio Focus 四级安全强占、弱网平滑降级状态机与红队自审。 |
 | **座舱系统级 Upmix 引擎 PRD** | [PRD_SMART_COCKPIT_SYSTEM_UPMIX_v1.0.md](./docs/prd/PRD_SMART_COCKPIT_SYSTEM_UPMIX_v1.0.md) | 底层全音源三维上混引擎；AudioAttributes 白名单过滤、原生空间声自动 Bypass、声场宽度控制、抗相位梳状滤波与 AEC 回声消除回采。 |
 | **座舱音效评估与质量门禁 PRD** | [PRD_SMART_COCKPIT_AUDIO_QUALITY_EVALUATION_v1.0.md](./docs/prd/PRD_SMART_COCKPIT_AUDIO_QUALITY_EVALUATION_v1.0.md) | 客观频响/失真 AP 扫频仪测量、ITU-R BS.1534 MUSHRA 金耳朵双盲评测规程、四工况动态路噪压测与 OTA 自动化阻断流水线。 |
+| **座舱多屏互动飞屏系统 PRD** | [PRD_SMART_COCKPIT_MULTI_SCREEN_INTERACTION_v1.0.md](./docs/prd/PRD_SMART_COCKPIT_MULTI_SCREEN_INTERACTION_v1.0.md) | 5 屏拓扑（仪表/中控/副驾/双后排）、三指飞屏流转协议、4 音区焦点仲裁、D 档防窥与行车安全阻断门禁、BDD 用例与红队报告。 |
+| **Pixel 10 桌面 AI 电子宠物 PRD** | [PRD_PIXEL10_DESKTOP_AI_PET_MVP_v1.0.md](./docs/prd/PRD_PIXEL10_DESKTOP_AI_PET_MVP_v1.0.md) | Pixel 10 桌面常驻 AI 情感陪伴宠物；端侧 SLM 离线推理、微表情状态机、触控/语音双工交互与低功耗保活策略。 |
+| **Pixel 10 交互与设计规范** | [UI_SPEC_AI_AUDIO_AGENT_PIXEL10.md](./docs/design/UI_SPEC_AI_AUDIO_AGENT_PIXEL10.md) | 端云协同 AI 语音伴侣交互设计规范；涵盖 4 种主形态（悬浮灵动球/沉浸对话/微表情/锁屏卡片）、状态转换动效与微交互规范。 |
 
 ---
 ## 🛠️ 快速上手路线：根据你的当下角色选用
