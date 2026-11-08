@@ -1,6 +1,32 @@
-# 🚀 工程师转型产品经理：实战入门手册 & AI 提效技能库
+# 🚀 工程师转型产品经理 & 独立开发者实战武器库 (AI-Native PM)
 
-> 专为拥有深厚工程背景（系统编程、音视频多媒体、高并发分布式架构）的技术人打造的 **产品经理（PM）转型认知框架 + AI 全流程实战武器库 + 可直接调用的 Agent Skills**。
+> 专为拥有深厚工程背景的技术人打造的 **双轨产品实战指南（企业级 TPM + 独立开发者 Solo Builder） + AI 全流程武器库 + 原生可挂载 Agent Skills**。
+
+---
+
+## 🧭 双轨并行体系：如何在两种角色间自如切换？
+
+本仓库不做脱离场景的空洞理论，而是针对技术人的两种典型工作形态提供**双轨模型（Dual-Track）**：
+
+```
+┌─────────────────────────────────────────────────────────────────────────────┐
+│                      【AI-Native PM 双轨并行体系】                          │
+├──────────────────────────────────────┬──────────────────────────────────────┤
+│ 轨道 A：企业与工业级 TPM 轨          │ 轨道 B：独立开发者 (Solo Builder) 轨 │
+│ (Corporate & Industrial TPM)         │ (Indie Hacker & AI-Native Solo)      │
+├──────────────────────────────────────┼──────────────────────────────────────┤
+│ • **定位**：智能座舱 / 硬件音视频 / 大型SaaS │ • **定位**：垂直 AI 工具 / 独立微SaaS / 副业MVP │
+│ • **心智**：坚守 Why & What，不替研发写代码  │ • **心智**：冷血自我仲裁，砍掉 70% 边缘需求   │
+│ • **交付**：40+页工业级 PRD、BDD、红队自检  │ • **交付**：一页 MVP 契约、Prompt-to-Spec     │
+│ • **防线**：研发交接边界、车规安全门禁      │ • **防线**：14 天两周止损死线、单用户 Quota 熔断│
+│ • **工具**：`pm-prd-copilot`                 │ • **工具**：`pm-solo-builder` (含 /solo 指令) │
+└──────────────────────────────────────┴──────────────────────────────────────┘
+```
+
+### ⚡ 3 种角色切换方式
+1. **自然语言自动嗅探**：聊“智能座舱/硬件平台/多部门协作/企业规范” ➔ 自动切入 **企业 TPM 模式**；聊“我自己想做/独立开发/副业/单人MVP” ➔ 自动切入 **独立开发者模式**。
+2. **显式前缀咒语**：在提问前加上 `【角色：企业级 TPM】` 或 `【角色：独立开发者】`，一秒锁定思考框架。
+3. **极速斜杠指令 (Slash Commands)**：针对独立开发者，直接敲 `/solo filter`、`/solo audit`、`/solo contract`、`/solo spec`、`/solo sprint`、`/solo redteam`。
 
 ---
 
@@ -28,6 +54,7 @@
 | **05. 术语表（工程师版）** | [05-glossary.md](./01-pm-handbook/05-glossary.md) | **40+ 产品与商业核心术语**，全部使用工程师熟悉的分布式系统、网络协议与研发概念进行精准类比映射 |
 | **06. 产品工作的边界** | [06-product-boundaries.md](./01-pm-handbook/06-product-boundaries.md) | **产品工作的边界与权责划分**：以端侧 AI 语音伴侣与 Mock 车控为例，拆解 Why & What 禁飞区、范围防护、RACI 矩阵，以及全 AI 化出 PRD（含红队自检）与可交互原型（内置状态切换器）的边界守则 |
 | **07. 独立开发产品手册** | [07-independent-product.md](./01-pm-handbook/07-independent-product.md) | **独立开发者产品实战手册**：从个人约束选题、问题验证与证据分级，到薄切片 MVP、一人周循环、小范围发布、指标分层、红队自检与 30 天起步计划 |
+| **08. 独立开发 vs 大厂协商** | [08-solo-builder-vs-corporate-pm.md](./01-pm-handbook/08-solo-builder-vs-corporate-pm.md) | **独立开发者的 PM 之道**：从“内部撕扯协调”到“自我无情仲裁”，六大维度剧烈蜕变、一页 MVP 契约、单人周冲刺与 11 维自检红队军规 |
 
 ---
 
@@ -41,6 +68,7 @@
 | **04. 快速原型与交互验证** | [04-prototyping.md](./02-ai-skills/04-prototyping.md) | Claude Artifacts, v0.dev, Bolt.new, Lovable | 告别静态线框图：15 分钟生成带 **「PM 多状态调试切换栏」**（正常/空状态/弱网报错）的可点击前端原型 |
 | **05. 数据分析与实验决策** | [05-data-analysis.md](./02-ai-skills/05-data-analysis.md) | Claude Code, Python/SQL Copilot, Julius AI | 自然语言秒写复杂漏斗与 Cohort 留存 SQL、用决策树寻找产品 Aha Moment、A/B 测试显著性检验、指标异动归因排查 |
 | **06. 团队协作与项目管理** | [06-collaboration.md](./02-ai-skills/06-collaboration.md) | Notion AI, Linear, 飞书 AI | 会议录音秒转可执行 Action Items、Epic 自动拆解为敏捷 User Stories、高情商拒绝伪需求话术、成果导向高管周报生成 |
+| **07. 独立开发 AI 工作流** | [07-solo-ai-workflow.md](./02-ai-skills/07-solo-ai-workflow.md) | Claude Code, Cursor, Codex | **独立开发者 AI-Native PM 工作流与实战 Prompt 模板库**：个人约束机会卡、Mom-Test 事实定级、一页契约切片、Prompt-to-Spec 代码转译与单周冷血决策门 |
 
 ---
 
@@ -81,17 +109,23 @@
 | **端云协同语音助手总 PRD** | [PRD_AI_AUDIO_AGENT_v1.0.md](./docs/prd/PRD_AI_AUDIO_AGENT_v1.0.md) | Pixel 10 与 Mac 双平台端云协同 AI 语音陪伴助手 PoC 业务与协同总纲；含双环架构流、本地分流/离线保底、数据边界与全链路验收指标。 |
 | **客户端 MVP PRD** | [PRD_AI_AUDIO_AGENT_CLIENT_MVP_v1.0.md](./docs/prd/PRD_AI_AUDIO_AGENT_CLIENT_MVP_v1.0.md) | Pixel 10 与 Mac 客户端 MVP 需求规范；含端侧意图路由、本地独立记忆 CRUD、Mock 车控日志、打断/离线状态机与平台生命周期边界。 |
 | **服务端 MVP PRD** | [PRD_AI_AUDIO_AGENT_SERVER_MVP_v1.0.md](./docs/prd/PRD_AI_AUDIO_AGENT_SERVER_MVP_v1.0.md) | 云端实时语音对话服务 MVP 需求规范；含会话鉴权、流式回复、插话取消、断线防护、临时上下文清理与服务发布门禁。 |
+| **座舱 Audio Vivid 空间音频 PRD** | [PRD_SMART_COCKPIT_AUDIO_VIVID_v1.0.md](./docs/prd/PRD_SMART_COCKPIT_AUDIO_VIVID_v1.0.md) | 智能座舱 7.1.4 物理扬声器 Audio Vivid 三维声系统规范；声音对象与床子通道解析、Audio Focus 四级安全强占、弱网平滑降级状态机与红队自审。 |
+| **座舱系统级 Upmix 引擎 PRD** | [PRD_SMART_COCKPIT_SYSTEM_UPMIX_v1.0.md](./docs/prd/PRD_SMART_COCKPIT_SYSTEM_UPMIX_v1.0.md) | 底层全音源三维上混引擎；AudioAttributes 白名单过滤、原生空间声自动 Bypass、声场宽度控制、抗相位梳状滤波与 AEC 回声消除回采。 |
+| **座舱音效评估与质量门禁 PRD** | [PRD_SMART_COCKPIT_AUDIO_QUALITY_EVALUATION_v1.0.md](./docs/prd/PRD_SMART_COCKPIT_AUDIO_QUALITY_EVALUATION_v1.0.md) | 客观频响/失真 AP 扫频仪测量、ITU-R BS.1534 MUSHRA 金耳朵双盲评测规程、四工况动态路噪压测与 OTA 自动化阻断流水线。 |
 
 ---
-## 🛠️ 快速上手路线：当你接到第一个产品任务时怎么用？
+## 🛠️ 快速上手路线：根据你的当下角色选用
 
-1. **刚接到业务方/老板抛来的一个模糊想法时**：
-   👉 先看 [01-mindset-shift.md](./01-pm-handbook/01-mindset-shift.md) 克制“直接想代码怎么写”的冲动，调用 `pm-user-insight` 用 `5-Whys` 和 `JTBD` 搞清楚真实痛点。
-2. **需要调研市面上别人是怎么做的**：
-   👉 调用 `pm-market-competitor` 或参考 [01-market-research.md](./02-ai-skills/01-market-research.md)，1 小时拿出有深度的竞品拆解与差异化切口。
-3. **准备动笔写 PRD 和画原型参加需求评审**：
-   👉 调用 `pm-prd-copilot` 生成标准 PRD 并执行**「红队边界自检」**；随后调用 `pm-prototype-builder` 生成一个带状态切换栏的交互 HTML 原型带去评审会现场演示。
-4. **功能上线后验证效果**：
-   👉 调用 `pm-data-analyst` 跑出漏斗、留存与 A/B 实验结论。
-5. **向上汇报与跨团队协同推进**：
-   👉 调用 `pm-report-polisher` 提炼成果周报、版本发布公告 (Release Notes) 或 STAR 述职报告，并在面对业务方插队时生成高情商拒绝话术。
+### 路线 A：如果你在公司做产品 / 面临跨团队交付 (TPM 轨)
+1. **刚接到模糊需求**：先看 [01-mindset-shift.md](./01-pm-handbook/01-mindset-shift.md)，用 `pm-user-insight` 剥离伪需求。
+2. **需要竞品分析**：调用 `pm-market-competitor` 产出 TAM/SAM/SOM 与定价拆解矩阵。
+3. **撰写交付级 PRD**：调用 `pm-prd-copilot` 生成带状态机与 BDD 的标准 PRD，并执行**「架构与 QA 红队自审」**。
+4. **评审会演示**：调用 `pm-prototype-builder` 输出带状态调试栏的单文件交互原型。
+5. **数据与复盘**：调用 `pm-data-analyst` 做漏斗归因，用 `pm-report-polisher` 提炼成果周报。
+
+### 路线 B：如果你单飞做独立产品 / 验证副业灵感 (Solo Builder 轨)
+1. **评估点子行不行**：输入 `/solo filter [点子]`，让 AI CFO 审查每周工时与渠道，生成《机会卡》。
+2. **验证是不是真痛点**：把用户吐槽丢给 AI 输入 `/solo audit [原话]`，用 Mom-Test 剔除客套赞美，必须拿到 Level 2+ 证据。
+3. **极窄刀法切片**：输入 `/solo contract [解法]`，砍掉 70% 边缘功能，生成《一页 MVP 契约》并写死 14 天两周止损线。
+4. **直接驱动代码生成**：输入 `/solo spec [契约]`，生成直喂 Claude Code / Cursor Composer 的 Task Spec，半天内手搓出可运行薄切片。
+5. **周末生杀决策**：输入 `/solo sprint [周数据]`，让商业裁判五选一裁决（继续 / 缩小 / 转向 / 停止），无证据立即冷血删库！
