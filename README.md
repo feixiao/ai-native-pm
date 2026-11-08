@@ -26,8 +26,7 @@
 ### ⚡ 3 种角色切换方式
 1. **自然语言自动嗅探**：聊“智能座舱/硬件平台/多部门协作/企业规范” ➔ 自动切入 **企业 TPM 模式**；聊“我自己想做/独立开发/副业/单人MVP” ➔ 自动切入 **独立开发者模式**。
 2. **显式前缀咒语**：在提问前加上 `【角色：企业级 TPM】` 或 `【角色：独立开发者】`，一秒锁定思考框架。
-3. **极速斜杠指令 (Slash Commands)**：针对独立开发者，直接敲 `/solo filter`、`/solo audit`、`/solo contract`、`/solo spec`、`/solo sprint`、`/solo redteam`。
-
+3. **极速斜杠指令 (Slash Commands)**：针对独立开发者，直接敲 `/solo filter`、`/solo audit`、`/solo spike`、`/solo contract`、`/solo spec`、`/solo sprint`、`/solo redteam`。
 ---
 
 ## 🎯 为什么要建这个仓库？
@@ -37,7 +36,7 @@
 本仓库不做空洞的理论堆砌，而是提供三套可直接用于日常工作的实用系统：
 1. **📘 第一部分：产品经理入门手册 (`01-pm-handbook/`)** —— 帮你完成从 `How to build` 到 `Why & What to build` 的底层心智切换，掌握 PM 核心工作流、方法论框架与行业语言。
 2. **🤖 第二部分：AI 赋能产品全流程技能指南 (`02-ai-skills/`)** —— 覆盖从市场调研、用户访谈、PRD 撰写与红队挑刺、15 分钟生成可交互原型，到自助 SQL/Python 数据分析的全套 SOP 与即插即用提示词模板。
-3. **⚡ 第三部分：内置可挂载的 AI Agent Skills (`.agents/skills/` & `.cursor/skills/`)** —— 遵循 Antigravity / Claude Code / Cursor 标准规范封装的 6 个自动化产品经理 Agent 技能包，在当前工作区对话时可自动激活执行。
+3. **⚡ 第三部分：内置可挂载的 AI Agent Skills (`.agents/skills/` & `.cursor/skills/`)** —— 遵循 Antigravity / Claude Code / Cursor 标准规范封装的 7 个自动化产品经理 Agent 技能包，在当前工作区对话时可自动激活执行。
 
 ---
 
@@ -127,8 +126,9 @@
 5. **数据与复盘**：调用 `pm-data-analyst` 做漏斗归因，用 `pm-report-polisher` 提炼成果周报。
 
 ### 路线 B：如果你单飞做独立产品 / 验证副业灵感 (Solo Builder 轨)
-1. **评估点子行不行**：输入 `/solo filter [点子]`，让 AI CFO 审查每周工时与渠道，生成《机会卡》。
-2. **验证是不是真痛点**：把用户吐槽丢给 AI 输入 `/solo audit [原话]`，用 Mom-Test 剔除客套赞美，必须拿到 Level 2+ 证据。
-3. **极窄刀法切片**：输入 `/solo contract [解法]`，砍掉 70% 边缘功能，生成《一页 MVP 契约》并写死 14 天两周止损线。
-4. **直接驱动代码生成**：输入 `/solo spec [契约]`，生成直喂 Claude Code / Cursor Composer 的 Task Spec，半天内手搓出可运行薄切片。
-5. **周末生杀决策**：输入 `/solo sprint [周数据]`，让商业裁判五选一裁决（继续 / 缩小 / 转向 / 停止），无证据立即冷血删库！
+1. **约束过滤与商业红队**：输入 `/solo filter [点子]`，让 AI CFO 审查每周工时与渠道，前置排查商业死穴，生成《机会卡》。
+2. **事实取证与代偿行为**：把用户吐槽或屏幕观察丢给 AI 输入 `/solo audit [原话/代偿]`，挖掘真实代偿代价，必须拿到 Level 2+ 证据。
+3. **<= 4 小时技术探针门禁**：涉及端侧 AI/音频/硬件高危项目，输入 `/solo spike [技术棘刺]`，写 <= 50 行脚本验证单点断点，探针不通严禁立项！
+4. **极窄契约与架构红队**：输入 `/solo contract [解法]`，砍掉 70% 边缘功能，生成内嵌自发酵分发抓手的《一页 MVP 契约》，锁死 14 天两周止损线。
+5. **阶梯式驱动代码生成**：输入 `/solo spec [契约]`，生成阶梯式 Micro-Spec (Slice 1->2->3) 增量喂给 Claude Code / Cursor，杜绝大包幻觉。
+6. **周末生杀决策**：输入 `/solo sprint [周数据]`，让商业裁判五选一裁决（继续 / 缩小 / 转向 / 暂停 / 停止），无证据立即冷血归档！
