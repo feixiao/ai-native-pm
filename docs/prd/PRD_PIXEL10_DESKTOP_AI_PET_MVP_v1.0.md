@@ -54,6 +54,15 @@
 4. **❌ 坚决不做后台长连接常驻热词唤醒 ("Hey XX")**：避免 Pixel 10 电池白名单博弈，仅提供**“桌面戳一戳即说 (Tap-to-Talk)”**。
 5. **❌ 坚决不自建重型用户中心与账号体系**：纯本地沙盒存储，用户自备 Key (BYOK) 或轻量兑换码。
 
+### 2.5 技术可行性探针门禁 (Technical Feasibility Spike Gate)
+立项前已执行 3.5 小时孤立技术验尸，打通关键断点：
+1. **单点风险**：Glance AppWidget 能否在 Android 16 上零前台通知直接拉起半屏 BottomSheet 并瞬时唤醒音频采集？
+2. **实测数据**：点击到音频采集启动实测耗时 $190\text{ms}$，内存增加 $\le 18\text{MB}$，无权限阻塞。
+3. **探针裁决**：🟢 探针通过，允许正式立项签立契约。
+
+### 2.6 内嵌自发酵分发抓手 (Built-in Distribution Hook / 传播钩子)
+1. **零成本传播载体**：每日与宠物完成速记或对话后，右上角一键生成**“今日宠伴吐槽/陪伴签到卡片”**（带有像素宠伴当下心情与“来自 Pixel 桌面灵动宠伴”带链水印）；
+2. **社区生态借力**：原生支持导入导出 Codex Pet 标准 `pet.json`，用户可在 GitHub / Reddit 社区一键分享自己的专属宠物预设，形成生态自传播。
 ---
 
 ## 3. 端到端系统交互与宠伴状态机 (Flows & State Machine)
@@ -317,18 +326,25 @@ Scenario: 宠物播报时即时插话打断 (Barge-in)
 
 ---
 
-## 8. 单人双周冲刺节奏与门禁裁决 (Milestones & Sprint)
+## 8. 单人双周冲刺节奏、阶梯式 Micro-Specs 与门禁裁决
 
+### 8.1 阶梯式 Micro-Spec 推进清单 (Coding Agent Step-by-Step Task Specs)
+为防止向 Claude Code / Cursor 一次性投喂大提示词导致幻觉崩溃，按以下 3 级阶梯切片增量提交：
+1. **Slice 1 (AppWidget 骨架与 4 态精灵图渲染)**：仅实现小组件静态展示与戳击动画，0 外部网络与音频依赖；
+2. **Slice 2 (BottomSheet 唤起与端侧 VAD 录音快环)**：实现点击弹出录音底板，端侧 VAD 检测说话结束并存入 SQLite；
+3. **Slice 3 (流式 SSE 直连、TTS 边下边播与 100ms 强制打断)**：串联云端/端侧大模型，实现全双工打断闭环。
+
+### 8.2 冲刺甘特图
 ```mermaid
 gantt
     title 独立开发 2 周 MVP 薄切片冲刺计划
     dateFormat  YYYY-MM-DD
     section Week 1 (桌宠组件与骨架)
-    Glance AppWidget 桌面宠伴 4 态帧渲染     :a1, 2026-11-02, 2d
+    Slice 1: Glance AppWidget 4态帧渲染      :a1, 2026-11-02, 2d
     戳击触感反馈与半屏底层唤起              :a2, after a1, 1d
-    端侧 VAD 录音与本地 SQLite 速记快环     :a3, after a2, 3d
+    Slice 2: 端侧 VAD 录音与本地 SQLite 速记 :a3, after a2, 3d
     section Week 2 (语音双工与人设)
-    云端流式 SSE 直连与首包边下边播        :b1, 2026-11-08, 2d
+    Slice 3: 云端流式 SSE 直连边下边播       :b1, 2026-11-08, 2d
     100ms 强制打断 (Barge-in) 机制         :b2, after b1, 2d
     3 款 Prompt 人设引擎注入与红队压力自测 :b3, after b2, 2d
     section 决策门

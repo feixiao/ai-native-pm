@@ -13,7 +13,7 @@
 - [产品经理日常工作流与全生命周期指南](./03-workflow.md)：公司团队中的完整流程与交接方式。
 - [产品经理常用方法论框架速查](./04-frameworks.md)：JTBD、RICE、MVP、AARRR、漏斗和同期群等框架。
 - [产品工作的边界与权责划分](./06-product-boundaries.md)：明确产品规格和研发实现的边界。
-- [内置独立开发 Agent 技能：pm-solo-builder](../.agents/skills/pm-solo-builder/SKILL.md)：可直接在对话中执行个人约束过滤、事实证据评级 (Level 0~4)、一页 MVP 契约、单人周冲刺与 11 维红队压力测试。
+- [内置独立开发 Agent 技能：pm-solo-builder](../.agents/skills/pm-solo-builder/SKILL.md)：可直接在对话中执行个人约束过滤、事实证据评级 (Level 0~4) 与新物种代偿行为取证、≤4小时技术探针门禁 (Spike Gate)、内嵌分发抓手的一页 MVP 契约、阶梯式 Micro-Spec 任务规格转译、单人周冲刺与双阶段解耦 11 维红队压力测试。
 
 ---
 
