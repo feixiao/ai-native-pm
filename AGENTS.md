@@ -69,7 +69,8 @@ pm/
 │   ├── 03-prd-writing.md     # 工业级 PRD 模板与架构/QA 红队挑刺
 │   ├── 04-prototyping.md     # 单文件带状态调试栏可交互原型设计
 │   ├── 05-data-analysis.md   # 漏斗/留存 SQL、A/B 检验与归因排查
-│   └── 06-collaboration.md   # 成果导向汇报与高情商拒绝话术
+│   ├── 06-collaboration.md   # 成果导向汇报与高情商拒绝话术
+│   └── 07-solo-ai-workflow.md # 独立开发者 AI-Native PM 工作流与实战 Prompt 模板库
 ├── .agents/skills/           # ⚡ 原生 Agent Skills（遵循跨平台 SKILL.md 规范）
 │   ├── pm-prd-copilot/       # PRD 自动化撰写与红队安全审查
 │   ├── pm-market-competitor/ # 竞品逆向拆解与商业模式调研
