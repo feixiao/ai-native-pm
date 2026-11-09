@@ -1,0 +1,37 @@
+{
+  "name": "ai-native-pm",
+  "version": "0.1.0",
+  "description": "AI-Native PM Skills Toolkit & Installer for Cursor, Claude Code, Antigravity, and Codex",
+  "type": "module",
+  "bin": {
+    "ai-native-pm": "./bin/cli.mjs"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  },
+  "keywords": [
+    "ai-native",
+    "pm",
+    "product-manager",
+    "agent-skills",
+    "cursor",
+    "claude-code",
+    "antigravity",
+    "codex",
+    "prd",
+    "solo-builder"
+  ],
+  "author": "feixiao",
+  "license": "MIT",
+  "files": [
+    "bin",
+    "src",
+    "skills",
+    "README.md"
+  ],
+  "scripts": {
+    "sync-skills": "node ./scripts/sync-skills.mjs",
+    "prepack": "npm run sync-skills",
+    "test": "node ./bin/cli.mjs --help"
+  }
+}

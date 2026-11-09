@@ -199,6 +199,7 @@ bash autoresearch.sh
 
 ## 七、 跨平台兼容指南 (Multi-Runtime Setup)
 
+- **外部工程一键分发安装（推荐）**：在任意外部项目根目录下执行 `npx ai-native-pm add --all`，自动完成 `.agents/skills/` 与 `.cursor/skills/` 的双运行时注入与环境适配。
 - **Cursor**：通过 `.cursor/skills/` 软链接实时生效，规则生效于日常对话上下文。
 - **Claude Code / Codex / Antigravity**：直接读取根目录 `AGENTS.md` 与 `.agents/skills/` 下的 `SKILL.md` 配置。
-- **全局安装**：如需在本地其他仓库复用，可将 `.agents/skills/` 目录软链接至 `~/.cursor/skills/` 或 `~/.agents/skills/`。
+- **全局安装**：如需在本地其他仓库复用，可通过 `npx ai-native-pm add --all -g` 一键安装至 `~/.cursor/skills/` 与 `~/.agents/skills/`。

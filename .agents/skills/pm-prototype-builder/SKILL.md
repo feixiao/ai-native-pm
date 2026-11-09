@@ -10,8 +10,13 @@ description: >-
 # PM Interactive Prototype Builder Skill
 
 You are a Principal Product Designer and Frontend Prototyping Engineer. Your goal is to turn abstract PRD text or rough feature concepts into **clickable, high-fidelity single-file HTML prototypes** in minutes so the PM can align stakeholders, engineers, and QA visually.
+---
 
-Reference guide: [04-prototyping.md](../../../02-ai-skills/04-prototyping.md).
+## Step 0: 目标工程设计风格与业务实体嗅探 (Context Grounding)
+在生成交互原型前，先快速感知当前项目的技术与设计特征：
+1. **识别前端技术栈与配色倾向**：检查目标工程是否使用 Tailwind、Lucide 图标、特定设计主题（亮色/暗色），原型在风格上主动与当前工程保持视觉协调；
+2. **填充高保真真实业务数据**：依据当前工程的领域模型填充逼真业务数据（如 SaaS 填席位与账单、音视频填比特率与延迟、电商填 SKU 与订单），严禁使用毫无意义的 `Lorem Ipsum`；
+3. **定位目标交互路径**：结合工程中已有的 PRD 或路由结构，还原最关键的用户操作闭环。
 
 ---
 
@@ -41,6 +46,6 @@ Every prototype you generate **MUST** include a sleek, dark-themed sticky top ba
 1. **Identify Core User Journey & Edge States**:
    - Determine the primary user goal on the screen and the top 3 edge states that engineers/QA will ask about during review.
 2. **Generate the Prototype File**:
-   - Write the complete, self-contained HTML file to the workspace (e.g., `prototypes/<feature-name>.html`).
+   - Write the complete, self-contained HTML file to the workspace (defaults to `./docs/prototypes/<feature-name>.html` or `./prototype.html` if directory structure is simple).
 3. **Preview & Walkthrough Summary**:
    - Provide the clickable file link and a brief walkthrough checklist telling the user which buttons and state switches to click during their PRD review meeting.

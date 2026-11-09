@@ -4,6 +4,30 @@
 
 ---
 
+## ⚡ 外部业务工程一键安装 (Install into Any Project in 3 Seconds)
+
+怕在不同业务项目中使用时**上下文串味、缺少真实代码与架构感知**？无需克隆本仓库，在你的任意外部业务工程（Go / Python / React / Rust / C++ / Java 等）根目录下直接运行 `npx ai-native-pm`，3 秒将 100% 自包含的 PM Agent 技能注入本地！
+
+```bash
+# 🎯 交互式选择所需技能并安装到当前项目
+npx ai-native-pm add
+
+# 🚀 一键全量安装全部 7 款 PM 技能
+npx ai-native-pm add --all
+
+# 📌 按需单独安装特定技能（如仅安装 PRD 审查或 Solo Builder 闭环）
+npx ai-native-pm add pm-prd-copilot pm-solo-builder
+
+# 🌐 全局安装（对本机所有项目永久生效）
+npx ai-native-pm add --all -g
+
+# 📋 查看当前项目中已安装技能与状态
+npx ai-native-pm list
+```
+
+> **✨ 零上下文污染 + 自动工程感知**：技能安装后 100% 独立运行在你的业务工程中，**彻底消除原仓库历史背景干扰**；动笔前自动扫描目标项目的包配置（`package.json`、`go.mod` 等）与既有文档，生成贴合真实业务的高水准 PRD。天然无缝兼容 **Cursor** (`.cursor/skills/`) 与 **Claude Code / Antigravity / Codex** (`.agents/skills/`)。
+
+---
 ## 🧭 双轨并行体系：如何在两种角色间自如切换？
 
 本仓库不做脱离场景的空洞理论，而是针对技术人的两种典型工作形态提供**双轨模型（Dual-Track）**：
@@ -94,10 +118,10 @@
 
 #### 🔌 跨环境多 IDE 即插即用说明
 为避免不同工具对配置目录的差异，项目已做多端兼容映射：
+- **任意外部项目一键安装**：推荐直接在目标项目根目录执行 `npx ai-native-pm add --all`，自动完成双运行时配置。
 - **Cursor**：通过根目录 `.cursor/skills/` 软链接无缝生效。
 - **Claude Code / Codex / Antigravity**：通过根目录 `.agents/skills/` 原生加载生效，并严格遵循根目录下的 [AGENTS.md](./AGENTS.md) 智能体准则与禁飞区红线。
-- **个人全局复用**：若需在其他本地项目中全局使用，可直接将对应技能软链接或拷贝至 `~/.cursor/skills/` 或 `~/.agents/skills/`。
----
+- **个人全局复用**：若需在其他本地项目中全局使用，可执行 `npx ai-native-pm add --all -g`，或直接软链接至 `~/.cursor/skills/` 或 `~/.agents/skills/`。
 
 ### 📂 `docs/`：工业级实战研究与产品需求文档 (PRD & Feasibility)
 
