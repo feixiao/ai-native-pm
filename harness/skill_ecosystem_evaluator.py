@@ -16,6 +16,8 @@ METRIC lifecycle_coverage=<float 0.0-1.0>  fraction of 8 lifecycle stages covere
 METRIC ops_coverage=<float 0.0-1.0>        quality of operations/growth coverage
 METRIC avg_skill_quality=<float 0.0-1.0>   mean per-skill craft score
 METRIC cli_sync=<float 0.0-1.0>            three-surface registry consistency
+METRIC handoff_coverage=<float 0.0-1.0>    fraction of 8 documented lifecycle handoffs
+METRIC handoff_documented=<int>             count of documented handoff edges
 METRIC skill_count=<int>                   skills on disk
 METRIC registered_count=<int>               skills in CLI meta
 METRIC bundle_count=<int>                   skills in cli/skills bundle
@@ -61,6 +63,26 @@ OPS_KEYWORDS = re.compile(
     r"community|user ops|retention ops|lifecycle ops",
     re.IGNORECASE,
 )
+
+# Directed lifecycle handoff chain. An edge is "documented" when the
+# SOURCE skill's SKILL.md references the TARGET skill by its id, i.e. a
+# user finishing stage A knows which skill to invoke for stage B.
+# Without these pointers the eight skills are isolated silos.
+HANDOFF_EDGES = [
+    ("pm-market-competitor", "pm-user-insight"),    # 市场机会 → 真实用户取证
+    ("pm-user-insight", "pm-prd-copilot"),          # 洞察与优先级 → PRD
+    ("pm-prd-copilot", "pm-prototype-builder"),     # PRD → 可点击原型
+    ("pm-prototype-builder", "pm-data-analyst"),    # 原型过审 → 埋点与指标
+    ("pm-data-analyst", "pm-operations"),           # 指标基线 → 增长动作
+    ("pm-operations", "pm-report-polisher"),        # 运营结果 → 高管汇报
+    ("pm-report-polisher", "pm-market-competitor"), # 复盘结论 → 下一轮调研
+]
+# The solo hub is an overlay: it must point into the main chain (any stage).
+MAIN_CHAIN_IDS = {
+    "pm-market-competitor", "pm-user-insight", "pm-prd-copilot",
+    "pm-prototype-builder", "pm-data-analyst", "pm-operations",
+    "pm-report-polisher",
+}
 
 
 def read_file(path):
@@ -193,6 +215,17 @@ def main():
     else:
         ops_coverage = 0.0
 
+    # ---- lifecycle handoff routing -------------------------------------------
+    documented = 0
+    for src, tgt in HANDOFF_EDGES:
+        if src in disk_skills and tgt in disk_skills[src]:
+            documented += 1
+    solo_text = disk_skills.get("pm-solo-builder", "")
+    if solo_text and any(t in solo_text for t in MAIN_CHAIN_IDS):
+        documented += 1
+    total_edges = len(HANDOFF_EDGES) + 1
+    handoff_coverage = documented / total_edges
+
     # ---- three-surface sync -------------------------------------------------
     disk_set = set(disk_skills)
     all_surfaces = disk_set | registered_ids | bundle_ids
@@ -203,16 +236,19 @@ def main():
         sync_ratio = 0.0
 
     # ---- composite ----------------------------------------------------------
-    ecosystem_score = 100.0 * (0.35 * lifecycle_coverage
-                               + 0.25 * ops_coverage
+    ecosystem_score = 100.0 * (0.30 * lifecycle_coverage
+                               + 0.20 * ops_coverage
                                + 0.20 * avg_quality
-                               + 0.20 * sync_ratio)
+                               + 0.15 * sync_ratio
+                               + 0.15 * handoff_coverage)
 
     print(f"METRIC ecosystem_score={ecosystem_score:.2f}")
     print(f"METRIC lifecycle_coverage={lifecycle_coverage:.3f}")
     print(f"METRIC ops_coverage={ops_coverage:.3f}")
     print(f"METRIC avg_skill_quality={avg_quality:.3f}")
     print(f"METRIC cli_sync={sync_ratio:.3f}")
+    print(f"METRIC handoff_coverage={handoff_coverage:.3f}")
+    print(f"METRIC handoff_documented={documented}")
     print(f"METRIC skill_count={len(disk_set)}")
     print(f"METRIC registered_count={len(registered_ids)}")
     print(f"METRIC bundle_count={len(bundle_ids)}")
@@ -221,6 +257,12 @@ def main():
     uncovered = [s for s in LIFECYCLE_STAGES if s not in covered]
     if uncovered:
         print("stages MISSING: " + ", ".join(uncovered), file=sys.stderr)
+    missing = [f"{s}→{t}" for s, t in HANDOFF_EDGES
+               if not (s in disk_skills and t in disk_skills[s])]
+    if solo_text and not any(t in solo_text for t in MAIN_CHAIN_IDS):
+        missing.append("pm-solo-builder→(main chain)")
+    if missing:
+        print("handoff edges MISSING: " + ", ".join(missing), file=sys.stderr)
     sys.exit(0)
 
 
