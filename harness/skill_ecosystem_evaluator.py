@@ -83,8 +83,9 @@ def parse_frontmatter(text):
             if km:
                 key = km.group(1)
                 fields[key] = km.group(2).strip()
-            elif key and line.strip().startswith((" ", "-")):
-                # folded continuation (e.g. `description: >-`)
+            elif key and (line.startswith((" ", "\t")) or line.lstrip().startswith("-")):
+                # folded continuation (e.g. `description: >-`); check raw
+                # leading whitespace, NOT the stripped line
                 fields[key] = (fields[key] + " " + line.strip()).strip()
     return fields, body
 
