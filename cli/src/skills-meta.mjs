@@ -62,6 +62,15 @@ export const SKILLS = [
     goldenTrigger: '根据这几条零散的工作日志，帮我生成一份成果导向的高管周报，结论前置',
     slashCommands: ['/report', '/star'],
   },
+  {
+    id: 'pm-operations',
+    name: 'pm-operations',
+    title: '产品运营与增长闭环（产品运营不分家）',
+    desc: 'AARRR 漏斗诊断、获客分发渠道矩阵、激活 Onboarding、留存召回、变现定价实验、病毒循环与合规红队',
+    category: 'Growth & Operations',
+    goldenTrigger: '我们的 7 日留存从 28% 掉到 19% 了，帮我按 AARRR 定位漏损层并给出本周唯一的运营动作',
+    slashCommands: ['/ops', '/growth', '/retention'],
+  },
 ];
 
 export const SKILL_MAP = new Map(SKILLS.map((s) => [s.id, s]));

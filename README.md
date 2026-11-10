@@ -12,7 +12,7 @@
 # 🎯 交互式选择所需技能并安装到当前项目
 npx ai-native-pm add
 
-# 🚀 一键全量安装全部 7 款 PM 技能
+# 🚀 一键全量安装全部 8 款 PM 技能
 npx ai-native-pm add --all
 
 # 📌 按需单独安装特定技能（如仅安装 PRD 审查或 Solo Builder 闭环）
@@ -60,7 +60,7 @@ npx ai-native-pm list
 本仓库不做空洞的理论堆砌，而是提供三套可直接用于日常工作的实用系统：
 1. **📘 第一部分：产品经理入门手册 (`01-pm-handbook/`)** —— 帮你完成从 `How to build` 到 `Why & What to build` 的底层心智切换，掌握 PM 核心工作流、方法论框架与行业语言。
 2. **🤖 第二部分：AI 赋能产品全流程技能指南 (`02-ai-skills/`)** —— 覆盖从市场调研、用户访谈、PRD 撰写与红队挑刺、15 分钟生成可交互原型，到自助 SQL/Python 数据分析的全套 SOP 与即插即用提示词模板。
-3. **⚡ 第三部分：内置可挂载的 AI Agent Skills (`.agents/skills/` & `.cursor/skills/`)** —— 遵循 Antigravity / Claude Code / Cursor 标准规范封装的 7 个自动化产品经理 Agent 技能包，在当前工作区对话时可自动激活执行。
+3. **⚡ 第三部分：内置可挂载的 AI Agent Skills (`.agents/skills/` & `.cursor/skills/`)** —— 遵循 Antigravity / Claude Code / Cursor 标准规范封装的 8 个自动化产品经理 Agent 技能包，在当前工作区对话时可自动激活执行。
 
 ---
 
@@ -97,7 +97,7 @@ npx ai-native-pm list
 
 ### ⚡ `.agents/skills/` & `.cursor/skills/`：可直接触发的 AI Agent 技能插件
 
-本仓库已在 `.agents/skills/`（并软链接至 `.cursor/skills/`）配置好 7 个工业级标准 Agent 技能包，天然跨平台兼容 **Cursor**、**Claude Code** 与 **Antigravity / Codex** 等支持 `SKILL.md` 规范的 Agent 环境。无需手动配置提示词，直接用自然语言即可唤醒对应 SOP：
+本仓库已在 `.agents/skills/`（并软链接至 `.cursor/skills/`）配置好 8 个工业级标准 Agent 技能包，天然跨平台兼容 **Cursor**、**Claude Code** 与 **Antigravity / Codex** 等支持 `SKILL.md` 规范的 Agent 环境。无需手动配置提示词，直接用自然语言即可唤醒对应 SOP：
 
 | Skill 名称 | 解决的核心场景 | 对应常见 PM 自定义技能 | 如何一句话触发使用 |
 | :--- | :--- | :--- | :--- |
@@ -108,9 +108,10 @@ npx ai-native-pm list
 | **`pm-data-analyst`** | 指标体系设计（北极星/护栏）、A/B 实验显著性检验、留存/漏斗归因分析 | `csv-data-summarizer` | *“帮我检验这组 A/B 测试数据是否显著”* 或 *“排查为什么今天首帧接通率下跌了 15%”* |
 | **`pm-report-polisher`** | 成果导向高管周报/月报、STAR+OKR 晋升述职、双视角 Release Notes 与需求拒绝话术 | `pm-report-polisher` | *“根据这几条零散的工作日志，帮我生成一份成果导向的高管周报”* 或 *“用 STAR 法则帮我提炼本年度晋升述职报告”* |
 | **`pm-solo-builder`** | 独立开发者全闭环：个人约束过滤、证据评级 (Level 0~4) 与代偿行为、≤4h 技术探针 (Spike Gate)、内嵌分发抓手的一页契约、阶梯式 Micro-Spec 代码转译、单周决策门与双阶段红队排雷 | `solo-builder` | 支持快捷指令：`/solo filter [点子]`、`/solo spike [棘刺]`、`/solo contract [解法]`、`/solo spec [契约]`、`/solo sprint [周数据]`、`/solo redteam [方案]` |
+| **`pm-operations`** | 产品运营与增长闭环（产品运营不分家）：AARRR 漏斗诊断、获客渠道矩阵、激活 Onboarding、留存召回、变现定价实验、病毒循环 (K 因子) 与合规红队 | `growth-ops` | *“我们的 7 日留存从 28% 掉到 19% 了，帮我定位漏损层并给出本周唯一运营动作”* 或 支持快捷指令：`/ops [漏斗数据]`、`/growth [渠道]`、`/retention [Cohort 矩阵]` |
 
 #### 🌐 推荐联动的通用开源生态技能 (Eco-Skills)
-在日常工作流中，本仓库的 7 大垂直 PM 技能可与以下通用生态技能协同组合：
+在日常工作流中，本仓库的 8 大垂直 PM 技能可与以下通用生态技能协同组合：
 - **`brainstorming`**（头脑风暴与苏格拉底追问）：在调用 `pm-prd-copilot` 动笔前，让 AI 扮演挑剔总监连续反问，强制收敛业务闭环与边界。
 - **`ui-ux-pro-max`**（现代设计规范与组件库）：与 `pm-prototype-builder` 结合，确保生成的 Web 原型具备现代主流 SaaS / Mobile 审美与专业配色。
 - **`pptx`**（演示文稿生成）：配合 `pm-report-polisher`，将立项方案、季度规划或述职内容直接转换为标准的演示文稿交付物。
