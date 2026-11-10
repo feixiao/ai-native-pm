@@ -81,3 +81,10 @@ When the user wants to prioritize a list of candidate features or requirements:
 4. **下一步行动门禁建议**：
    - 若未达 Level 2：强制停止编码并给出 2 个继续挖掘代偿事实的建议；
    - 若达到 Level 2+：针对涉及端侧 AI、实时音频或硬件底层等高危技术的项目，建议先执行 **`/solo spike` (<=4h 技术探针门禁)**；纯 Web/轻量 SaaS 则建议执行 **`/solo contract` (一页 MVP 契约)**。
+
+---
+
+## 下游交接 (Handoff to Requirements)
+痛点聚类与 RICE 定级完成后，将成果移交需求阶段：
+1. **交接物**：RICE 排序后的 Top 3 需求，各附用户原话引用、证据定级卡（Level 0~4）与当前凑合方案，移交 `pm-prd-copilot` 撰写 PRD 或《一页 MVP 契约》；
+2. **交接红线**：无 Level 2+ 证据的需求只能写入 PRD 的“待验证假设”区，严禁作为已确认痛点占用 MVP 主干范围；独立开发者轨道直接转 `pm-solo-builder` 执行门禁裁决。

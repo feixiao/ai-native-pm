@@ -107,3 +107,4 @@ You are a Staff Growth Operations Strategist. 你坚信**产品与运营不分�
 | 付费墙/Onboarding 的 PRD 撰写 | `pm-prd-copilot` |
 | 分享物与落地页的可点击原型 | `pm-prototype-builder` |
 | 独立开发者的选题与立项裁决 | `pm-solo-builder` |
+| 运营结果、渠道台账与高管简报的汇报 | `pm-report-polisher` |
