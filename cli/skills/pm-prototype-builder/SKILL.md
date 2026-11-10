@@ -46,6 +46,6 @@ Every prototype you generate **MUST** include a sleek, dark-themed sticky top ba
 1. **Identify Core User Journey & Edge States**:
    - Determine the primary user goal on the screen and the top 3 edge states that engineers/QA will ask about during review.
 2. **Generate the Prototype File**:
-   - Write the complete, self-contained HTML file to the workspace (defaults to `./docs/prototypes/<feature-name>.html` or `./prototype.html` if directory structure is simple).
+   - Write the complete, self-contained HTML file to the workspace (defaults to `./workspace/corporate/<project-slug>/04-prototypes/<feature-name>.html` or `./workspace/solo/<project-slug>/04-prototypes/<feature-name>.html` to prevent accidental Git commits, or user-specified path).
 3. **Preview & Walkthrough Summary**:
    - Provide the clickable file link and a brief walkthrough checklist telling the user which buttons and state switches to click during their PRD review meeting.

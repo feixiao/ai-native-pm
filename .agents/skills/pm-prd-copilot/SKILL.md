@@ -99,7 +99,10 @@ Immediately after drafting (or when reviewing an existing PRD), append a **`🛡
 
 ## Step 4: Output & Next-Step Recommendations
 
-1. **文件落地与沉淀**：默认将生成的 PRD 文件保存到当前工程的 `./docs/prd/PRD_<FEATURE_NAME>_v1.0.md`（若 `docs/prd` 目录不存在则自动创建，或根据用户指定路径保存），便于版本控制追踪。
+1. **文件落地与沉淀**：默认将生成的 PRD 文件保存至本地私有工作台目录，避免污染公开仓库：
+   - 企业级工业 PRD：`./workspace/corporate/<project-slug>/03-prd-specs/PRD_<FEATURE_NAME>_v1.0.md`；
+   - 独立开发极窄切片：`./workspace/solo/<project-slug>/03-contract/ONE_PAGE_MVP_CONTRACT.md`；
+   - 或根据用户指定路径保存。`workspace/` 目录已全局 Git 忽略，确保私有业务与商业机密永不上云。
 2. Offer to generate either:
    - An **Executive Summary (One-Pager)** for leadership/sales alignment, OR
    - An **Interactive HTML/React Prototype** (via the `pm-prototype-builder` skill) for the upcoming review meeting.

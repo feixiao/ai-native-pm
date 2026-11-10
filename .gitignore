@@ -14,3 +14,20 @@ local_cockpit_memory.db*
 __pycache__/
 *.pyc
 .planning/
+
+# ==============================================================================
+# Local Production Workspace (Private user documents, prototypes & data)
+# ==============================================================================
+workspace/corporate/*
+workspace/solo/*
+workspace/archive/**
+workspace/shared/**
+!workspace/archive/**/
+!workspace/shared/**/
+!workspace/**/.gitkeep
+!workspace/**/README.md
+
+*.local.md
+*.private.md
+docs/local/
+docs/temp/

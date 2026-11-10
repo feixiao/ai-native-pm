@@ -83,6 +83,13 @@
 - ❌ **严禁无防破产护栏的 API 设计**：所有调用 LLM 或外部云服务的方案，必须默认包含端侧频率限制 (Rate Limit)、单用户每日 Quota 熔断与账单告警，严禁让开发者的个人信用卡承担无限扣费风险。
 - ❌ **严禁假设存在多角色协同**：严禁给出“交由测试部门验证”、“与运营对齐排期”、“召开跨部门评审会”等脱离单人现实的建议。
 
+### 5. 生产文档存储与隔离红线 (Workspace Storage & Zero-Pollution Guardrails)
+- ❌ **严禁向仓库根目录或公共 `docs/` 写入新业务文档**：`docs/` 仅保留公开教学用例与自动化评测基准。所有后续使用本仓库技能生成的业务文档、用户访谈、一页纸契约、Micro-Spec、原型 HTML、SQL 埋点等，**一律写入 `workspace/` 本地工作台，严禁直接上传或提交至 Git 远端**。
+- ❌ **严禁跨轨道相互污染 (No Track Contamination)**：企业级 TPM 重度文档（40+页 PRD、RACI、全量状态机）严禁写入 `solo/`；独立开发极窄切片（一页纸契约、Micro-Spec 阶梯）严禁写入 `corporate/`。
+- ❌ **严禁跨项目相互污染 (No Project Contamination)**：每个产品/微服务/垂直工具必须建立独立的 `<project-slug>` 命名空间目录，严禁将两个不同业务线的文件混在同一个文件夹。
+- ❌ **严禁交付物类型相互污染 (No Artifact Contamination)**：调研文档必须入 `01`，规格/契约必须入 `03`，可运行原型 HTML 必须入 `04`，研发契约入 `05`，验收用例入 `06`，数据指标入 `07`。严禁在项目根目录下平铺堆放混合文件。
+- ❌ **严禁活跃区与废弃区相互污染 (No Status Contamination)**：触发 14 天两周死线终止 (Drop-dead) 或已结项归档的项目，必须立即整体移至 `workspace/archive/` 隔离区，保持主工作区极致清爽。
+
 ## 三、 仓库目录架构与职责划分 (Repository Architecture)
 
 ```
@@ -113,7 +120,13 @@ pm/
 │   ├── pm-report-polisher/   # 成果导向周报/月报/述职与需求拒绝话术
 │   └── pm-solo-builder/      # 独立开发者全流程闭环：约束过滤/证据分级/一页契约/单问题周冲刺/红队自检
 ├── .cursor/                  # 🔌 Cursor 适配层（软链接到 .agents/skills）
-├── docs/                     # 📂 交付级工业实战案例
+├── workspace/                # 🔒 本地生产工作台（已全局 gitignore，生产文档永不上传远程）
+│   ├── README.md             # 本地工作台目录索引与防污染隔离使用指南
+│   ├── corporate/            # 🏢 轨道 A：企业级项目沙盒 (01-research ~ 07-data-metrics)
+│   ├── solo/                 # 🚀 轨道 B：独立开发项目沙盒 (01-validation ~ 06-metrics-cash)
+│   ├── shared/               # 🧩 跨项目公用沉淀 (模板、访谈话术、速查表)
+│   └── archive/              # 📦 归档与止损隔离区 (淘汰或已结项项目)
+├── docs/                     # 📂 仓库内置参考基准案例 (公开教学用例)
 │   ├── prd/                  # 标准 PRD（AI 语音助手 MVP、SkillStore MVP 等）
 │   ├── research/             # 商业与技术可行性调研（对标 Skillry.dev 等）
 │   └── design/               # 交互与系统设计规范
