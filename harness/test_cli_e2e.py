@@ -10,6 +10,7 @@ Verifies:
 """
 
 import os
+import re
 import shutil
 import subprocess
 import sys
@@ -18,6 +19,12 @@ from pathlib import Path
 
 REPO_ROOT = Path(__file__).resolve().parent.parent
 CLI_BIN = REPO_ROOT / "cli" / "bin" / "cli.mjs"
+
+def expected_skill_count():
+    """Derive the expected installed skill count from the CLI registry,
+    so the gate stays green as the ecosystem grows (never hardcode)."""
+    meta = (REPO_ROOT / "cli" / "src" / "skills-meta.mjs").read_text(encoding="utf-8")
+    return len(re.findall(r"id:\s*'[\w-]+',", meta))
 
 def run_cli(args, cwd=None, env=None):
     cmd = ["node", str(CLI_BIN)] + args
@@ -28,6 +35,8 @@ def run_cli(args, cwd=None, env=None):
     return res
 
 def test_cli():
+    n = expected_skill_count()
+    print(f"  (CLI registry contains {n} skills; assertions scale with it.)")
     print("🧪 [Test 1/6] CLI --help & --version basic check...")
     res = run_cli(["--version"])
     assert res.returncode == 0, f"Version check failed: {res.stderr}"
@@ -70,19 +79,19 @@ def test_cli():
         print("🧪 [Test 4/6] Batch skill installation: --all...")
         res = run_cli(["add", "--all", "-d", str(sandbox), "-f"])
         assert res.returncode == 0
-        assert "成功写入 7 款技能" in res.stdout
+        assert f"成功写入 {n} 款技能" in res.stdout
 
         skills_dir = sandbox / ".agents" / "skills"
         installed_skills = [d.name for d in skills_dir.iterdir() if d.is_dir()]
-        assert len(installed_skills) == 7, f"Expected 7 skills, got {len(installed_skills)}"
-        print(f"  ✔ All 7 skills installed in sandbox: {', '.join(installed_skills)}")
+        assert len(installed_skills) == n, f"Expected {n} skills, got {len(installed_skills)}"
+        print(f"  ✔ All {n} skills installed in sandbox: {', '.join(installed_skills)}")
 
         # Update test
         print("🧪 [Test 5/6] Skill update verification...")
         res = run_cli(["update", "-d", str(sandbox), "-f"])
         assert res.returncode == 0
-        assert "更新完成！共更新 7 款技能" in res.stdout
-        print("  ✔ Update command successfully updated all 7 skills.")
+        assert f"更新完成！共更新 {n} 款技能" in res.stdout
+        print(f"  ✔ Update command successfully updated all {n} skills.")
 
     # Global mode test
     with tempfile.TemporaryDirectory() as temp_home_dir:

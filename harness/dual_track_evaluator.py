@@ -87,11 +87,15 @@ def main():
     r_content = read_file_corp(RESEARCH_FILE)
     p_content = read_file_corp(PRD_FILE)
     
-    if not r_content or not p_content:
-        print(f"ERROR: Corporate files missing: {RESEARCH_FILE} or {PRD_FILE}", file=sys.stderr)
+    if not p_content:
+        print(f"ERROR: Corporate PRD baseline missing: {PRD_FILE}", file=sys.stderr)
         sys.exit(1)
 
-    r_score, r_details = evaluate_research(r_content)
+    if r_content:
+        r_score, r_details = evaluate_research(r_content)
+    else:
+        # Research baseline is optional; PRD is the hard gate.
+        r_score, r_details = 0.0, {}
     p_score, p_details = evaluate_prd(p_content)
     corp_score = round(r_score + p_score, 2)
 
