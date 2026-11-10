@@ -158,6 +158,11 @@ Agent 在处理具体任务时，应主动调用或对齐以下 8 大内置垂�
 - 生成原型时：联动 `ui-ux-pro-max` 引入高质量排版、视觉层级与主流设计系统。
 - 交付与汇报时：联动 `pptx`、`docx`、`xlsx`、`pdf` 输出结构化排版交付物。
 
+### 全生命周期交接链路 (Lifecycle Handoff Chain)
+8 大技能构成 **“市场 → 取证 → 需求 → 原型 → 指标 → 运营 → 汇报 → 下一轮市场”** 闭环，每个技能的 SKILL.md 均内置指向下一阶段的交接指引（交接物 + 红线），跨阶段切换时按其中定义执行：
+
+`pm-market-competitor` → `pm-user-insight` → `pm-prd-copilot` → `pm-prototype-builder` → `pm-data-analyst` → `pm-operations` → `pm-report-polisher` → 回流 `pm-market-competitor`；`pm-solo-builder` 为独立轨道主引擎，经兄弟技能联动地图接入链路任意阶段。
+
 ---
 
 ## 五、 标准工作流执行规范 (Standard Operating Procedures)

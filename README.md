@@ -117,6 +117,8 @@ npx ai-native-pm list
 - **`pptx`**（演示文稿生成）：配合 `pm-report-polisher`，将立项方案、季度规划或述职内容直接转换为标准的演示文稿交付物。
 - **`docx` / `xlsx` / `pdf`**（文档与表格处理）：自动读取客户原声工单表、导出指标计算结果，或一键生成排版规范的交付文档。
 
+**全生命周期交接链路**：8 大技能内置阶段交接指引，构成 `市场 → 取证 → 需求 → 原型 → 指标 → 运营 → 汇报 → 下一轮市场` 闭环（`pm-market-competitor` → `pm-user-insight` → `pm-prd-copilot` → `pm-prototype-builder` → `pm-data-analyst` → `pm-operations` → `pm-report-polisher` → 回流调研）；`pm-solo-builder` 为独立轨道主引擎，经兄弟技能联动地图接入任意阶段。
+
 #### 🔌 跨环境多 IDE 即插即用说明
 为避免不同工具对配置目录的差异，项目已做多端兼容映射：
 - **任意外部项目一键安装**：推荐直接在目标项目根目录执行 `npx ai-native-pm add --all`，自动完成双运行时配置。
