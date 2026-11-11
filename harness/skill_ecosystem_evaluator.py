@@ -25,6 +25,9 @@ METRIC docs_quality=<float 0.0-1.0>        dual-track reference-doc quality
 METRIC handbook_symmetry=<float 0.0-1.0>   fraction of skills with a declared,
                                              existing, substantive 02-ai-skills
                                              companion guide (1:1 convention)
+METRIC wake_command_docs=<float 0.0-1.0>   fraction of CLI-advertised slash
+                                             commands documented in the paired
+                                             SKILL.md (唤醒指令 contract)
 METRIC handoff_documented=<int>             count of documented handoff edges
 METRIC skill_count=<int>                   skills on disk
 METRIC registered_count=<int>               skills in CLI meta
@@ -263,6 +266,30 @@ def handbook_symmetry(disk_ids, agents_content):
     return covered / len(disk_ids) if disk_ids else 1.0
 
 
+def wake_command_docs(disk_skills, meta_text):
+    """Wake-command contract 0..1. The CLI advertises each skill's
+    `slashCommands` as 唤醒指令 in its `add`/`info` output — the paired
+    SKILL.md must document every advertised command, otherwise the user is
+    promised a trigger the installed artifact never explains. Fraction of
+    advertised commands actually present in the SKILL.md body."""
+    total = 0
+    present = 0
+    for m in re.finditer(
+            r"\{[^{}]*id:\s*'([\w-]+)'[^{}]*slashCommands:\s*\[([^\]]*)\]",
+            meta_text):
+        sid = m.group(1)
+        if sid not in disk_skills:
+            continue
+        body = disk_skills[sid]
+        for cmd in (c.strip().strip("'\"") for c in m.group(2).split(",")):
+            if not cmd:
+                continue
+            total += 1
+            if cmd in body:
+                present += 1
+    return (present / total) if total else 1.0
+
+
 def trigger_disambiguation(disk_skills):
     """Routing-ambiguity check 0..1. For each unordered pair of skills whose
     frontmatter descriptions share at least one TRIGGER_CONCEPTS keyword,
@@ -371,18 +398,22 @@ def main():
     # ---- trigger disambiguation (routing clarity) ---------------------------
     disambiguation, n_amb_pairs = trigger_disambiguation(disk_skills)
 
+    # ---- wake-command contract (advertised 唤醒指令 must be documented) ------
+    wake_docs = wake_command_docs(disk_skills, meta_text)
+
     # ---- reference-doc quality (AGENTS.md SOP 3 dual-track baseline) --------
     docs_quality = docs_quality_score()
 
     # ---- composite ----------------------------------------------------------
-    ecosystem_score = 100.0 * (0.20 * lifecycle_coverage
-                               + 0.16 * avg_quality
-                               + 0.12 * ops_coverage
-                               + 0.12 * sync_ratio
-                               + 0.12 * handoff_coverage
-                               + 0.08 * disambiguation
-                               + 0.12 * docs_quality
-                               + 0.08 * handbook)
+    ecosystem_score = 100.0 * (0.18 * lifecycle_coverage
+                               + 0.14 * avg_quality
+                               + 0.10 * ops_coverage
+                               + 0.10 * sync_ratio
+                               + 0.10 * handoff_coverage
+                               + 0.07 * disambiguation
+                               + 0.10 * docs_quality
+                               + 0.07 * handbook
+                               + 0.14 * wake_docs)
 
     print(f"METRIC ecosystem_score={ecosystem_score:.2f}")
     print(f"METRIC lifecycle_coverage={lifecycle_coverage:.3f}")
@@ -393,6 +424,7 @@ def main():
     print(f"METRIC trigger_disambiguation={disambiguation:.3f}")
     print(f"METRIC docs_quality={docs_quality:.3f}")
     print(f"METRIC handbook_symmetry={handbook:.3f}")
+    print(f"METRIC wake_command_docs={wake_docs:.3f}")
     print(f"METRIC ambiguous_pairs={n_amb_pairs}")
     print(f"METRIC handoff_documented={documented}")
     print(f"METRIC skill_count={len(disk_set)}")
