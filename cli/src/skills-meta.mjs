@@ -71,6 +71,15 @@ export const SKILLS = [
     goldenTrigger: '我们的 7 日留存从 28% 掉到 19% 了，帮我按 AARRR 定位漏损层并给出本周唯一的运营动作',
     slashCommands: ['/ops', '/growth', '/retention'],
   },
+  {
+    id: 'pm-customer-success',
+    name: 'pm-customer-success',
+    title: '客户成功：支持分流、流失挽留与单位经济',
+    desc: '支持分层与自助拦截 (Deflection)、取消挽留流程 (Save Flow)、NPS/CSAT 不满者访谈、支持黑洞红线与个人时间预算',
+    category: 'Customer Success & Support',
+    goldenTrigger: '我们的取消率连续三周上升，帮我设计一个体面的挽留流程并核算支持单位经济',
+    slashCommands: ['/cs', '/save', '/churn'],
+  },
 ];
 
 export const SKILL_MAP = new Map(SKILLS.map((s) => [s.id, s]));

@@ -108,16 +108,17 @@ npx ai-native-pm list
 | **`pm-data-analyst`** | 指标体系设计（北极星/护栏）、A/B 实验显著性检验、留存/漏斗归因分析 | `csv-data-summarizer` | *“帮我检验这组 A/B 测试数据是否显著”* 或 *“排查为什么今天首帧接通率下跌了 15%”* |
 | **`pm-report-polisher`** | 成果导向高管周报/月报、STAR+OKR 晋升述职、双视角 Release Notes 与需求拒绝话术 | `pm-report-polisher` | *“根据这几条零散的工作日志，帮我生成一份成果导向的高管周报”* 或 *“用 STAR 法则帮我提炼本年度晋升述职报告”* |
 | **`pm-solo-builder`** | 独立开发者全闭环：个人约束过滤、证据评级 (Level 0~4) 与代偿行为、≤4h 技术探针 (Spike Gate)、内嵌分发抓手的一页契约、阶梯式 Micro-Spec 代码转译、单周决策门与双阶段红队排雷 | `solo-builder` | 支持快捷指令：`/solo filter [点子]`、`/solo spike [棘刺]`、`/solo contract [解法]`、`/solo spec [契约]`、`/solo sprint [周数据]`、`/solo redteam [方案]` |
-| **`pm-operations`** | 产品运营与增长闭环（产品运营不分家）：AARRR 漏斗诊断、获客渠道矩阵、激活 Onboarding、留存召回、变现定价实验、病毒循环 (K 因子) 与合规红队 | `growth-ops` | *“我们的 7 日留存从 28% 掉到 19% 了，帮我定位漏损层并给出本周唯一运营动作”* 或 支持快捷指令：`/ops [漏斗数据]`、`/growth [渠道]`、`/retention [Cohort 矩阵]` |
+| **`pm-operations`** | 产品运营与增长闭环(产品运营不分家):AARRR 漏斗诊断、获客渠道矩阵、激活 Onboarding、留存召回、变现定价实验、病毒循环 (K 因子) 与合规红队 | `growth-ops` | *"我们的 7 日留存从 28% 掉到 19% 了,帮我定位漏损层并给出本周唯一运营动作"* 或 支持快捷指令:`/ops [漏斗数据]`、`/growth [渠道]`、`/retention [Cohort 矩阵]` |
+| **`pm-customer-success`** | 客户成功与支持体系:支持分层与自助拦截 (Deflection)、取消挽留流程 (Save Flow) 与反 Dark Pattern 红线、NPS/CSAT 不满者访谈、支持单位经济与支持黑洞裁决 | `customer-success` | *"我们的取消率连续三周上升,帮我设计一个体面的挽留流程并核算支持单位经济"* 或 支持快捷指令:`/cs [支持工单]`、`/save [取消流程]`、`/churn [流失数据]` |
 
 #### 🌐 推荐联动的通用开源生态技能 (Eco-Skills)
-在日常工作流中，本仓库的 8 大垂直 PM 技能可与以下通用生态技能协同组合：
+在日常工作流中,本仓库的 9 大垂直 PM 技能可与以下通用生态技能协同组合:
 - **`brainstorming`**（头脑风暴与苏格拉底追问）：在调用 `pm-prd-copilot` 动笔前，让 AI 扮演挑剔总监连续反问，强制收敛业务闭环与边界。
 - **`ui-ux-pro-max`**（现代设计规范与组件库）：与 `pm-prototype-builder` 结合，确保生成的 Web 原型具备现代主流 SaaS / Mobile 审美与专业配色。
 - **`pptx`**（演示文稿生成）：配合 `pm-report-polisher`，将立项方案、季度规划或述职内容直接转换为标准的演示文稿交付物。
 - **`docx` / `xlsx` / `pdf`**（文档与表格处理）：自动读取客户原声工单表、导出指标计算结果，或一键生成排版规范的交付文档。
 
-**全生命周期交接链路**：8 大技能内置阶段交接指引，构成 `市场 → 取证 → 需求 → 原型 → 指标 → 运营 → 汇报 → 下一轮市场` 闭环（`pm-market-competitor` → `pm-user-insight` → `pm-prd-copilot` → `pm-prototype-builder` → `pm-data-analyst` → `pm-operations` → `pm-report-polisher` → 回流调研）；`pm-solo-builder` 为独立轨道主引擎，经兄弟技能联动地图接入任意阶段。
+**全生命周期交接链路**：9 大技能内置阶段交接指引，构成 `市场 → 取证 → 需求 → 原型 → 指标 → 运营 → 客户成功 → 汇报 → 下一轮市场` 闭环（`pm-market-competitor` → `pm-user-insight` → `pm-prd-copilot` → `pm-prototype-builder` → `pm-data-analyst` → `pm-operations` → `pm-customer-success` → `pm-report-polisher` → 回流调研；侧向：`pm-customer-success` 的 Detractor 流失访谈回流 `pm-user-insight`）；`pm-solo-builder` 为独立轨道主引擎，经兄弟技能联动地图接入任意阶段。
 
 #### 🔌 跨环境多 IDE 即插即用说明
 为避免不同工具对配置目录的差异，项目已做多端兼容映射：

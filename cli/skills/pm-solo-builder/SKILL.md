@@ -349,4 +349,5 @@ Solo Builder 是独立轨道的主引擎；各阶段优先移交给对应兄弟�
 | 原型验证 | `pm-prototype-builder` | 单文件可点击原型（带状态切换器） |
 | 指标与经济账 | `pm-data-analyst` | 北极星指标 + 单客边际利润测算 |
 | 分发与发布 | `pm-operations` | 单渠道纪律 + 自发酵传播钩子 |
+| 支持黑洞与流失挽留 | `pm-customer-success` | 支持分流三层 + 体面挽留流程 + 单位经济核算 |
 | 周复盘与汇报 | `pm-report-polisher` | 单周复盘五段公式 |
