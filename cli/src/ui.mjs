@@ -23,6 +23,29 @@ ${c.gray('AI-Native PM Skills Toolkit for Cursor, Claude Code, Antigravity & Cod
 `);
 }
 
+// East-Asia-aware display width (CJK chars = 2 cols) so box borders stay aligned.
+function displayWidth(s) {
+  let w = 0;
+  for (const ch of String(s)) {
+    const cp = ch.codePointAt(0);
+    const wide =
+      (cp >= 0x1100 && cp <= 0x115f) ||
+      (cp >= 0x2e80 && cp <= 0xa4cf) ||
+      (cp >= 0xac00 && cp <= 0xd7a3) ||
+      (cp >= 0xf900 && cp <= 0xfaff) ||
+      (cp >= 0xfe30 && cp <= 0xfe4f) ||
+      (cp >= 0xff00 && cp <= 0xff60) ||
+      (cp >= 0xffe0 && cp <= 0xffe6);
+    w += wide ? 2 : 1;
+  }
+  return w;
+}
+
+function padDisplay(s, width) {
+  const pad = width - displayWidth(s);
+  return String(s) + (pad > 0 ? ' '.repeat(pad) : '');
+}
+
 export function printQuickStartCard(skill, targetPath) {
   const line = '─'.repeat(66);
   console.log(`
@@ -36,7 +59,7 @@ ${c.cyan('│')}  ${c.bold(c.yellow('💡 黄金唤醒词 (Golden Trigger Prompt
 ${c.cyan('│')}  ${c.cyan('“' + skill.goldenTrigger + '”')}
 ${c.cyan('│')}                                                                    ${c.cyan('│')}
 ${c.cyan('│')}  ${c.bold('⚡ 快捷指令速查:')} ${c.magenta(skill.slashCommands.join('  ')).padEnd(52)} ${c.cyan('│')}
-${c.cyan('│')}  ${c.dim('在 Cursor / Claude Code / Codex 对话框直接粘贴上述唤醒词即可触发。')} ${c.cyan('│')}
+${c.cyan('│')}  ${c.dim(padDisplay('已落盘 .claude/commands 与 .cursor/commands,斜杠触发', 52))} ${c.cyan('│')}
 ${c.cyan('└' + line + '┘')}
 `);
 }

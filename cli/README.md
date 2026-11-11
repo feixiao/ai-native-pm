@@ -42,8 +42,8 @@ npx ai-native-pm list
 
 ## 🔌 Multi-Runtime Compatibility
 
-`ai-native-pm` automatically writes skills to `.agents/skills/<name>/SKILL.md`, generates corresponding `.cursor/skills/<name>` mappings, and materializes every advertised slash command as a `.claude/commands/<cmd>.md` file:
-- **Cursor**: Instant auto-activation via `.cursor/skills/`.
+`ai-native-pm` automatically writes skills to `.agents/skills/<name>/SKILL.md`, generates corresponding `.cursor/skills/<name>` mappings, and materializes every advertised slash command into BOTH runtimes (`.claude/commands/<cmd>.md` + `.cursor/commands/<cmd>.md`):
+- **Cursor**: Instant auto-activation via `.cursor/skills/`, plus `@`-invokable custom commands in `.cursor/commands/`.
 - **Claude Code**: Native recognition via `.agents/skills/`, plus ready-to-type slash commands in `.claude/commands/`.
 - **Antigravity / Codex**: Direct compatibility with standard `SKILL.md` specifications.
 
@@ -59,7 +59,7 @@ npx ai-native-pm update [skills...]  # Update installed skills to latest upstrea
 
 # Flags:
 --all, -a                            # Apply to all skills
---global, -g                         # Target user global directory (~/.agents/skills, ~/.cursor/skills, ~/.claude/commands)
+--global, -g                         # Target user global directory (~/.agents/skills, ~/.cursor/skills, ~/.claude/commands, ~/.cursor/commands)
 --force, -f                          # Overwrite existing files without prompt
 --dir, -d <path>                     # Target directory (default: process.cwd())
 ```

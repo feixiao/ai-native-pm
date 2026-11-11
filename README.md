@@ -100,7 +100,7 @@ npx ai-native-pm list
 
 ### ⚡ `.agents/skills/` & `.cursor/skills/`：可直接触发的 AI Agent 技能插件
 
-本仓库已在 `.agents/skills/`（并软链接至 `.cursor/skills/`）配置好 10 个工业级标准 Agent 技能包，天然跨平台兼容 **Cursor**、**Claude Code** 与 **Antigravity / Codex** 等支持 `SKILL.md` 规范的 Agent 环境。无需手动配置提示词，直接用自然语言即可唤醒对应 SOP；通过 `npx ai-native-pm add` 安装的技能会同时落盘 `.claude/commands/` 唤醒指令文件，在 Claude Code 中直接敲斜杠命令即可触发：
+本仓库已在 `.agents/skills/`（并软链接至 `.cursor/skills/`）配置好 10 个工业级标准 Agent 技能包，天然跨平台兼容 **Cursor**、**Claude Code** 与 **Antigravity / Codex** 等支持 `SKILL.md` 规范的 Agent 环境。无需手动配置提示词，直接用自然语言即可唤醒对应 SOP；通过 `npx ai-native-pm add` 安装的技能会同时落盘 `.claude/commands/` 与 `.cursor/commands/` 唤醒指令文件，在 Claude Code / Cursor 中直接敲斜杠命令即可触发：
 
 | Skill 名称 | 解决的核心场景 | 对应常见 PM 自定义技能 | 如何一句话触发使用 |
 | :--- | :--- | :--- | :--- |

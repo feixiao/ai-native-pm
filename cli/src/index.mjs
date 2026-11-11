@@ -57,7 +57,7 @@ ${c.bold('核心命令 (Commands):')}
 
 ${c.bold('常用选项 (Options):')}
   ${c.yellow('--all, -a')}           一键安装/更新全部 ${SKILLS.length} 大 PM 技能
-  ${c.yellow('--global, -g')}        安装到个人用户全局目录 (~/.agents/skills 等)
+  ${c.yellow('--global, -g')}        安装到个人用户全局目录 (~/.agents/skills, ~/.claude/commands, ~/.cursor/commands)
   ${c.yellow('--force, -f')}         覆盖已有技能而不提示确认
   ${c.yellow('--dir, -d <path>')}    指定目标工程根目录 (默认当前工作区)
   ${c.yellow('--help, -h')}          查看命令帮助
@@ -156,7 +156,9 @@ async function handleAdd(params, flags) {
       } else {
         console.log(`  ${c.green('✔')} ${c.bold(skill.name)} ➔ ${c.gray(res.path)}`);
         if (res.commands && res.commands.length > 0) {
-          console.log(`      ${c.yellow('⚡ 唤醒指令:')} ${res.commands.map((f) => c.cyan(`/${path.basename(f, '.md')}`)).join('  ')}`);
+          const names = [...new Set(res.commands.map((f) => path.basename(f, '.md')))]
+            .map((nm) => c.cyan(`/${nm}`)).join('  ');
+          console.log(`      ${c.yellow('⚡ 唤醒指令:')} ${names} ${c.gray('→ .claude/commands + .cursor/commands')}`);
         }
         installedResults.push(res);
       }

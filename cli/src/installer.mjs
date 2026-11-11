@@ -31,6 +31,7 @@ export function resolveTargetDirs(options = {}) {
     agentsSkillsDir: path.join(baseDir, '.agents', 'skills'),
     cursorSkillsDir: path.join(baseDir, '.cursor', 'skills'),
     claudeCommandsDir: path.join(baseDir, '.claude', 'commands'),
+    cursorCommandsDir: path.join(baseDir, '.cursor', 'commands'),
   };
 }
 
@@ -58,8 +59,9 @@ async function promptOverwrite(skillId) {
   });
 }
 
-// Materialize the advertised 唤醒指令: one Claude Code custom command file
-// per slashCommands entry, pointing back at the installed skill.
+// Materialize the advertised 唤醒指令: one custom command file per slashCommands
+// entry, pointing back at the installed skill. $ARGUMENTS is supported by both
+// Claude Code and Cursor custom commands, so a single template serves both runtimes.
 function renderCommandFile(skill, cmd) {
   const name = cmd.replace(/^\//, '');
   return [
@@ -75,17 +77,23 @@ function renderCommandFile(skill, cmd) {
 }
 
 export function installCommands(skill, options = {}) {
-  const { claudeCommandsDir } = resolveTargetDirs(options);
-  fs.mkdirSync(claudeCommandsDir, { recursive: true });
+  const { claudeCommandsDir, cursorCommandsDir } = resolveTargetDirs(options);
+  for (const dir of [claudeCommandsDir, cursorCommandsDir]) {
+    fs.mkdirSync(dir, { recursive: true });
+  }
   const written = [];
   for (const cmd of skill.slashCommands || []) {
-    const file = path.join(claudeCommandsDir, `${cmd.replace(/^\//, '')}.md`);
-    if (fs.existsSync(file) && !options.force) {
-      console.warn(c.yellow(`⚠️  命令已存在，跳过: ${file}（使用 --force 覆盖）`));
-      continue;
+    // Dual-runtime parity: every advertised command materialized for BOTH
+    // Claude Code and Cursor (the two runtimes this toolkit already targets).
+    for (const dir of [claudeCommandsDir, cursorCommandsDir]) {
+      const file = path.join(dir, `${cmd.replace(/^\//, '')}.md`);
+      if (fs.existsSync(file) && !options.force) {
+        console.warn(c.yellow(`⚠️  命令已存在，跳过: ${file}（使用 --force 覆盖）`));
+        continue;
+      }
+      fs.writeFileSync(file, renderCommandFile(skill, cmd), 'utf8');
+      written.push(file);
     }
-    fs.writeFileSync(file, renderCommandFile(skill, cmd), 'utf8');
-    written.push(file);
   }
   return written;
 }
@@ -137,7 +145,7 @@ export async function installSkill(skill, options = {}) {
     }
   }
 
-  // 3. Materialize the advertised wake commands into .claude/commands/
+  // 3. Materialize the advertised wake commands into .claude/commands/ + .cursor/commands/
   const commands = installCommands(skill, options);
 
   return {

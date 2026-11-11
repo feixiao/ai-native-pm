@@ -317,8 +317,8 @@ def wake_runtime_parity(meta_text, installer_text):
     if not body:
         return 0.0
     text = body.group(0)
-    claude = ".claude" in text and "commands" in text
-    cursor = ".cursor" in text and "commands" in text
+    claude = "claudeCommandsDir" in text
+    cursor = "cursorCommandsDir" in text
     return 1.0 if (claude and cursor) else 0.0
 
 

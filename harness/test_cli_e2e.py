@@ -3,7 +3,7 @@
 E2E Sandbox Automated Test for ai-native-pm CLI
 Verifies:
 1. Fresh target project: list shows uninstalled
-2. Single skill installation (pm-prd-copilot): checks .agents and .cursor directories, zero broken relative links, wake commands materialized as .claude/commands/*.md pointing back at the skill
+2. Single skill installation (pm-prd-copilot): checks .agents and .cursor directories, zero broken relative links, wake commands materialized into BOTH .claude/commands/*.md and .cursor/commands/*.md pointing back at the skill
 3. Batch installation (--all): all 7 skills installed
 4. Safe conflict handling and --force update
 5. Global mode (-g) with isolated HOME environment
@@ -83,7 +83,13 @@ def test_cli():
         prd_cmd = prd_cmd_file.read_text(encoding="utf-8")
         assert "pm-prd-copilot" in prd_cmd, "Command file must point back at its skill!"
         assert "$ARGUMENTS" in prd_cmd, "Command file must forward user input via $ARGUMENTS!"
-        print("  ✔ Wake command materialized: /prd -> pm-prd-copilot")
+
+        # Dual-runtime parity: same command also materialized for Cursor
+        cursor_cmd_file = sandbox / ".cursor" / "commands" / "prd.md"
+        assert cursor_cmd_file.exists(), "Wake command .cursor/commands/prd.md not materialized!"
+        cursor_cmd = cursor_cmd_file.read_text(encoding="utf-8")
+        assert "pm-prd-copilot" in cursor_cmd, "Cursor command file must point back at its skill!"
+        print("  ✔ Wake commands materialized in BOTH runtimes: .claude/commands + .cursor/commands")
 
         # Batch install: --all
         print("🧪 [Test 4/6] Batch skill installation: --all...")
@@ -104,7 +110,9 @@ def test_cli():
         )
         all_cmd_files = sorted(p.name for p in (sandbox / ".claude" / "commands").glob("*.md"))
         assert len(all_cmd_files) == total_cmds, f"Expected {total_cmds} command files, got {len(all_cmd_files)}: {all_cmd_files}"
-        print(f"  ✔ All {total_cmds} advertised wake commands materialized across {n} skills.")
+        cursor_cmd_files = sorted(p.name for p in (sandbox / ".cursor" / "commands").glob("*.md"))
+        assert len(cursor_cmd_files) == total_cmds, f"Expected {total_cmds} Cursor command files, got {len(cursor_cmd_files)}: {cursor_cmd_files}"
+        print(f"  ✔ All {total_cmds} advertised wake commands materialized across {n} skills (both runtimes).")
 
         # Update test
         print("🧪 [Test 5/6] Skill update verification...")
@@ -121,7 +129,11 @@ def test_cli():
         assert res.returncode == 0
         global_skill = temp_home / ".agents" / "skills" / "pm-solo-builder" / "SKILL.md"
         assert global_skill.exists(), "Global skill not found in custom HOME!"
-        print("  ✔ Global mode (-g) correctly wrote to ~/.agents/skills/pm-solo-builder")
+        claude_cmds = sorted(p.name for p in (temp_home / ".claude" / "commands").glob("*.md"))
+        cursor_cmds = sorted(p.name for p in (temp_home / ".cursor" / "commands").glob("*.md"))
+        assert len(claude_cmds) == len(cursor_cmds) > 0, \
+            f"Global wake commands must be materialized for BOTH runtimes: claude={claude_cmds} cursor={cursor_cmds}"
+        print(f"  ✔ Global mode (-g) wrote skill + {len(claude_cmds)} wake commands to BOTH ~/.claude/commands and ~/.cursor/commands")
 
     print("\n🎉 ALL 6 CLI E2E TESTS PASSED 100%! ZERO FAILURES.")
 
