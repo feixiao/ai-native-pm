@@ -12,11 +12,14 @@ published across the three surfaces:
 
 Outputs (all deterministic, file-based, no network):
 METRIC ecosystem_score=<float 0.0-100.0>   PRIMARY
-METRIC lifecycle_coverage=<float 0.0-1.0>  fraction of 8 lifecycle stages covered
+METRIC lifecycle_coverage=<float 0.0-1.0>  fraction of 10 lifecycle stages covered
 METRIC ops_coverage=<float 0.0-1.0>        quality of operations/growth coverage
 METRIC avg_skill_quality=<float 0.0-1.0>   mean per-skill craft score
 METRIC cli_sync=<float 0.0-1.0>            three-surface registry consistency
 METRIC handoff_coverage=<float 0.0-1.0>    fraction of 12 documented lifecycle handoffs
+METRIC trigger_disambiguation=<float 0.0-1.0> fraction of ambiguous skill pairs
+                                             with explicit sibling pointers
+METRIC ambiguous_pairs=<int>               count of ambiguous description pairs
 METRIC handoff_documented=<int>             count of documented handoff edges
 METRIC skill_count=<int>                   skills on disk
 METRIC registered_count=<int>               skills in CLI meta
@@ -68,6 +71,37 @@ OPS_KEYWORDS = re.compile(
     r"community|user ops|retention ops|lifecycle ops",
     re.IGNORECASE,
 )
+
+# Trigger-vocabulary concepts used to detect ROUTING AMBIGUITY between skills.
+# The agent router sees only frontmatter descriptions before loading a skill.
+# A pair of skills is "ambiguous" when both descriptions advertise the same
+# trigger concept (e.g. both claim 留存/funnel); the router cannot tell them
+# apart. A pair is "resolved" when BOTH sides carry an explicit pointer to
+# the sibling (its id in the description or opening body) scoping the
+# boundary. Frozen vocabulary: any keyword of a concept matching both
+# descriptions makes the pair ambiguous.
+TRIGGER_CONCEPTS = {
+    "interview": ["interview", "访谈"],
+    "retention": ["retention", "留存"],
+    "funnel": ["funnel", "漏斗"],
+    "growth": ["growth", "增长"],
+    "churn": ["churn", "流失", "取消"],
+    "support": ["support", "支持", "工单"],
+    "report": ["report", "汇报", "周报", "述职"],
+    "research": ["research", "调研", "竞品", "市场"],
+    "prototype": ["prototype", "原型"],
+    "prd": ["prd", "需求"],
+    "metric": ["metric", "指标"],
+    "data": ["data", "sql", "数据"],
+    "experiment": ["ab test", "实验", "显著"],
+    "security": ["security", "隐私", "gdpr", "合规"],
+    "pricing": ["pricing", "定价", "变现"],
+    "onboarding": ["onboarding", "激活"],
+    "viral": ["viral", "病毒", "k 因子", "k-factor"],
+    "comms": ["沟通", "干系人", "stakeholder", "高管"],
+    "evidence": ["证据"],
+    "mvp": ["mvp", "一页", "契约"],
+}
 
 # Directed lifecycle handoff chain. An edge is "documented" when the
 # SOURCE skill's SKILL.md references the TARGET skill by its id, i.e. a
@@ -172,6 +206,34 @@ def stage_covered(stage, identities):
     return False
 
 
+def trigger_disambiguation(disk_skills):
+    """Routing-ambiguity check 0..1. For each unordered pair of skills whose
+    frontmatter descriptions share at least one TRIGGER_CONCEPTS keyword,
+    require an explicit sibling pointer in BOTH directions (sibling id in the
+    description or the first 500 chars of body). Returns (fraction, n_pairs);
+    (1.0, 0) when no pair is ambiguous."""
+    views = {}
+    for sid, text in disk_skills.items():
+        fields, body = parse_frontmatter(text)
+        views[sid] = (fields.get("description", "").lower(), body.lower())
+    n_pairs = resolved = 0
+    sids = sorted(views)
+    for i, a in enumerate(sids):
+        for b in sids[i + 1:]:
+            shared = {k for k, ws in TRIGGER_CONCEPTS.items()
+                      if any(w in views[a][0] and w in views[b][0] for w in ws)}
+            if not shared:
+                continue
+            n_pairs += 1
+            a_points = b in views[a][0] or b in views[a][1][:500]
+            b_points = a in views[b][0] or a in views[b][1][:500]
+            if a_points and b_points:
+                resolved += 1
+    if n_pairs == 0:
+        return 1.0, 0
+    return resolved / n_pairs, n_pairs
+
+
 def main():
     # ---- discover skills on disk -------------------------------------------
     disk_skills = {}
@@ -245,12 +307,16 @@ def main():
     else:
         sync_ratio = 0.0
 
+    # ---- trigger disambiguation (routing clarity) ---------------------------
+    disambiguation, n_amb_pairs = trigger_disambiguation(disk_skills)
+
     # ---- composite ----------------------------------------------------------
-    ecosystem_score = 100.0 * (0.30 * lifecycle_coverage
-                               + 0.20 * ops_coverage
+    ecosystem_score = 100.0 * (0.25 * lifecycle_coverage
                                + 0.20 * avg_quality
+                               + 0.15 * ops_coverage
                                + 0.15 * sync_ratio
-                               + 0.15 * handoff_coverage)
+                               + 0.15 * handoff_coverage
+                               + 0.10 * disambiguation)
 
     print(f"METRIC ecosystem_score={ecosystem_score:.2f}")
     print(f"METRIC lifecycle_coverage={lifecycle_coverage:.3f}")
@@ -258,6 +324,8 @@ def main():
     print(f"METRIC avg_skill_quality={avg_quality:.3f}")
     print(f"METRIC cli_sync={sync_ratio:.3f}")
     print(f"METRIC handoff_coverage={handoff_coverage:.3f}")
+    print(f"METRIC trigger_disambiguation={disambiguation:.3f}")
+    print(f"METRIC ambiguous_pairs={n_amb_pairs}")
     print(f"METRIC handoff_documented={documented}")
     print(f"METRIC skill_count={len(disk_set)}")
     print(f"METRIC registered_count={len(registered_ids)}")
