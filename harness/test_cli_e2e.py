@@ -3,7 +3,7 @@
 E2E Sandbox Automated Test for ai-native-pm CLI
 Verifies:
 1. Fresh target project: list shows uninstalled
-2. Single skill installation (pm-prd-copilot): checks .agents and .cursor directories, zero broken relative links
+2. Single skill installation (pm-prd-copilot): checks .agents and .cursor directories, zero broken relative links, wake commands materialized as .claude/commands/*.md pointing back at the skill
 3. Batch installation (--all): all 7 skills installed
 4. Safe conflict handling and --force update
 5. Global mode (-g) with isolated HOME environment
@@ -75,6 +75,15 @@ def test_cli():
         assert "Context Grounding" in content, "Context Grounding missing in installed skill!"
         print("  ✔ pm-prd-copilot installed, self-contained and verified in both runtimes.")
 
+        # Advertised 唤醒指令 materialized as Claude Code custom command files
+        cmd_dir = sandbox / ".claude" / "commands"
+        prd_cmd_file = cmd_dir / "prd.md"
+        assert prd_cmd_file.exists(), "Wake command .claude/commands/prd.md not materialized!"
+        prd_cmd = prd_cmd_file.read_text(encoding="utf-8")
+        assert "pm-prd-copilot" in prd_cmd, "Command file must point back at its skill!"
+        assert "$ARGUMENTS" in prd_cmd, "Command file must forward user input via $ARGUMENTS!"
+        print("  ✔ Wake command materialized: /prd -> pm-prd-copilot")
+
         # Batch install: --all
         print("🧪 [Test 4/6] Batch skill installation: --all...")
         res = run_cli(["add", "--all", "-d", str(sandbox), "-f"])
@@ -85,6 +94,16 @@ def test_cli():
         installed_skills = [d.name for d in skills_dir.iterdir() if d.is_dir()]
         assert len(installed_skills) == n, f"Expected {n} skills, got {len(installed_skills)}"
         print(f"  ✔ All {n} skills installed in sandbox: {', '.join(installed_skills)}")
+
+        # Every advertised slash command across the registry materialized
+        meta = (REPO_ROOT / "cli" / "src" / "skills-meta.mjs").read_text(encoding="utf-8")
+        total_cmds = sum(
+            len([x for x in block.split(",") if x.strip()])
+            for block in re.findall(r"slashCommands:\s*\[([^\]]*)\]", meta)
+        )
+        all_cmd_files = sorted(p.name for p in (sandbox / ".claude" / "commands").glob("*.md"))
+        assert len(all_cmd_files) == total_cmds, f"Expected {total_cmds} command files, got {len(all_cmd_files)}: {all_cmd_files}"
+        print(f"  ✔ All {total_cmds} advertised wake commands materialized across {n} skills.")
 
         # Update test
         print("🧪 [Test 5/6] Skill update verification...")

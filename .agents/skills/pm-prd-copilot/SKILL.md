@@ -18,6 +18,14 @@ When activated, follow this **5-Step Standard Operating Procedure** to help the 
 - **判定为【企业级 TPM 轨】**（多团队协同、复杂系统/高可用服务、企业级 SaaS、硬件/音视频/端侧、研发测试交底）：执行本技能的标准 SOP，输出包含状态机、SLA 与 BDD 的工业级 PRD；
 - **判定为【独立开发者轨 (Solo Builder)】**（单人项目、微 SaaS、一人公司、直接投喂 Claude Code/Cursor）：**严禁输出大厂交底型长篇 PRD**，主动联动或分流至 `pm-solo-builder`，输出 **《一页 MVP 契约》**（含内嵌分发抓手）与 **《阶梯式 Micro-Spec 任务规格》**。
 
+## ⚡ 快速唤醒 (Slash Commands)
+
+| 唤醒指令 | 用途 |
+|:---|:---|
+| **`/prd [需求描述]`** | 一句话拉起 PRD 全闭环：5-Whys 需求深挖 → Mermaid 状态机 → BDD 验收用例 → 架构/QA 红队边界挑刺 |
+
+---
+
 ## 🚫 PM 职责红线与负面清单 (PM Anti-Patterns & Boundary Guardrails)
 
 无论在撰写 PRD、拆解需求还是给研发/设计团队交底时，必须严格坚守 **PM 角色边界（Focus on Why & What, never dictate How）**，绝对禁止越俎代庖：

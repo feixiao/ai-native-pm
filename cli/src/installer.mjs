@@ -30,6 +30,7 @@ export function resolveTargetDirs(options = {}) {
     baseDir,
     agentsSkillsDir: path.join(baseDir, '.agents', 'skills'),
     cursorSkillsDir: path.join(baseDir, '.cursor', 'skills'),
+    claudeCommandsDir: path.join(baseDir, '.claude', 'commands'),
   };
 }
 
@@ -57,6 +58,38 @@ async function promptOverwrite(skillId) {
   });
 }
 
+// Materialize the advertised 唤醒指令: one Claude Code custom command file
+// per slashCommands entry, pointing back at the installed skill.
+function renderCommandFile(skill, cmd) {
+  const name = cmd.replace(/^\//, '');
+  return [
+    '---',
+    `description: ${skill.title}（唤醒 ${skill.id} 技能）`,
+    '---',
+    '',
+    `请使用 \`${skill.id}\` 技能处理这个任务：$ARGUMENTS`,
+    '',
+    `${skill.desc}`,
+    '',
+  ].join('\n');
+}
+
+export function installCommands(skill, options = {}) {
+  const { claudeCommandsDir } = resolveTargetDirs(options);
+  fs.mkdirSync(claudeCommandsDir, { recursive: true });
+  const written = [];
+  for (const cmd of skill.slashCommands || []) {
+    const file = path.join(claudeCommandsDir, `${cmd.replace(/^\//, '')}.md`);
+    if (fs.existsSync(file) && !options.force) {
+      console.warn(c.yellow(`⚠️  命令已存在，跳过: ${file}（使用 --force 覆盖）`));
+      continue;
+    }
+    fs.writeFileSync(file, renderCommandFile(skill, cmd), 'utf8');
+    written.push(file);
+  }
+  return written;
+}
+
 export async function installSkill(skill, options = {}) {
   const sourceDir = getSourceSkillsDir();
   const skillSourcePath = path.join(sourceDir, skill.id);
@@ -75,6 +108,7 @@ export async function installSkill(skill, options = {}) {
     if (!overwrite) {
       return { skill, status: 'skipped', path: targetAgentsSkillPath };
     }
+    options = { ...options, force: true };
   }
 
   // 1. Ensure target directory and copy to .agents/skills/<id>
@@ -103,10 +137,14 @@ export async function installSkill(skill, options = {}) {
     }
   }
 
+  // 3. Materialize the advertised wake commands into .claude/commands/
+  const commands = installCommands(skill, options);
+
   return {
     skill,
     status: 'installed',
     path: targetAgentsSkillPath,
+    commands,
     isGlobal,
     baseDir,
   };

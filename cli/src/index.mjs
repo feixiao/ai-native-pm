@@ -155,6 +155,9 @@ async function handleAdd(params, flags) {
         console.log(`  ${c.gray('◯')} ${c.dim(skill.name)} ${c.yellow('[已跳过/已存在]')}`);
       } else {
         console.log(`  ${c.green('✔')} ${c.bold(skill.name)} ➔ ${c.gray(res.path)}`);
+        if (res.commands && res.commands.length > 0) {
+          console.log(`      ${c.yellow('⚡ 唤醒指令:')} ${res.commands.map((f) => c.cyan(`/${path.basename(f, '.md')}`)).join('  ')}`);
+        }
         installedResults.push(res);
       }
     } catch (err) {
