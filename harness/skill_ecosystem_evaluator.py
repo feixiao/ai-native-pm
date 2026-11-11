@@ -22,6 +22,9 @@ METRIC trigger_disambiguation=<float 0.0-1.0> fraction of ambiguous skill pairs
 METRIC ambiguous_pairs=<int>               count of ambiguous description pairs
 METRIC docs_quality=<float 0.0-1.0>        dual-track reference-doc quality
                                              (AGENTS.md SOP 3 baseline)
+METRIC handbook_symmetry=<float 0.0-1.0>   fraction of skills with a declared,
+                                             existing, substantive 02-ai-skills
+                                             companion guide (1:1 convention)
 METRIC handoff_documented=<int>             count of documented handoff edges
 METRIC skill_count=<int>                   skills on disk
 METRIC registered_count=<int>               skills in CLI meta
@@ -237,6 +240,29 @@ def docs_quality_score():
     return min(1.0, (corp + solo) / 200.0)
 
 
+def handbook_symmetry(disk_ids, agents_content):
+    """1:1 skill↔guide symmetry 0..1. The handbook layer (02-ai-skills/) has
+    one guide per skill: the AGENTS.md §4 skills table declares the companion
+    guide in a `02-ai-skills/<file>.md` reference on the skill's row, the file
+    must exist on disk, and must be substantive (>=3000 bytes — a stub file
+    does not document the skill). Fraction of on-disk skills satisfying all
+    three; 1.0 when every skill has a declared, existing, substantive guide."""
+    covered = 0
+    for sid in disk_ids:
+        row_match = re.search(
+            r"^\|[^|\n]*`?%s`?[^|\n]*(?:\|[^|\n]*)*$" % re.escape(sid),
+            agents_content, re.MULTILINE)
+        if not row_match:
+            continue
+        guide_match = re.search(r"02-ai-skills/([\w.-]+\.md)", row_match.group(0))
+        if not guide_match:
+            continue
+        guide_path = os.path.join(REPO_ROOT, "02-ai-skills", guide_match.group(1))
+        if os.path.exists(guide_path) and os.path.getsize(guide_path) >= 3000:
+            covered += 1
+    return covered / len(disk_ids) if disk_ids else 1.0
+
+
 def trigger_disambiguation(disk_skills):
     """Routing-ambiguity check 0..1. For each unordered pair of skills whose
     frontmatter descriptions share at least one TRIGGER_CONCEPTS keyword,
@@ -292,6 +318,10 @@ def main():
     qualities = {sid: skill_quality(sid, text) for sid, text in disk_skills.items()}
     avg_quality = (sum(qualities.values()) / len(qualities)) if qualities else 0.0
 
+    # ---- handbook symmetry (1:1 skill↔guide, declared in AGENTS.md §4) ------
+    agents_content = read_file(os.path.join(REPO_ROOT, "AGENTS.md"))
+    handbook = handbook_symmetry(set(disk_skills), agents_content)
+
     # ---- lifecycle coverage -------------------------------------------------
     identities = []
     for sid, text in disk_skills.items():
@@ -345,13 +375,14 @@ def main():
     docs_quality = docs_quality_score()
 
     # ---- composite ----------------------------------------------------------
-    ecosystem_score = 100.0 * (0.22 * lifecycle_coverage
-                               + 0.18 * avg_quality
-                               + 0.13 * ops_coverage
-                               + 0.13 * sync_ratio
-                               + 0.13 * handoff_coverage
-                               + 0.09 * disambiguation
-                               + 0.12 * docs_quality)
+    ecosystem_score = 100.0 * (0.20 * lifecycle_coverage
+                               + 0.16 * avg_quality
+                               + 0.12 * ops_coverage
+                               + 0.12 * sync_ratio
+                               + 0.12 * handoff_coverage
+                               + 0.08 * disambiguation
+                               + 0.12 * docs_quality
+                               + 0.08 * handbook)
 
     print(f"METRIC ecosystem_score={ecosystem_score:.2f}")
     print(f"METRIC lifecycle_coverage={lifecycle_coverage:.3f}")
@@ -361,6 +392,7 @@ def main():
     print(f"METRIC handoff_coverage={handoff_coverage:.3f}")
     print(f"METRIC trigger_disambiguation={disambiguation:.3f}")
     print(f"METRIC docs_quality={docs_quality:.3f}")
+    print(f"METRIC handbook_symmetry={handbook:.3f}")
     print(f"METRIC ambiguous_pairs={n_amb_pairs}")
     print(f"METRIC handoff_documented={documented}")
     print(f"METRIC skill_count={len(disk_set)}")
