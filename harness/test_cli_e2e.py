@@ -7,6 +7,8 @@ Verifies:
 3. Batch installation (--all): all 7 skills installed
 4. Safe conflict handling and --force update
 5. Global mode (-g) with isolated HOME environment
+6. CJK-aware layout: rendered quick-start card and skill table have uniform
+   display widths (CJK/emoji = 2 cols) — ragged borders are a visible defect
 """
 
 import os
@@ -19,6 +21,25 @@ from pathlib import Path
 
 REPO_ROOT = Path(__file__).resolve().parent.parent
 CLI_BIN = REPO_ROOT / "cli" / "bin" / "cli.mjs"
+
+# Mirrors the CLI's display-width convention (cli/src/ui.mjs): CJK = 2 cols,
+# emoji/symbols = 2 cols, ANSI escapes = 0.
+WIDE_RANGES = [
+    (0x1100, 0x115F), (0x2E80, 0xA4CF), (0xAC00, 0xD7A3), (0xF900, 0xFAFF),
+    (0xFE30, 0xFE4F), (0xFF00, 0xFF60), (0xFFE0, 0xFFE6), (0x1F300, 0x1F64F),
+    (0x1F680, 0x1F6FF), (0x1F900, 0x1F9FF), (0x2600, 0x26FF), (0x2700, 0x27BF),
+    (0x2B00, 0x2BFF),
+]
+
+def display_width(s):
+    s = re.sub(r"\x1b\[[0-9;]*m", "", s)
+    return sum(2 if any(lo <= ord(ch) <= hi for lo, hi in WIDE_RANGES) else 1
+               for ch in s)
+
+def assert_uniform_lines(lines, what):
+    widths = {display_width(l.rstrip()) for l in lines if l.strip()}
+    assert len(widths) == 1, f"{what} rows have ragged widths: {sorted(widths)} -> {lines[:4]}"
+    return widths
 
 def expected_skill_count():
     """Derive the expected installed skill count from the CLI registry,
@@ -37,7 +58,7 @@ def run_cli(args, cwd=None, env=None):
 def test_cli():
     n = expected_skill_count()
     print(f"  (CLI registry contains {n} skills; assertions scale with it.)")
-    print("🧪 [Test 1/6] CLI --help & --version basic check...")
+    print("🧪 [Test 1/7] CLI --help & --version basic check...")
     res = run_cli(["--version"])
     assert res.returncode == 0, f"Version check failed: {res.stderr}"
     assert "ai-native-pm" in res.stdout
@@ -50,7 +71,7 @@ def test_cli():
 
     with tempfile.TemporaryDirectory() as temp_project_dir:
         sandbox = Path(temp_project_dir)
-        print(f"🧪 [Test 2/6] Fresh sandbox project check: {sandbox}")
+        print(f"🧪 [Test 2/7] Fresh sandbox project check: {sandbox}")
 
         # List in empty sandbox
         res = run_cli(["list", "-d", str(sandbox)])
@@ -59,7 +80,7 @@ def test_cli():
         print("  ✔ Empty sandbox correctly reports uninstalled.")
 
         # Single install: pm-prd-copilot
-        print("🧪 [Test 3/6] Single skill installation: pm-prd-copilot...")
+        print("🧪 [Test 3/7] Single skill installation: pm-prd-copilot...")
         res = run_cli(["add", "pm-prd-copilot", "-d", str(sandbox), "-f"])
         assert res.returncode == 0, f"Add failed: {res.stderr}"
         assert "安装完成" in res.stdout
@@ -92,7 +113,7 @@ def test_cli():
         print("  ✔ Wake commands materialized in BOTH runtimes: .claude/commands + .cursor/commands")
 
         # Batch install: --all
-        print("🧪 [Test 4/6] Batch skill installation: --all...")
+        print("🧪 [Test 4/7] Batch skill installation: --all...")
         res = run_cli(["add", "--all", "-d", str(sandbox), "-f"])
         assert res.returncode == 0
         assert f"成功写入 {n} 款技能" in res.stdout
@@ -115,7 +136,7 @@ def test_cli():
         print(f"  ✔ All {total_cmds} advertised wake commands materialized across {n} skills (both runtimes).")
 
         # Update test
-        print("🧪 [Test 5/6] Skill update verification...")
+        print("🧪 [Test 5/7] Skill update verification...")
         res = run_cli(["update", "-d", str(sandbox), "-f"])
         assert res.returncode == 0
         assert f"更新完成！共更新 {n} 款技能" in res.stdout
@@ -124,7 +145,7 @@ def test_cli():
     # Global mode test
     with tempfile.TemporaryDirectory() as temp_home_dir:
         temp_home = Path(temp_home_dir)
-        print(f"🧪 [Test 6/6] Global mode (-g) verification in isolated HOME: {temp_home}")
+        print(f"🧪 [Test 6/7] Global mode (-g) verification in isolated HOME: {temp_home}")
         res = run_cli(["add", "pm-solo-builder", "-g", "-f"], env={"HOME": str(temp_home)})
         assert res.returncode == 0
         global_skill = temp_home / ".agents" / "skills" / "pm-solo-builder" / "SKILL.md"
@@ -135,7 +156,40 @@ def test_cli():
             f"Global wake commands must be materialized for BOTH runtimes: claude={claude_cmds} cursor={cursor_cmds}"
         print(f"  ✔ Global mode (-g) wrote skill + {len(claude_cmds)} wake commands to BOTH ~/.claude/commands and ~/.cursor/commands")
 
-    print("\n🎉 ALL 6 CLI E2E TESTS PASSED 100%! ZERO FAILURES.")
+    # CJK-aware layout: rendered card + table must have uniform display widths
+    with tempfile.TemporaryDirectory() as temp_project_dir:
+        sandbox = Path(temp_project_dir)
+        print("🧪 [Test 7/7] CJK-aware layout: rendered card + table width uniformity...")
+        res = run_cli(["add", "pm-operations", "-d", str(sandbox), "-f"])
+        assert res.returncode == 0
+        card_rows, box = [], False
+        for l in res.stdout.split("\n"):
+            t = re.sub(r"\x1b\[[0-9;]*m", "", l).rstrip()
+            if "┌" in t:
+                box = True
+            if box:
+                card_rows.append(t)
+                if "└" in t:
+                    box = False
+        bordered = [r for r in card_rows if r and r[-1] in "│┤├┌└┐┘"]
+        assert len(bordered) >= 8, f"Expected 8 bordered card rows, got {len(bordered)}"
+        assert_uniform_lines(bordered, "quick-start card")
+        res = run_cli(["list", "-d", str(sandbox)])
+        assert res.returncode == 0
+        tbl, collecting = [], False
+        for l in res.stdout.split("\n"):
+            t = re.sub(r"\x1b\[[0-9;]*m", "", l)
+            if "本地状态" in t:
+                collecting = True
+            if collecting:
+                if not t.strip():
+                    break
+                tbl.append(t)
+        assert len(tbl) >= n + 2, f"Skill table too short: {len(tbl)} rows"
+        assert_uniform_lines(tbl, "skill table")
+        print("  ✔ Quick-start card + skill table render at uniform display width (CJK/emoji-aware).")
+
+    print("\n🎉 ALL 7 CLI E2E TESTS PASSED 100%! ZERO FAILURES.")
 
 if __name__ == "__main__":
     test_cli()

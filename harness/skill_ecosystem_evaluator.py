@@ -404,9 +404,13 @@ def cli_layout(ui_text):
         return parts
 
     def declared_width(expr):
-        """Declared display width of an expression: its pad/fit arg, or the
-        literal text once c.color() wrappers are peeled; None if dynamic."""
-        m = re.search(r"(?:fit|pad)Display\([^,]+,\s*(\d+)\)", expr)
+        """Declared display width of an expression: its pad/fit arg (first arg
+        may be a quoted string containing commas), or the literal text once
+        c.color() wrappers are peeled; None if dynamic."""
+        m = re.search(r"(?:fit|pad)Display\((?:[^()]*(?:\([^()]*\))?[^()]*),\s*(\d+)\)", expr)
+        if m:
+            return int(m.group(1))
+        m = re.search(r"'\s*'\.repeat\(\s*(\d+)\s*\)", expr)
         if m:
             return int(m.group(1))
         core = expr[2:-1]
@@ -420,13 +424,25 @@ def cli_layout(ui_text):
 
     for l in body.split("\n"):
         s = l.strip()
-        if not (s.startswith("${c.cyan('│')}") and s.endswith("${c.cyan('│')}")):
+        B = "${c.cyan('│')}"
+        inner = None
+        if B in s:
+            if s.startswith(B) and s.endswith(B):
+                inner = s[len(B):-len(B)]
+            else:
+                first, last = s.find(B), s.rfind(B)
+                if first != last:
+                    pre = s[:first]
+                    post = s[last + len(B):]
+                    if (re.fullmatch(r"out\.push\(`", pre)
+                            and re.fullmatch(r"`\);", post)):
+                        inner = s[first + len(B):last]
+        if inner is None:
             continue
-        inner = s[len("${c.cyan('│')}"):-len("${c.cyan('│')}")]
         text_w, declared, complete = 0, 0, True
         for text, expr in split_expr(inner):
-            text_w += dw(text)
             if expr is None:
+                text_w += dw(text)
                 continue
             w = declared_width(expr)
             if w is None:
