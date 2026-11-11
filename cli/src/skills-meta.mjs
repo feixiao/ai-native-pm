@@ -80,6 +80,15 @@ export const SKILLS = [
     goldenTrigger: '我们的取消率连续三周上升，帮我设计一个体面的挽留流程并核算支持单位经济',
     slashCommands: ['/cs', '/save', '/churn'],
   },
+  {
+    id: 'pm-security-compliance',
+    name: 'pm-security-compliance',
+    title: '安全合规需求产品化：数据契约与发布门禁',
+    desc: '数据分级与生命周期契约、隐私法规映射 (GDPR/PIPL/CCPA)、同意与删除流程、需求级 STRIDE 威胁建模与合规发布门禁',
+    category: 'Security & Compliance',
+    goldenTrigger: '我们要出海欧洲并收集位置数据，帮我写一份数据分级契约与 GDPR 产品约束清单',
+    slashCommands: ['/compliance', '/privacy', '/datagovern'],
+  },
 ];
 
 export const SKILL_MAP = new Map(SKILLS.map((s) => [s.id, s]));

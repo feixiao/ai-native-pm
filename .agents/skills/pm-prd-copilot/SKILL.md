@@ -106,3 +106,4 @@ Immediately after drafting (or when reviewing an existing PRD), append a **`🛡
 2. Offer to generate either:
    - An **Executive Summary (One-Pager)** for leadership/sales alignment, OR
    - An **Interactive HTML/React Prototype** (via the `pm-prototype-builder` skill) for the upcoming review meeting.
+   - 若 PRD 涉及敏感数据、跨境传输或未成年人场景：先移交 `pm-security-compliance` 完成数据分级、同意与删除的合规契约，再进入原型与实现，严禁高危未决先画界面。

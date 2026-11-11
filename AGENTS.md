@@ -120,6 +120,7 @@ pm/
 │   ├── pm-report-polisher/   # 成果导向周报/月报/述职与高情商协同话术
 │   ├── pm-operations/        # 产品运营与增长：AARRR 诊断/分发渠道/留存召回/变现实验/病毒循环
 │   ├── pm-customer-success/  # 客户成功：支持分流/流失挽留/NPS 访谈/支持单位经济
+│   ├── pm-security-compliance/  # 安全合规：数据分级契约/隐私法规映射/威胁建模/发布门禁
 │   └── pm-solo-builder/      # 独立开发者全流程闭环：约束过滤/证据分级/一页契约/单问题周冲刺/红队自检
 ├── .cursor/                  # 🔌 Cursor 适配层（软链接到 .agents/skills）
 ├── workspace/                # 🔒 本地生产工作台（已全局 gitignore，生产文档永不上传远程）
@@ -141,7 +142,7 @@ pm/
 
 ## 四、 内置 Agent 技能库分工与触发 (Skills Ecosystem)
 
-Agent 在处理具体任务时，应主动调用或对齐以下 9 大内置垂直技能（位于 `.agents/skills/`）：
+Agent 在处理具体任务时，应主动调用或对齐以下 10 大内置垂直技能（位于 `.agents/skills/`）：
 
 | 技能名称 | 核心能力与适用场景 | 关键约束与输出标准 |
 | :--- | :--- | :--- |
@@ -154,6 +155,7 @@ Agent 在处理具体任务时，应主动调用或对齐以下 9 大内置垂�
 |**`pm-solo-builder`**|独立开发者全流程闭环：个人约束过滤、证据评级 (Level 0~4) 与代偿行为、<=4h 技术探针门禁 (Spike Gate)、内嵌分发抓手的一页 MVP 契约、阶梯式 Micro-Spec 任务规格转译、单人周冲刺与双阶段解耦 11 维红队压力测试。|坚守薄切片原则，探针不通严禁立项，严禁一次性大包投喂 Agent；强制输出两周止损门禁与非目标清单。|
 |**`pm-operations`**|产品运营与增长闭环(产品运营不分家):AARRR 全漏斗诊断、Owned/Earned/Paid 渠道矩阵、激活 Onboarding 与 Aha Moment、Cohort 留存与生命周期召回、变现定价实验、病毒循环 (K 因子) 与合规红队自检。|产品发布后兑现价值的唯一入口;强制内嵌自发酵分发抓手;触达必须带频率上限与合规护栏;无正向单位经济严禁付费买量。|
 |**`pm-customer-success`**|客户成功与支持体系:支持分层与自助拦截 (Deflection)、取消挽留流程 (Save Flow) 与反 Dark Pattern 红线、NPS/CSAT 不满者访谈、支持单位经济与支持黑洞红线。|把"注册/买过"变成"留下并续费";挽留必须可一次点击跳过,严禁暗模式;支持负载 >30% 总工时触发三选一裁决;Detractor 访谈证据回流 `pm-user-insight`。|
+|**`pm-security-compliance`**|安全合规需求产品化:数据分级与生命周期契约、隐私法规映射 (GDPR/PIPL/CCPA)、同意与删除流程、需求级 STRIDE 威胁建模、合规发布门禁与独立开发者最小合规集。|只写契约(What & Why),实现归研发,法律结论归法务;严禁默认勾选与删除流程埋雷;高危威胁未决严禁进入原型;敏感数据四元组(目的/保留/超期/跨境)全覆盖。|
 
 ### 生态技能联动建议 (Eco-Skills Collaboration)
 - 编写方案前：联动 `brainstorming` 进行苏格拉底追问与边界收敛。
@@ -161,9 +163,9 @@ Agent 在处理具体任务时，应主动调用或对齐以下 9 大内置垂�
 - 交付与汇报时：联动 `pptx`、`docx`、`xlsx`、`pdf` 输出结构化排版交付物。
 
 ### 全生命周期交接链路 (Lifecycle Handoff Chain)
-9 大技能构成 **"市场 → 取证 → 需求 → 原型 → 指标 → 运营 → 客户成功 → 汇报 → 下一轮市场"** 闭环，每个技能的 SKILL.md 均内置指向下一阶段的交接指引（交接物 + 红线），跨阶段切换时按其中定义执行：
+10 大技能构成 **"市场 → 取证 → 需求 → 安全合规 → 原型 → 指标 → 运营 → 客户成功 → 汇报 → 下一轮市场"** 闭环，每个技能的 SKILL.md 均内置指向下一阶段的交接指引（交接物 + 红线），跨阶段切换时按其中定义执行：
 
-`pm-market-competitor` → `pm-user-insight` → `pm-prd-copilot` → `pm-prototype-builder` → `pm-data-analyst` → `pm-operations` → `pm-customer-success` → `pm-report-polisher` → 回流 `pm-market-competitor`（侧向回流：`pm-customer-success` 的 Detractor 流失访谈证据回流 `pm-user-insight` 完成证据定级）；`pm-solo-builder` 为独立轨道主引擎，经兄弟技能联动地图接入链路任意阶段。
+`pm-market-competitor` → `pm-user-insight` → `pm-prd-copilot` → `pm-security-compliance` → `pm-prototype-builder` → `pm-data-analyst` → `pm-operations` → `pm-customer-success` → `pm-report-polisher` → 回流 `pm-market-competitor`（侧向回流：`pm-customer-success` 的 Detractor 流失访谈证据回流 `pm-user-insight` 完成证据定级）；`pm-solo-builder` 为独立轨道主引擎，经兄弟技能联动地图接入链路任意阶段。
 
 ---
 
