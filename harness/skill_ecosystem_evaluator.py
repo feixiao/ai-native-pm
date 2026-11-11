@@ -16,7 +16,7 @@ METRIC lifecycle_coverage=<float 0.0-1.0>  fraction of 8 lifecycle stages covere
 METRIC ops_coverage=<float 0.0-1.0>        quality of operations/growth coverage
 METRIC avg_skill_quality=<float 0.0-1.0>   mean per-skill craft score
 METRIC cli_sync=<float 0.0-1.0>            three-surface registry consistency
-METRIC handoff_coverage=<float 0.0-1.0>    fraction of 8 documented lifecycle handoffs
+METRIC handoff_coverage=<float 0.0-1.0>    fraction of 10 documented lifecycle handoffs
 METRIC handoff_documented=<int>             count of documented handoff edges
 METRIC skill_count=<int>                   skills on disk
 METRIC registered_count=<int>               skills in CLI meta
@@ -32,7 +32,7 @@ SKILLS_DIR = os.path.join(REPO_ROOT, ".agents", "skills")
 META_FILE = os.path.join(REPO_ROOT, "cli", "src", "skills-meta.mjs")
 BUNDLE_DIR = os.path.join(REPO_ROOT, "cli", "skills")
 
-# The eight lifecycle stages of the product-operations continuum.
+# The nine lifecycle stages of the product-operations continuum.
 # Each stage is matched against a skill's identity text (name + description)
 # and body headings. A stage is "covered" when at least one skill matches.
 LIFECYCLE_STAGES = {
@@ -50,7 +50,9 @@ LIFECYCLE_STAGES = {
                           "growth", "distribution", "monetization", "campaign",
                           "community", "用户运营"],
     "communication": ["汇报", "周报", "述职", "沟通", "话术", "Release Notes",
-                      "report", "communication", "stakeholder"],
+                     "report", "communication", "stakeholder"],
+    "customer_success": ["客户成功", "客服", "流失挽留", "churn", "NPS",
+                        "CSAT", "customer success", "deflection", "save flow"],
     "solo_indie": ["独立开发", "indie", "solo", "微SaaS", "MVP", "一人公司",
                    "独立开发者"],
 }
@@ -76,12 +78,14 @@ HANDOFF_EDGES = [
     ("pm-data-analyst", "pm-operations"),           # 指标基线 → 增长动作
     ("pm-operations", "pm-report-polisher"),        # 运营结果 → 高管汇报
     ("pm-report-polisher", "pm-market-competitor"), # 复盘结论 → 下一轮调研
+    ("pm-operations", "pm-customer-success"),       # 留存/流失 → 个体挽留与成功
+    ("pm-customer-success", "pm-user-insight"),     # 流失访谈 → 证据回流研究
 ]
 # The solo hub is an overlay: it must point into the main chain (any stage).
 MAIN_CHAIN_IDS = {
     "pm-market-competitor", "pm-user-insight", "pm-prd-copilot",
     "pm-prototype-builder", "pm-data-analyst", "pm-operations",
-    "pm-report-polisher",
+    "pm-report-polisher", "pm-customer-success",
 }
 
 
