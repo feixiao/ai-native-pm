@@ -20,6 +20,8 @@ METRIC handoff_coverage=<float 0.0-1.0>    fraction of 12 documented lifecycle h
 METRIC trigger_disambiguation=<float 0.0-1.0> fraction of ambiguous skill pairs
                                              with explicit sibling pointers
 METRIC ambiguous_pairs=<int>               count of ambiguous description pairs
+METRIC docs_quality=<float 0.0-1.0>        dual-track reference-doc quality
+                                             (AGENTS.md SOP 3 baseline)
 METRIC handoff_documented=<int>             count of documented handoff edges
 METRIC skill_count=<int>                   skills on disk
 METRIC registered_count=<int>               skills in CLI meta
@@ -29,6 +31,12 @@ METRIC bundle_count=<int>                   skills in cli/skills bundle
 import os
 import re
 import sys
+
+from evaluator import read_file as read_file_corp, evaluate_research, evaluate_prd, RESEARCH_FILE, PRD_FILE
+from solo_workflow_evaluator import (
+    read_file as read_file_solo, evaluate_solo_skill,
+    SKILL_FILE, HANDBOOK_FILE, WORKFLOW_FILE, BASE_HANDBOOK_FILE, AGENTS_FILE,
+)
 
 REPO_ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 SKILLS_DIR = os.path.join(REPO_ROOT, ".agents", "skills")
@@ -206,6 +214,29 @@ def stage_covered(stage, identities):
     return False
 
 
+def docs_quality_score():
+    """Repo reference-doc quality 0..1: the dual-track composite (AGENTS.md
+    SOP 3 declares a >=90 quality baseline) — corporate feasibility research
+    + enterprise PRD, averaged with the solo-track handbook/workflow scores.
+    Mirrors dual_track_evaluator's composition exactly."""
+    r_content = read_file_corp(RESEARCH_FILE)
+    p_content = read_file_corp(PRD_FILE)
+    if not p_content:
+        return 0.0
+    r_score, _ = evaluate_research(r_content) if r_content else (0.0, {})
+    p_score, _ = evaluate_prd(p_content)
+    corp = r_score + p_score
+    skill_content = read_file_solo(SKILL_FILE)
+    handbook_content = read_file_solo(HANDBOOK_FILE)
+    if not skill_content or not handbook_content:
+        return 0.0
+    solo, _ = evaluate_solo_skill(
+        skill_content, handbook_content,
+        read_file_solo(WORKFLOW_FILE), read_file_solo(BASE_HANDBOOK_FILE),
+        read_file_solo(AGENTS_FILE))
+    return min(1.0, (corp + solo) / 200.0)
+
+
 def trigger_disambiguation(disk_skills):
     """Routing-ambiguity check 0..1. For each unordered pair of skills whose
     frontmatter descriptions share at least one TRIGGER_CONCEPTS keyword,
@@ -310,13 +341,17 @@ def main():
     # ---- trigger disambiguation (routing clarity) ---------------------------
     disambiguation, n_amb_pairs = trigger_disambiguation(disk_skills)
 
+    # ---- reference-doc quality (AGENTS.md SOP 3 dual-track baseline) --------
+    docs_quality = docs_quality_score()
+
     # ---- composite ----------------------------------------------------------
-    ecosystem_score = 100.0 * (0.25 * lifecycle_coverage
-                               + 0.20 * avg_quality
-                               + 0.15 * ops_coverage
-                               + 0.15 * sync_ratio
-                               + 0.15 * handoff_coverage
-                               + 0.10 * disambiguation)
+    ecosystem_score = 100.0 * (0.22 * lifecycle_coverage
+                               + 0.18 * avg_quality
+                               + 0.13 * ops_coverage
+                               + 0.13 * sync_ratio
+                               + 0.13 * handoff_coverage
+                               + 0.09 * disambiguation
+                               + 0.12 * docs_quality)
 
     print(f"METRIC ecosystem_score={ecosystem_score:.2f}")
     print(f"METRIC lifecycle_coverage={lifecycle_coverage:.3f}")
@@ -325,6 +360,7 @@ def main():
     print(f"METRIC cli_sync={sync_ratio:.3f}")
     print(f"METRIC handoff_coverage={handoff_coverage:.3f}")
     print(f"METRIC trigger_disambiguation={disambiguation:.3f}")
+    print(f"METRIC docs_quality={docs_quality:.3f}")
     print(f"METRIC ambiguous_pairs={n_amb_pairs}")
     print(f"METRIC handoff_documented={documented}")
     print(f"METRIC skill_count={len(disk_set)}")
