@@ -60,7 +60,7 @@ npx ai-native-pm list
 本仓库不做空洞的理论堆砌，而是提供三套可直接用于日常工作的实用系统：
 1. **📘 第一部分：产品经理入门手册 (`01-pm-handbook/`)** —— 帮你完成从 `How to build` 到 `Why & What to build` 的底层心智切换，掌握 PM 核心工作流、方法论框架与行业语言。
 2. **🤖 第二部分：AI 赋能产品全流程技能指南 (`02-ai-skills/`)** —— 覆盖从市场调研、用户访谈、PRD 撰写与红队挑刺、15 分钟生成可交互原型，到自助 SQL/Python 数据分析的全套 SOP 与即插即用提示词模板。
-3. **⚡ 第三部分：内置可挂载的 AI Agent Skills (`.agents/skills/` & `.cursor/skills/`)** —— 遵循 Antigravity / Claude Code / Cursor 标准规范封装的 8 个自动化产品经理 Agent 技能包，在当前工作区对话时可自动激活执行。
+3. **⚡ 第三部分：内置可挂载的 AI Agent Skills (`.agents/skills/` & `.cursor/skills/`)** —— 遵循 Antigravity / Claude Code / Cursor 标准规范封装的 10 个自动化产品经理 Agent 技能包，在当前工作区对话时可自动激活执行。
 
 ---
 
@@ -92,6 +92,9 @@ npx ai-native-pm list
 | **05. 数据分析与实验决策** | [05-data-analysis.md](./02-ai-skills/05-data-analysis.md) | Claude Code, Python/SQL Copilot, Julius AI | 自然语言秒写复杂漏斗与 Cohort 留存 SQL、用决策树寻找产品 Aha Moment、A/B 测试显著性检验、指标异动归因排查 |
 | **06. 团队协作与项目管理** | [06-collaboration.md](./02-ai-skills/06-collaboration.md) | Notion AI, Linear, 飞书 AI | 会议录音秒转可执行 Action Items、Epic 自动拆解为敏捷 User Stories、高情商拒绝伪需求话术、成果导向高管周报生成 |
 | **07. 独立开发 AI 工作流** | [07-solo-ai-workflow.md](./02-ai-skills/07-solo-ai-workflow.md) | Claude Code, Cursor, Codex | **独立开发者 AI-Native PM 工作流与实战 Prompt 模板库**：个人约束机会卡、Mom-Test 事实定级、一页契约切片、Prompt-to-Spec 代码转译与单周冷血决策门 |
+| **08. 产品运营与增长闭环** | [08-operations-growth.md](./02-ai-skills/08-operations-growth.md) | Claude Code, Cursor, Julius AI | **产品运营不分家**：AARRR 全漏斗单点打击、Owned/Earned/Paid 渠道矩阵与渠道评分台账、Onboarding 最短路径、Cohort 分段召回（带频控）、定价 A/B 与单位经济、病毒循环 K 因子 |
+| **09. 客户成功与流失挽留** | [09-customer-success.md](./02-ai-skills/09-customer-success.md) | Claude Code, Cursor, 飞书妙记 | 工单三层分流 (L0/L1/L2) 与自助化改造、取消挽留 Save Flow 状态机（一次点击红线）、NPS 不满者 72 小时访谈、支持黑洞 30% 红线与三选一裁决 |
+| **10. 安全合规需求产品化** | [10-security-compliance.md](./02-ai-skills/10-security-compliance.md) | Claude Code, Cursor | 数据四元组生命周期契约（分级/目的/保留/跨境）、GDPR/PIPL/CCPA 辖区约束映射、需求级 STRIDE 威胁登记、同意/删除反暗模式审查、独立开发者最小合规集 |
 
 ---
 

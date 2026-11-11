@@ -103,14 +103,17 @@ pm/
 │   ├── 06-product-boundaries.md # 权责边界划分与 RACI 矩阵
 │   ├── 07-independent-product.md # 独立开发者产品实战手册（选题/验证/MVP/发布/经营）
 │   └── 08-solo-builder-vs-corporate-pm.md # 独立开发者 PM 指南（自我仲裁与大厂协商异构）
-├── 02-ai-skills/             # 🤖 AI 全链路提效指南与工业级 Prompt 模板
-│   ├── 01-market-research.md # 市场扫描、竞品逆向与差评挖掘
-│   ├── 02-user-research.md   # 《The Mom Test》非引导访谈与痛点聚类
-│   ├── 03-prd-writing.md     # 工业级 PRD 模板与架构/QA 红队挑刺
-│   ├── 04-prototyping.md     # 单文件带状态调试栏可交互原型设计
-│   ├── 05-data-analysis.md   # 漏斗/留存 SQL、A/B 检验与归因排查
-│   ├── 06-collaboration.md   # 成果导向汇报与高情商拒绝话术
-│   └── 07-solo-ai-workflow.md # 独立开发者 AI-Native PM 工作流与实战 Prompt 模板库
+├── 02-ai-skills/             # 🤖 AI 全链路提效指南与工业级 Prompt 模板（每技能一指南，1:1 对应 §4 技能表）
+│   ├── 01-market-research.md # 市场扫描、竞品逆向与差评挖掘（对应 `pm-market-competitor`）
+│   ├── 02-user-research.md   # 《The Mom Test》非引导访谈与痛点聚类（对应 `pm-user-insight`）
+│   ├── 03-prd-writing.md     # 工业级 PRD 模板与架构/QA 红队挑刺（对应 `pm-prd-copilot`）
+│   ├── 04-prototyping.md     # 单文件带状态调试栏可交互原型设计（对应 `pm-prototype-builder`）
+│   ├── 05-data-analysis.md   # 漏斗/留存 SQL、A/B 检验与归因排查（对应 `pm-data-analyst`）
+│   ├── 06-collaboration.md   # 成果导向汇报与高情商拒绝话术（对应 `pm-report-polisher`）
+│   ├── 07-solo-ai-workflow.md # 独立开发者 AI-Native PM 工作流（对应 `pm-solo-builder`）
+│   ├── 08-operations-growth.md # 产品运营与增长闭环（对应 `pm-operations`，产品运营不分家）
+│   ├── 09-customer-success.md # 客户成功与流失挽留（对应 `pm-customer-success`）
+│   └── 10-security-compliance.md # 安全合规需求产品化（对应 `pm-security-compliance`）
 ├── .agents/skills/           # ⚡ 原生 Agent Skills（遵循跨平台 SKILL.md 规范）
 │   ├── pm-prd-copilot/       # PRD 自动化撰写与红队安全审查
 │   ├── pm-market-competitor/ # 竞品逆向拆解与商业模式调研
@@ -144,18 +147,18 @@ pm/
 
 Agent 在处理具体任务时，应主动调用或对齐以下 10 大内置垂直技能（位于 `.agents/skills/`）：
 
-| 技能名称 | 核心能力与适用场景 | 关键约束与输出标准 |
-| :--- | :--- | :--- |
-| **`pm-prd-copilot`** | 5-Whys 需求深挖、状态机梳理、BDD 测试用例与**架构/QA 红队边界挑刺**。 | 坚守 PM 职责边界，禁止写底层 DDL 或硬件私有驱动；必须附带异常状态机与红队自检报告。 |
-| **`pm-market-competitor`** | 竞品逆向拆解、TAM/SAM/SOM 空间测算、定价策略逆向与社交媒体差评挖掘。 | 联网调用搜索获取最新证据；按 ICP、商业模式、技术壁垒输出对比矩阵，严禁空洞泛谈。 |
-| **`pm-user-insight`** | 《The Mom Test》非引导访谈提纲编制、跨样本真实痛点聚类、RICE 优先级排序。 | 访谈严禁引导性提问（“如果做X你用吗”❌）；必须锚定真实过去行为；给出清晰版本划线。 |
-| **`pm-prototype-builder`** | 快速构建单文件可点击 Web 原型（Tailwind CDN + Vanilla/Alpine.js）。 | **强制内置顶部 `🛠️ PM 评审状态切换器`**（正常/空状态/加载中/弱网异常），可离线双击运行。 |
-| **`pm-data-analyst`** | 指标分层（北极星+护栏）、漏斗/留存生产级 SQL、A/B 显著性检验与指标异动归因。 | 指标设计必须包含反向护栏指标；SQL 考虑时区、去重与时间窗顺序；异常归因输出 4 层漏斗。 |
-| **`pm-report-polisher`** | 成果导向高管周报/月报、STAR+OKR 述职提炼、双视角 Release Notes 与需求拒绝话术。 | 拒绝流水账；TL;DR 结论前置；量化数据与未实测标注；拒绝伪需求遵循“共情-大局-绕行-门禁”。 |
-|**`pm-solo-builder`**|独立开发者全流程闭环：个人约束过滤、证据评级 (Level 0~4) 与代偿行为、<=4h 技术探针门禁 (Spike Gate)、内嵌分发抓手的一页 MVP 契约、阶梯式 Micro-Spec 任务规格转译、单人周冲刺与双阶段解耦 11 维红队压力测试。|坚守薄切片原则，探针不通严禁立项，严禁一次性大包投喂 Agent；强制输出两周止损门禁与非目标清单。|
-|**`pm-operations`**|产品运营与增长闭环(产品运营不分家):AARRR 全漏斗诊断、Owned/Earned/Paid 渠道矩阵、激活 Onboarding 与 Aha Moment、Cohort 留存与生命周期召回、变现定价实验、病毒循环 (K 因子) 与合规红队自检。|产品发布后兑现价值的唯一入口;强制内嵌自发酵分发抓手;触达必须带频率上限与合规护栏;无正向单位经济严禁付费买量。|
-|**`pm-customer-success`**|客户成功与支持体系:支持分层与自助拦截 (Deflection)、取消挽留流程 (Save Flow) 与反 Dark Pattern 红线、NPS/CSAT 不满者访谈、支持单位经济与支持黑洞红线。|把"注册/买过"变成"留下并续费";挽留必须可一次点击跳过,严禁暗模式;支持负载 >30% 总工时触发三选一裁决;Detractor 访谈证据回流 `pm-user-insight`。|
-|**`pm-security-compliance`**|安全合规需求产品化:数据分级与生命周期契约、隐私法规映射 (GDPR/PIPL/CCPA)、同意与删除流程、需求级 STRIDE 威胁建模、合规发布门禁与独立开发者最小合规集。|只写契约(What & Why),实现归研发,法律结论归法务;严禁默认勾选与删除流程埋雷;高危威胁未决严禁进入原型;敏感数据四元组(目的/保留/超期/跨境)全覆盖。|
+| 技能名称 | 核心能力与适用场景 | 关键约束与输出标准 | 对应指南（02-ai-skills） |
+| :--- | :--- | :--- | :--- |
+| **`pm-prd-copilot`** | 5-Whys 需求深挖、状态机梳理、BDD 测试用例与**架构/QA 红队边界挑刺**。 | 坚守 PM 职责边界，禁止写底层 DDL 或硬件私有驱动；必须附带异常状态机与红队自检报告。 | `02-ai-skills/03-prd-writing.md` |
+| **`pm-market-competitor`** | 竞品逆向拆解、TAM/SAM/SOM 空间测算、定价策略逆向与社交媒体差评挖掘。 | 联网调用搜索获取最新证据；按 ICP、商业模式、技术壁垒输出对比矩阵，严禁空洞泛谈。 | `02-ai-skills/01-market-research.md` |
+| **`pm-user-insight`** | 《The Mom Test》非引导访谈提纲编制、跨样本真实痛点聚类、RICE 优先级排序。 | 访谈严禁引导性提问（“如果做X你用吗”❌）；必须锚定真实过去行为；给出清晰版本划线。 | `02-ai-skills/02-user-research.md` |
+| **`pm-prototype-builder`** | 快速构建单文件可点击 Web 原型（Tailwind CDN + Vanilla/Alpine.js）。 | **强制内置顶部 `🛠️ PM 评审状态切换器`**（正常/空状态/加载中/弱网异常），可离线双击运行。 | `02-ai-skills/04-prototyping.md` |
+| **`pm-data-analyst`** | 指标分层（北极星+护栏）、漏斗/留存生产级 SQL、A/B 显著性检验与指标异动归因。 | 指标设计必须包含反向护栏指标；SQL 考虑时区、去重与时间窗顺序；异常归因输出 4 层漏斗。 | `02-ai-skills/05-data-analysis.md` |
+| **`pm-report-polisher`** | 成果导向高管周报/月报、STAR+OKR 述职提炼、双视角 Release Notes 与需求拒绝话术。 | 拒绝流水账；TL;DR 结论前置；量化数据与未实测标注；拒绝伪需求遵循“共情-大局-绕行-门禁”。 | `02-ai-skills/06-collaboration.md` |
+|**`pm-solo-builder`**|独立开发者全流程闭环：个人约束过滤、证据评级 (Level 0~4) 与代偿行为、<=4h 技术探针门禁 (Spike Gate)、内嵌分发抓手的一页 MVP 契约、阶梯式 Micro-Spec 任务规格转译、单人周冲刺与双阶段解耦 11 维红队压力测试。|坚守薄切片原则，探针不通严禁立项，严禁一次性大包投喂 Agent；强制输出两周止损门禁与非目标清单。| `02-ai-skills/07-solo-ai-workflow.md` |
+|**`pm-operations`**|产品运营与增长闭环(产品运营不分家):AARRR 全漏斗诊断、Owned/Earned/Paid 渠道矩阵、激活 Onboarding 与 Aha Moment、Cohort 留存与生命周期召回、变现定价实验、病毒循环 (K 因子) 与合规红队自检。|产品发布后兑现价值的唯一入口;强制内嵌自发酵分发抓手;触达必须带频率上限与合规护栏;无正向单位经济严禁付费买量。| `02-ai-skills/08-operations-growth.md` |
+|**`pm-customer-success`**|客户成功与支持体系:支持分层与自助拦截 (Deflection)、取消挽留流程 (Save Flow) 与反 Dark Pattern 红线、NPS/CSAT 不满者访谈、支持单位经济与支持黑洞红线。|把"注册/买过"变成"留下并续费";挽留必须可一次点击跳过,严禁暗模式;支持负载 >30% 总工时触发三选一裁决;Detractor 访谈证据回流 `pm-user-insight`。| `02-ai-skills/09-customer-success.md` |
+|**`pm-security-compliance`**|安全合规需求产品化:数据分级与生命周期契约、隐私法规映射 (GDPR/PIPL/CCPA)、同意与删除流程、需求级 STRIDE 威胁建模、合规发布门禁与独立开发者最小合规集。|只写契约(What & Why),实现归研发,法律结论归法务;严禁默认勾选与删除流程埋雷;高危威胁未决严禁进入原型;敏感数据四元组(目的/保留/超期/跨境)全覆盖。| `02-ai-skills/10-security-compliance.md` |
 
 ### 生态技能联动建议 (Eco-Skills Collaboration)
 - 编写方案前：联动 `brainstorming` 进行苏格拉底追问与边界收敛。
