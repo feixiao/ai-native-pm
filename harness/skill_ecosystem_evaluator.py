@@ -16,7 +16,7 @@ METRIC lifecycle_coverage=<float 0.0-1.0>  fraction of 8 lifecycle stages covere
 METRIC ops_coverage=<float 0.0-1.0>        quality of operations/growth coverage
 METRIC avg_skill_quality=<float 0.0-1.0>   mean per-skill craft score
 METRIC cli_sync=<float 0.0-1.0>            three-surface registry consistency
-METRIC handoff_coverage=<float 0.0-1.0>    fraction of 10 documented lifecycle handoffs
+METRIC handoff_coverage=<float 0.0-1.0>    fraction of 12 documented lifecycle handoffs
 METRIC handoff_documented=<int>             count of documented handoff edges
 METRIC skill_count=<int>                   skills on disk
 METRIC registered_count=<int>               skills in CLI meta
@@ -32,7 +32,7 @@ SKILLS_DIR = os.path.join(REPO_ROOT, ".agents", "skills")
 META_FILE = os.path.join(REPO_ROOT, "cli", "src", "skills-meta.mjs")
 BUNDLE_DIR = os.path.join(REPO_ROOT, "cli", "skills")
 
-# The nine lifecycle stages of the product-operations continuum.
+# The ten lifecycle stages of the product-operations continuum.
 # Each stage is matched against a skill's identity text (name + description)
 # and body headings. A stage is "covered" when at least one skill matches.
 LIFECYCLE_STAGES = {
@@ -42,6 +42,9 @@ LIFECYCLE_STAGES = {
                       "user research", "interview", "insight"],
     "requirements": ["PRD", "需求", "规格", "状态机", "BDD", "验收",
                      "prd", "requirements", "spec"],
+    "security_compliance": ["安全", "合规", "STRIDE", "威胁模型", "隐私",
+                          "security", "compliance", "threat model",
+                          "data classification", "consent"],
     "prototype": ["原型", "交互", "mockup", "prototype", "UI", "wireframe"],
     "data_experiment": ["指标", "SQL", "A/B", "漏斗", "留存", "归因",
                         "metric", "funnel", "retention", "experiment"],
@@ -69,11 +72,13 @@ OPS_KEYWORDS = re.compile(
 # Directed lifecycle handoff chain. An edge is "documented" when the
 # SOURCE skill's SKILL.md references the TARGET skill by its id, i.e. a
 # user finishing stage A knows which skill to invoke for stage B.
-# Without these pointers the eight skills are isolated silos.
+# Without these pointers the skills are isolated silos.
 HANDOFF_EDGES = [
     ("pm-market-competitor", "pm-user-insight"),    # 市场机会 → 真实用户取证
     ("pm-user-insight", "pm-prd-copilot"),          # 洞察与优先级 → PRD
     ("pm-prd-copilot", "pm-prototype-builder"),     # PRD → 可点击原型
+    ("pm-prd-copilot", "pm-security-compliance"),   # PRD 红队 → 安全合规加固
+    ("pm-security-compliance", "pm-prototype-builder"),  # 合规约束 → 原型落地
     ("pm-prototype-builder", "pm-data-analyst"),    # 原型过审 → 埋点与指标
     ("pm-data-analyst", "pm-operations"),           # 指标基线 → 增长动作
     ("pm-operations", "pm-report-polisher"),        # 运营结果 → 高管汇报
@@ -86,6 +91,7 @@ MAIN_CHAIN_IDS = {
     "pm-market-competitor", "pm-user-insight", "pm-prd-copilot",
     "pm-prototype-builder", "pm-data-analyst", "pm-operations",
     "pm-report-polisher", "pm-customer-success",
+    "pm-security-compliance",
 }
 
 
