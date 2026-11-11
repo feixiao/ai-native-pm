@@ -23,20 +23,24 @@ ${c.gray('AI-Native PM Skills Toolkit for Cursor, Claude Code, Antigravity & Cod
 `);
 }
 
-// East-Asia-aware display width (CJK chars = 2 cols) so box borders stay aligned.
+// Display-width convention (modern terminals): CJK full-width chars = 2 cols,
+// emoji/symbols = 2 cols, everything else = 1, ANSI escape codes = 0.
+// padEnd is length-based and makes CJK/emoji cells ragged; use these instead.
+const WIDE_RANGES = [
+  [0x1100, 0x115f], [0x2e80, 0xa4cf], [0xac00, 0xd7a3], [0xf900, 0xfaff],
+  [0xfe30, 0xfe4f], [0xff00, 0xff60], [0xffe0, 0xffe6], [0x1f300, 0x1f64f],
+  [0x1f680, 0x1f6ff], [0x1f900, 0x1f9ff], [0x2600, 0x26ff], [0x2700, 0x27bf],
+  [0x2b00, 0x2bff],
+];
+
+function codePointWidth(cp) {
+  return WIDE_RANGES.some(([lo, hi]) => cp >= lo && cp <= hi) ? 2 : 1;
+}
+
 function displayWidth(s) {
   let w = 0;
-  for (const ch of String(s)) {
-    const cp = ch.codePointAt(0);
-    const wide =
-      (cp >= 0x1100 && cp <= 0x115f) ||
-      (cp >= 0x2e80 && cp <= 0xa4cf) ||
-      (cp >= 0xac00 && cp <= 0xd7a3) ||
-      (cp >= 0xf900 && cp <= 0xfaff) ||
-      (cp >= 0xfe30 && cp <= 0xfe4f) ||
-      (cp >= 0xff00 && cp <= 0xff60) ||
-      (cp >= 0xffe0 && cp <= 0xffe6);
-    w += wide ? 2 : 1;
+  for (const ch of String(s).replace(/\u001b\[[0-9;]*m/g, '')) {
+    w += codePointWidth(ch.codePointAt(0));
   }
   return w;
 }
@@ -46,36 +50,61 @@ function padDisplay(s, width) {
   return String(s) + (pad > 0 ? ' '.repeat(pad) : '');
 }
 
+// Fit text into exactly `width` display columns: pad if short, truncate with a
+// 2-col ellipsis if long. ANSI-safe (escape sequences are preserved, not cut).
+function fitDisplay(s, width) {
+  const str = String(s);
+  if (displayWidth(str) <= width) return padDisplay(str, width);
+  let w = 0;
+  let i = 0;
+  let cut = str.length;
+  while (i < str.length) {
+    const ch = str[i];
+    if (ch === '\u001b') {
+      const m = /\u001b\[[0-9;]*m/.exec(str.slice(i));
+      if (m) { i += m[0].length; continue; }
+    }
+    const cp = ch.codePointAt(0);
+    const cw = codePointWidth(cp);
+    if (w + cw > width - 2) { cut = i; break; }
+    w += cw;
+    i += cp > 0xffff ? 2 : 1;
+  }
+  return str.slice(0, cut) + '…';
+}
+
 export function printQuickStartCard(skill, targetPath) {
   const line = '─'.repeat(66);
+  // Every bordered row = │(1) + margin(2) + content(63) + margin(1) + │(1) = 68.
   console.log(`
 ${c.cyan('┌' + line + '┐')}
-${c.cyan('│')}  ${c.bold(c.green('⚡ 技能就绪 (Skill Ready):'))} ${c.bold(skill.name.padEnd(41))} ${c.cyan('│')}
-${c.cyan('│')}  ${c.dim(skill.title.padEnd(52))} ${c.cyan('│')}
+${c.cyan('│')}  ${c.bold(c.green('⚡ 技能就绪 (Skill Ready):'))} ${c.bold(fitDisplay(skill.name, 36))} ${c.cyan('│')}
+${c.cyan('│')}  ${c.dim(fitDisplay(skill.title, 63))} ${c.cyan('│')}
 ${c.cyan('├' + line + '┤')}
-${c.cyan('│')}  ${c.bold('📂 安装路径:')} ${c.gray(targetPath.slice(0, 52).padEnd(52))} ${c.cyan('│')}
-${c.cyan('│')}                                                                    ${c.cyan('│')}
-${c.cyan('│')}  ${c.bold(c.yellow('💡 黄金唤醒词 (Golden Trigger Prompt):'))}                            ${c.cyan('│')}
+${c.cyan('│')}  ${c.bold('📂 安装路径:')} ${c.gray(fitDisplay(targetPath, 50))}  ${c.cyan('│')}
+${c.cyan('│')}                                                                  ${c.cyan('│')}
+${c.cyan('│')}  ${c.bold(c.yellow('💡 黄金唤醒词 (Golden Trigger Prompt):'))}                          ${c.cyan('│')}
 ${c.cyan('│')}  ${c.cyan('“' + skill.goldenTrigger + '”')}
-${c.cyan('│')}                                                                    ${c.cyan('│')}
-${c.cyan('│')}  ${c.bold('⚡ 快捷指令速查:')} ${c.magenta(skill.slashCommands.join('  ')).padEnd(52)} ${c.cyan('│')}
-${c.cyan('│')}  ${c.dim(padDisplay('已落盘 .claude/commands 与 .cursor/commands,斜杠触发', 52))} ${c.cyan('│')}
+${c.cyan('│')}                                                                  ${c.cyan('│')}
+${c.cyan('│')}  ${c.bold('⚡ 快捷指令速查:')} ${c.magenta(fitDisplay(skill.slashCommands.join('  '), 46))} ${c.cyan('│')}
+${c.cyan('│')}  ${c.dim(padDisplay('已落盘 .claude/commands 与 .cursor/commands,斜杠触发', 63))} ${c.cyan('│')}
 ${c.cyan('└' + line + '┘')}
 `);
 }
 
 export function printTable(headers, rows) {
-  const colWidths = headers.map((h, i) => {
-    return Math.max(h.length, ...rows.map((r) => (r[i] ? String(r[i]).length : 0)));
-  });
+  // Columns sized by display width (CJK/emoji = 2 cols), so CJK cells never
+  // push adjacent columns off; over-long cells are ellipsis-truncated.
+  const colWidths = headers.map((h, i) =>
+    Math.max(displayWidth(h), ...rows.map((r) => displayWidth(String(r[i] ?? '')))));
 
-  const headerLine = headers.map((h, i) => c.bold(h.padEnd(colWidths[i]))).join('   ');
+  const headerLine = headers.map((h, i) => c.bold(fitDisplay(h, colWidths[i]))).join('   ');
   const divider = colWidths.map((w) => '─'.repeat(w)).join('   ');
 
   console.log(headerLine);
   console.log(c.gray(divider));
   for (const row of rows) {
-    console.log(row.map((cell, i) => String(cell || '').padEnd(colWidths[i])).join('   '));
+    console.log(row.map((cell, i) => fitDisplay(String(cell ?? ''), colWidths[i])).join('   '));
   }
   console.log();
 }
