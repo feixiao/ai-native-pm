@@ -32,6 +32,10 @@ METRIC wake_runtime_parity=<float 0.0-1.0> dual-runtime wake contract: installer
                                              materializes commands for BOTH
                                              Claude Code and Cursor (the two
                                              runtimes the toolkit already targets)
+METRIC cli_layout=<float 0.0-1.0>          CJK-aware layout contract: quick-start
+                                             card rows reconstruct the 68-col box,
+                                             spacer runs exact, table display-aware
+                                             (behavioral proof in the e2e gate)
 METRIC handoff_documented=<int>             count of documented handoff edges
 METRIC skill_count=<int>                   skills on disk
 METRIC registered_count=<int>               skills in CLI meta
@@ -350,6 +354,92 @@ def trigger_disambiguation(disk_skills):
     return resolved / n_pairs, n_pairs
 
 
+def cli_layout(ui_text):
+    """CJK-aware layout contract 0..1 (structural; rendered output is gated
+    behaviorally by the e2e harness). The quick-start card is a 68-column box:
+    every bordered row (borders + template text + declared pad/fit widths) must
+    reconstruct exactly 68 display columns, and printTable must size/pad by
+    display width (JS padEnd is length-based and renders CJK cells ragged).
+    Width convention: modern terminals — CJK = 2, emoji/symbols = 2."""
+    if not ui_text.strip():
+        return 0.0
+    wide_ranges = ((0x1100, 0x115F), (0x2E80, 0xA4CF), (0xAC00, 0xD7A3),
+                   (0xF900, 0xFAFF), (0xFE30, 0xFE4F), (0xFF00, 0xFF60),
+                   (0xFFE0, 0xFFE6), (0x1F300, 0x1F64F), (0x1F680, 0x1F6FF),
+                   (0x1F900, 0x1F9FF), (0x2600, 0x26FF), (0x2700, 0x27BF),
+                   (0x2B00, 0x2BFF))
+
+    def dw(s):
+        return sum(2 if any(lo <= ord(ch) <= hi for lo, hi in wide_ranges) else 1
+                   for ch in s)
+
+    m = re.search(r"function printQuickStartCard\(.*?\n\}", ui_text, re.S)
+    if not m:
+        return 0.0
+    body = m.group(0)
+    checks = [bool(re.search(r"repeat\(\s*66\s*\)", body)),
+              ".padEnd(" not in body]
+
+    def split_expr(inner):
+        """Yield (text, expr_source) segments; expr_source None for plain text."""
+        parts, i, n = [], 0, len(inner)
+        while i < n:
+            j = inner.find("${", i)
+            if j == -1:
+                parts.append((inner[i:], None))
+                break
+            parts.append((inner[i:j], None))
+            depth, k = 0, j
+            while k < n:
+                ch = inner[k]
+                if ch in "({[":
+                    depth += 1
+                elif ch in ")}]":
+                    depth -= 1
+                    if depth == 0:
+                        break
+                k += 1
+            parts.append((inner[j:k + 1], inner[j:k + 1]))
+            i = k + 1
+        return parts
+
+    def declared_width(expr):
+        """Declared display width of an expression: its pad/fit arg, or the
+        literal text once c.color() wrappers are peeled; None if dynamic."""
+        m = re.search(r"(?:fit|pad)Display\([^,]+,\s*(\d+)\)", expr)
+        if m:
+            return int(m.group(1))
+        core = expr[2:-1]
+        for _ in range(6):
+            mm = re.match(r"^c\.\w+\((.*)\)$", core)
+            if not mm:
+                break
+            core = mm.group(1)
+        lm = re.fullmatch(r"'([^']*)'", core)
+        return dw(lm.group(1)) if lm else None
+
+    for l in body.split("\n"):
+        s = l.strip()
+        if not (s.startswith("${c.cyan('│')}") and s.endswith("${c.cyan('│')}")):
+            continue
+        inner = s[len("${c.cyan('│')}"):-len("${c.cyan('│')}")]
+        text_w, declared, complete = 0, 0, True
+        for text, expr in split_expr(inner):
+            text_w += dw(text)
+            if expr is None:
+                continue
+            w = declared_width(expr)
+            if w is None:
+                complete = False  # dynamic width not declared
+            else:
+                declared += w
+        checks.append(complete and 2 + text_w + declared == 68)
+    tm = re.search(r"export function printTable\(.*?\n\}", ui_text, re.S)
+    checks.append(bool(tm and "displayWidth" in tm.group(0)
+                       and ".padEnd(" not in tm.group(0)))
+    return round(sum(1 for c in checks if c) / len(checks), 3)
+
+
 def main():
     # ---- discover skills on disk -------------------------------------------
     disk_skills = {}
@@ -440,17 +530,22 @@ def main():
     # ---- reference-doc quality (AGENTS.md SOP 3 dual-track baseline) --------
     docs_quality = docs_quality_score()
 
+    # ---- CJK-aware CLI layout contract --------------------------------------
+    ui_text = read_file(os.path.join(REPO_ROOT, "cli", "src", "ui.mjs"))
+    cli_layout_score = cli_layout(ui_text)
+
     # ---- composite ----------------------------------------------------------
-    ecosystem_score = 100.0 * (0.15 * lifecycle_coverage
-                               + 0.12 * avg_quality
-                               + 0.10 * ops_coverage
-                               + 0.09 * sync_ratio
-                               + 0.09 * handoff_coverage
-                               + 0.06 * disambiguation
-                               + 0.09 * docs_quality
-                               + 0.06 * handbook
-                               + 0.12 * wake_docs
-                               + 0.12 * wake_runtimes)
+    ecosystem_score = 100.0 * (0.14 * lifecycle_coverage
+                               + 0.11 * avg_quality
+                               + 0.09 * ops_coverage
+                               + 0.08 * sync_ratio
+                               + 0.08 * handoff_coverage
+                               + 0.05 * disambiguation
+                               + 0.08 * docs_quality
+                               + 0.05 * handbook
+                               + 0.11 * wake_docs
+                               + 0.11 * wake_runtimes
+                               + 0.10 * cli_layout_score)
 
     print(f"METRIC ecosystem_score={ecosystem_score:.2f}")
     print(f"METRIC lifecycle_coverage={lifecycle_coverage:.3f}")
@@ -463,6 +558,7 @@ def main():
     print(f"METRIC handbook_symmetry={handbook:.3f}")
     print(f"METRIC wake_command_docs={wake_docs:.3f}")
     print(f"METRIC wake_runtime_parity={wake_runtimes:.3f}")
+    print(f"METRIC cli_layout={cli_layout_score:.3f}")
     print(f"METRIC ambiguous_pairs={n_amb_pairs}")
     print(f"METRIC handoff_documented={documented}")
     print(f"METRIC skill_count={len(disk_set)}")
