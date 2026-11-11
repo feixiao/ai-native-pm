@@ -100,16 +100,16 @@ npx ai-native-pm list
 
 ### ⚡ `.agents/skills/` & `.cursor/skills/`：可直接触发的 AI Agent 技能插件
 
-本仓库已在 `.agents/skills/`（并软链接至 `.cursor/skills/`）配置好 8 个工业级标准 Agent 技能包，天然跨平台兼容 **Cursor**、**Claude Code** 与 **Antigravity / Codex** 等支持 `SKILL.md` 规范的 Agent 环境。无需手动配置提示词，直接用自然语言即可唤醒对应 SOP：
+本仓库已在 `.agents/skills/`（并软链接至 `.cursor/skills/`）配置好 10 个工业级标准 Agent 技能包，天然跨平台兼容 **Cursor**、**Claude Code** 与 **Antigravity / Codex** 等支持 `SKILL.md` 规范的 Agent 环境。无需手动配置提示词，直接用自然语言即可唤醒对应 SOP；通过 `npx ai-native-pm add` 安装的技能会同时落盘 `.claude/commands/` 唤醒指令文件，在 Claude Code 中直接敲斜杠命令即可触发：
 
 | Skill 名称 | 解决的核心场景 | 对应常见 PM 自定义技能 | 如何一句话触发使用 |
 | :--- | :--- | :--- | :--- |
-| **`pm-prd-copilot`** | 5-Whys 需求校验、状态机推演与**架构/QA 红队边界挑刺** | `prd-generator` | *“帮我写一份【实时音视频弱网自动降级】的 PRD，并做红队架构与 QA 边界审查”* |
-| **`pm-market-competitor`** | 竞品逆向拆解、TAM/SAM/SOM 测算、定价策略与真实差评挖掘 | `competitor-teardown` | *“联网调研【某竞品A与竞品B】的商业模式、核心工作流、定价策略和差评痛点”* |
-| **`pm-user-insight`** | 《The Mom Test》非引导访谈提纲、原声痛点聚类、RICE/Kano 优先级排序 | `user-research-synthesizer` | *“设计一份针对【海外直播运维】的非引导性用户访谈提纲”* 或 *“用 RICE 模型帮我给这几个需求排优先级”* |
-| **`pm-prototype-builder`** | 15 分钟生成单文件可交互 HTML 原型，内置 **PM 状态调试切换栏** | `vibe-prototyping` | *“根据刚才的 PRD，帮我生成一个带【PM 多状态调试切换栏】的单文件可交互 HTML 原型”* |
-| **`pm-data-analyst`** | 指标体系设计（北极星/护栏）、A/B 实验显著性检验、留存/漏斗归因分析 | `csv-data-summarizer` | *“帮我检验这组 A/B 测试数据是否显著”* 或 *“排查为什么今天首帧接通率下跌了 15%”* |
-| **`pm-report-polisher`** | 成果导向高管周报/月报、STAR+OKR 晋升述职、双视角 Release Notes 与需求拒绝话术 | `pm-report-polisher` | *“根据这几条零散的工作日志，帮我生成一份成果导向的高管周报”* 或 *“用 STAR 法则帮我提炼本年度晋升述职报告”* |
+| **`pm-prd-copilot`** | 5-Whys 需求校验、状态机推演与**架构/QA 红队边界挑刺** | `prd-generator` | 支持快捷指令:`/prd [需求描述]`,或 *"帮我写一份【实时音视频弱网自动降级】的 PRD,并做红队架构与 QA 边界审查"* |
+| **`pm-market-competitor`** | 竞品逆向拆解、TAM/SAM/SOM 测算、定价策略与真实差评挖掘 | `competitor-teardown` | 支持快捷指令:`/competitor [竞品名]`,或 *"联网调研【某竞品A与竞品B】的商业模式、核心工作流、定价策略和差评痛点"* |
+| **`pm-user-insight`** | 《The Mom Test》非引导访谈提纲、原声痛点聚类、RICE/Kano 优先级排序 | `user-research-synthesizer` | 支持快捷指令:`/interview [访谈目标]`、`/rice [需求列表]`,或 *"设计一份针对【海外直播运维】的非引导性用户访谈提纲"* |
+| **`pm-prototype-builder`** | 15 分钟生成单文件可交互 HTML 原型，内置 **PM 状态调试切换栏** | `vibe-prototyping` | 支持快捷指令:`/prototype [PRD/功能]`,或 *"根据刚才的 PRD，帮我生成一个带【PM 多状态调试切换栏】的单文件可交互 HTML 原型"* |
+| **`pm-data-analyst`** | 指标体系设计（北极星/护栏）、A/B 实验显著性检验、留存/漏斗归因分析 | `csv-data-summarizer` | 支持快捷指令:`/data [数据问题]`、`/sql [查询意图]`,或 *"帮我检验这组 A/B 测试数据是否显著"* |
+| **`pm-report-polisher`** | 成果导向高管周报/月报、STAR+OKR 晋升述职、双视角 Release Notes 与需求拒绝话术 | `pm-report-polisher` | 支持快捷指令:`/report [周期/数据]`、`/star [晋升素材]`,或 *"根据这几条零散的工作日志，帮我生成一份成果导向的高管周报"* |
 | **`pm-solo-builder`** | 独立开发者全闭环：个人约束过滤、证据评级 (Level 0~4) 与代偿行为、≤4h 技术探针 (Spike Gate)、内嵌分发抓手的一页契约、阶梯式 Micro-Spec 代码转译、单周决策门与双阶段红队排雷 | `solo-builder` | 支持快捷指令：`/solo filter [点子]`、`/solo spike [棘刺]`、`/solo contract [解法]`、`/solo spec [契约]`、`/solo sprint [周数据]`、`/solo redteam [方案]` |
 | **`pm-operations`** | 产品运营与增长闭环(产品运营不分家):AARRR 漏斗诊断、获客渠道矩阵、激活 Onboarding、留存召回、变现定价实验、病毒循环 (K 因子) 与合规红队 | `growth-ops` | *"我们的 7 日留存从 28% 掉到 19% 了,帮我定位漏损层并给出本周唯一运营动作"* 或 支持快捷指令:`/ops [漏斗数据]`、`/growth [渠道]`、`/retention [Cohort 矩阵]` |
 | **`pm-customer-success`** | 客户成功与支持体系:支持分层与自助拦截 (Deflection)、取消挽留流程 (Save Flow) 与反 Dark Pattern 红线、NPS/CSAT 不满者访谈、支持单位经济与支持黑洞裁决 | `customer-success` | *"我们的取消率连续三周上升,帮我设计一个体面的挽留流程并核算支持单位经济"* 或 支持快捷指令:`/cs [支持工单]`、`/save [取消流程]`、`/churn [流失数据]` |

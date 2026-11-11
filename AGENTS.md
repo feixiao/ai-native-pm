@@ -160,6 +160,9 @@ Agent 在处理具体任务时，应主动调用或对齐以下 10 大内置垂�
 |**`pm-customer-success`**|客户成功与支持体系:支持分层与自助拦截 (Deflection)、取消挽留流程 (Save Flow) 与反 Dark Pattern 红线、NPS/CSAT 不满者访谈、支持单位经济与支持黑洞红线。|把"注册/买过"变成"留下并续费";挽留必须可一次点击跳过,严禁暗模式;支持负载 >30% 总工时触发三选一裁决;Detractor 访谈证据回流 `pm-user-insight`。| `02-ai-skills/09-customer-success.md` |
 |**`pm-security-compliance`**|安全合规需求产品化:数据分级与生命周期契约、隐私法规映射 (GDPR/PIPL/CCPA)、同意与删除流程、需求级 STRIDE 威胁建模、合规发布门禁与独立开发者最小合规集。|只写契约(What & Why),实现归研发,法律结论归法务;严禁默认勾选与删除流程埋雷;高危威胁未决严禁进入原型;敏感数据四元组(目的/保留/超期/跨境)全覆盖。| `02-ai-skills/10-security-compliance.md` |
 
+### ⚡ 唤醒指令 (Slash Commands) 契约
+每个技能的 SKILL.md 均内置 **⚡ 快速唤醒 (Slash Commands)** 小节，与 `cli/src/skills-meta.mjs` 登记的 `slashCommands` 一一对应（由 harness 强制校验，严禁虚报）。通过 CLI 安装技能时会同步落盘 `.claude/commands/<cmd>.md` 指针文件（全局模式写 `~/.claude/commands/`），在 Claude Code 中直接敲斜杠命令即可触发对应 SOP。
+
 ### 生态技能联动建议 (Eco-Skills Collaboration)
 - 编写方案前：联动 `brainstorming` 进行苏格拉底追问与边界收敛。
 - 生成原型时：联动 `ui-ux-pro-max` 引入高质量排版、视觉层级与主流设计系统。
@@ -226,7 +229,7 @@ bash autoresearch.sh
 
 ## 七、 跨平台兼容指南 (Multi-Runtime Setup)
 
-- **外部工程一键分发安装（推荐）**：在任意外部项目根目录下执行 `npx ai-native-pm add --all`，自动完成 `.agents/skills/` 与 `.cursor/skills/` 的双运行时注入与环境适配。
+- **外部工程一键分发安装（推荐）**：在任意外部项目根目录下执行 `npx ai-native-pm add --all`，自动完成 `.agents/skills/` 与 `.cursor/skills/` 的双运行时注入，并在 `.claude/commands/` 落盘全部唤醒指令（斜杠命令）文件，Claude Code 中直接可用。
 - **Cursor**：通过 `.cursor/skills/` 软链接实时生效，规则生效于日常对话上下文。
 - **Claude Code / Codex / Antigravity**：直接读取根目录 `AGENTS.md` 与 `.agents/skills/` 下的 `SKILL.md` 配置。
-- **全局安装**：如需在本地其他仓库复用，可通过 `npx ai-native-pm add --all -g` 一键安装至 `~/.cursor/skills/` 与 `~/.agents/skills/`。
+- **全局安装**：如需在本地其他仓库复用，可通过 `npx ai-native-pm add --all -g` 一键安装至 `~/.cursor/skills/`、`~/.agents/skills/` 与 `~/.claude/commands/`。
