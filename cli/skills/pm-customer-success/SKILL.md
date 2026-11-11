@@ -5,7 +5,8 @@ description: >-
   support systems: ticket triage and self-service deflection, cancellation
   and churn save flows, NPS/CSAT programs, detractor interviews, support
   unit economics, or diagnosing a support black hole. 客户成功：把"注册过/买过"
-  的用户变成"留下并续费"的用户；本技能负责流失挽留与支持体系的产品化。
+  的用户变成"留下并续费"的用户；本技能负责流失挽留与支持体系的产品化。边界：
+  产品侧用户痛点访谈与 JTBD 取证用 `pm-user-insight`。
 ---
 
 # PM Customer Success Skill (客户成功与流失挽留)

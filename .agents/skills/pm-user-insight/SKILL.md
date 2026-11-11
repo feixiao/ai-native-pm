@@ -4,6 +4,7 @@ description: >-
   Use this skill when the user wants to prepare user interview guides, analyze
   interview transcripts or customer support tickets, extract Jobs-To-Be-Done (JTBD),
   build user personas, or prioritize a feature backlog using RICE and Kano models.
+  边界：已购客户的取消挽留与支持工单体系用 `pm-customer-success`。
 ---
 
 # PM User Insight & Prioritization Skill

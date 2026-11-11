@@ -6,7 +6,8 @@ description: >-
   privacy regulation mapping (GDPR / PIPL / CCPA), consent and deletion flows,
   PM-level STRIDE threat modeling with engineering handoff, or compliance
   release gates. 安全与合规：把"数据安全、隐私合规"从法务黑话翻译成产品可执行
-  的需求契约；本技能负责合规需求的产品化，严禁越俎代庖写实现。
+  的需求契约；本技能负责合规需求的产品化，严禁越俎代庖写实现。边界：指标口径与
+  埋点分析用 `pm-data-analyst`；营销触达的频控与召回合规护栏用 `pm-operations`。
 ---
 
 # PM Security & Compliance Skill (安全合规需求产品化)

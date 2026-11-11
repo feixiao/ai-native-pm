@@ -3,7 +3,8 @@ name: pm-market-competitor
 description: >-
   Use this skill when the user wants to conduct market research, industry sizing,
   competitor teardown, pricing model reverse-engineering, or user complaint mining
-  to find differentiated product positioning.
+  to find differentiated product positioning. 边界：产品发布后的分发与召回运营用
+  `pm-operations`。
 ---
 
 # PM Market & Competitor Intelligence Skill

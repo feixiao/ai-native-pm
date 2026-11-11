@@ -5,6 +5,7 @@ description: >-
   Product Requirements Document (PRD), feature specification, user stories, or
   acceptance criteria. Guides the workflow from 5-Whys problem validation to
   structured PRD generation and automated Architecture/QA edge-case auditing.
+  边界：可点击 HTML 原型用 `pm-prototype-builder`。
 ---
 
 # PM PRD Copilot & Red-Team Auditor

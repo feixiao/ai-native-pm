@@ -4,7 +4,8 @@ description: >-
   Use this skill when the user wants to rapidly build an interactive UI prototype,
   wireframe, dashboard demo, or step-by-step wizard from a PRD or feature idea.
   Generates a self-contained single-file HTML/React/Tailwind prototype with a
-  built-in PM Debug State Switcher for live requirement reviews.
+  built-in PM Debug State Switcher for live requirement reviews. 边界：PRD 撰写与
+  红队审计用 `pm-prd-copilot`。
 ---
 
 # PM Interactive Prototype Builder Skill

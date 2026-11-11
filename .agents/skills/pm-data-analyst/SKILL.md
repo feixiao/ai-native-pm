@@ -4,7 +4,8 @@ description: >-
   Use this skill when the user wants to design product metrics (North Star, AARRR,
   Guardrails), write funnel or cohort retention SQL, analyze CSV/log datasets in
   Python, calculate A/B test sample size and statistical significance, or diagnose
-  sudden metric drops.
+  sudden metric drops. 边界：拉新/促活/触达等运营动作用 `pm-operations`；数据合规与
+  隐私契约用 `pm-security-compliance`。
 ---
 
 # PM Data & Experimentation Analyst Skill
