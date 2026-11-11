@@ -56,8 +56,8 @@ ${c.bold('核心命令 (Commands):')}
   ${c.green('update [skills...]')}   检查并更新本地已安装的技能至最新版本
 
 ${c.bold('常用选项 (Options):')}
-  ${c.yellow('--all, -a')}           一键安装/更新全部 7 大 PM 技能
-  ${c.yellow('--global, -g')}        安装到个人用户全局目录 (~/.agents/skills)
+  ${c.yellow('--all, -a')}           一键安装/更新全部 ${SKILLS.length} 大 PM 技能
+  ${c.yellow('--global, -g')}        安装到个人用户全局目录 (~/.agents/skills 等)
   ${c.yellow('--force, -f')}         覆盖已有技能而不提示确认
   ${c.yellow('--dir, -d <path>')}    指定目标工程根目录 (默认当前工作区)
   ${c.yellow('--help, -h')}          查看命令帮助

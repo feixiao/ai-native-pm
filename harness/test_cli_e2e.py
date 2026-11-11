@@ -45,6 +45,7 @@ def test_cli():
     res = run_cli(["--help"])
     assert res.returncode == 0
     assert "add [skills...]" in res.stdout
+    assert f"{n} 大 PM 技能" in res.stdout, "Help text advertises a stale skill count!"
     print("  ✔ Version and Help commands passed.")
 
     with tempfile.TemporaryDirectory() as temp_project_dir:
