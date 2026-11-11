@@ -12,7 +12,7 @@
 # 🎯 交互式选择所需技能并安装到当前项目
 npx ai-native-pm add
 
-# 🚀 一键全量安装全部 8 款 PM 技能
+# 🚀 一键全量安装全部 10 款 PM 技能
 npx ai-native-pm add --all
 
 # 📌 按需单独安装特定技能（如仅安装 PRD 审查或 Solo Builder 闭环）
