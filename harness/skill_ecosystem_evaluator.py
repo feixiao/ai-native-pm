@@ -28,6 +28,10 @@ METRIC handbook_symmetry=<float 0.0-1.0>   fraction of skills with a declared,
 METRIC wake_command_docs=<float 0.0-1.0>   fraction of CLI-advertised slash
                                              commands documented in the paired
                                              SKILL.md (唤醒指令 contract)
+METRIC wake_runtime_parity=<float 0.0-1.0> dual-runtime wake contract: installer
+                                             materializes commands for BOTH
+                                             Claude Code and Cursor (the two
+                                             runtimes the toolkit already targets)
 METRIC handoff_documented=<int>             count of documented handoff edges
 METRIC skill_count=<int>                   skills on disk
 METRIC registered_count=<int>               skills in CLI meta
@@ -290,6 +294,34 @@ def wake_command_docs(disk_skills, meta_text):
     return (present / total) if total else 1.0
 
 
+def wake_runtime_parity(meta_text, installer_text):
+    """Dual-runtime wake contract 0..1. The toolkit already targets BOTH
+    Claude Code (.agents/skills) and Cursor (.cursor/skills) for skill
+    installation, so the command layer must be symmetric: every advertised
+    slash command materialized into BOTH .claude/commands/ and
+    .cursor/commands/. Checked on the installer's command-writer function
+    (behavioral proof lives in the e2e sandbox gate)."""
+    if not installer_text:
+        return 0.0
+    has_advertised = any(
+        c.strip()
+        for m in re.finditer(
+                r"\{[^{}]*id:\s*'([\w-]+)'[^{}]*slashCommands:\s*\[([^\]]*)\]",
+                meta_text)
+        for c in m.group(2).split(","))
+    if not has_advertised:
+        return 1.0
+    body = re.search(
+        r"function installCommands\b[\s\S]*?(?=\nexport |\nfunction |\Z)",
+        installer_text)
+    if not body:
+        return 0.0
+    text = body.group(0)
+    claude = ".claude" in text and "commands" in text
+    cursor = ".cursor" in text and "commands" in text
+    return 1.0 if (claude and cursor) else 0.0
+
+
 def trigger_disambiguation(disk_skills):
     """Routing-ambiguity check 0..1. For each unordered pair of skills whose
     frontmatter descriptions share at least one TRIGGER_CONCEPTS keyword,
@@ -329,6 +361,7 @@ def main():
 
     # ---- CLI registry -------------------------------------------------------
     meta_text = read_file(META_FILE)
+    installer_text = read_file(os.path.join(REPO_ROOT, "cli", "src", "installer.mjs"))
     registered = {m.group(1): m.group(3)
                   for m in re.finditer(
                       r"id:\s*'([\w-]+)',\s*\n\s*name:\s*'([\w-]+)',\s*\n\s*title:\s*'([^']*)',\s*\n\s*desc:\s*'([^']*)'",
@@ -401,19 +434,23 @@ def main():
     # ---- wake-command contract (advertised 唤醒指令 must be documented) ------
     wake_docs = wake_command_docs(disk_skills, meta_text)
 
+    # ---- dual-runtime wake parity (commands for Claude Code AND Cursor) ------
+    wake_runtimes = wake_runtime_parity(meta_text, installer_text)
+
     # ---- reference-doc quality (AGENTS.md SOP 3 dual-track baseline) --------
     docs_quality = docs_quality_score()
 
     # ---- composite ----------------------------------------------------------
-    ecosystem_score = 100.0 * (0.18 * lifecycle_coverage
-                               + 0.14 * avg_quality
+    ecosystem_score = 100.0 * (0.15 * lifecycle_coverage
+                               + 0.12 * avg_quality
                                + 0.10 * ops_coverage
-                               + 0.10 * sync_ratio
-                               + 0.10 * handoff_coverage
-                               + 0.07 * disambiguation
-                               + 0.10 * docs_quality
-                               + 0.07 * handbook
-                               + 0.14 * wake_docs)
+                               + 0.09 * sync_ratio
+                               + 0.09 * handoff_coverage
+                               + 0.06 * disambiguation
+                               + 0.09 * docs_quality
+                               + 0.06 * handbook
+                               + 0.12 * wake_docs
+                               + 0.12 * wake_runtimes)
 
     print(f"METRIC ecosystem_score={ecosystem_score:.2f}")
     print(f"METRIC lifecycle_coverage={lifecycle_coverage:.3f}")
@@ -425,6 +462,7 @@ def main():
     print(f"METRIC docs_quality={docs_quality:.3f}")
     print(f"METRIC handbook_symmetry={handbook:.3f}")
     print(f"METRIC wake_command_docs={wake_docs:.3f}")
+    print(f"METRIC wake_runtime_parity={wake_runtimes:.3f}")
     print(f"METRIC ambiguous_pairs={n_amb_pairs}")
     print(f"METRIC handoff_documented={documented}")
     print(f"METRIC skill_count={len(disk_set)}")
