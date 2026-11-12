@@ -5,7 +5,7 @@ description: >-
   Guardrails), write funnel or cohort retention SQL, analyze CSV/log datasets in
   Python, calculate A/B test sample size and statistical significance, or diagnose
   sudden metric drops. 边界：拉新/促活/触达等运营动作用 `pm-operations`；数据合规与
-  隐私契约用 `pm-security-compliance`。
+  隐私契约用 `pm-security-compliance`；前端设计手感与视觉减法用 `pm-design-editor`。
 ---
 
 # PM Data & Experimentation Analyst Skill

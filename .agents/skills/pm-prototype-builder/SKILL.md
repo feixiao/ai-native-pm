@@ -5,7 +5,8 @@ description: >-
   wireframe, dashboard demo, or step-by-step wizard from a PRD or feature idea.
   Generates a self-contained single-file HTML/React/Tailwind prototype with a
   built-in PM Debug State Switcher for live requirement reviews. 边界：PRD 撰写与
-  红队审计用 `pm-prd-copilot`。
+  红队审计用 `pm-prd-copilot`；视觉减法与手感调参用 `pm-design-editor`；可用性
+  走查与 UAT 验收用 `pm-ux-audit`。
 ---
 
 # PM Interactive Prototype Builder Skill

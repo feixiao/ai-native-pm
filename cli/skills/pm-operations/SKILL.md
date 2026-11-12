@@ -8,7 +8,8 @@ description: >-
   loop design, or diagnosing a stalled growth curve. 产品与运营不分家：本技能负责
   产品发布后的增长与经营闭环。边界：漏斗/留存的指标口径与 SQL 分析用
   `pm-data-analyst`；竞品定价逆向与市场调研用 `pm-market-competitor`；触达
-  频控之外的合规与隐私约束用 `pm-security-compliance`。
+  频控之外的合规与隐私约束用 `pm-security-compliance`；上线前发版门禁与灰度
+  开关用 `pm-release-gtm`。
 ---
 
 # PM Operations & Growth Skill (产品运营与增长)

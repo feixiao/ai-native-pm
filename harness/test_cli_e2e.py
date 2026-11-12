@@ -37,7 +37,7 @@ def display_width(s):
                for ch in s)
 
 def assert_uniform_lines(lines, what):
-    widths = {display_width(l.rstrip()) for l in lines if l.strip()}
+    widths = {display_width(l) for l in lines if l.strip()}
     assert len(widths) == 1, f"{what} rows have ragged widths: {sorted(widths)} -> {lines[:4]}"
     return widths
 

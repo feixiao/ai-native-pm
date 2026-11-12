@@ -4,7 +4,8 @@ description: >-
   Use this skill when the user wants to write, polish, or structure product weekly/monthly reports,
   annual performance reviews (晋升述职), project retrospectives, customer release notes, or high-stakes
   cross-functional communication (refusing feature requests, escalating risks). Converts scattered notes
-  into outcome-oriented, STAR/OKR-aligned executive deliverables.
+  into outcome-oriented, STAR/OKR-aligned executive deliverables. 边界：上线前灰度放量与
+  回滚预案用 `pm-release-gtm`。
 ---
 
 # PM Report Polisher & Executive Communication

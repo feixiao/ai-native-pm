@@ -89,6 +89,33 @@ export const SKILLS = [
     goldenTrigger: '我们要出海欧洲并收集位置数据，帮我写一份数据分级契约与 GDPR 产品约束清单',
     slashCommands: ['/compliance', '/privacy', '/datagovern'],
   },
+  {
+    id: 'pm-design-editor',
+    name: 'pm-design-editor',
+    title: 'AI 设计编辑：草图转译与 DialKit 调参',
+    desc: '基于 Shopify 设计工作流：草图/Figma关键帧转可打断交互、DialKit 实时参数控件调手感、冷血减法剔除 AI 塑料味',
+    category: 'Design & Craft',
+    goldenTrigger: '/design edit 帮我审查当前页面，删掉抢焦点的冗余按钮与傲慢平滑滚动，只保留一个核心 CTA',
+    slashCommands: ['/design sketch', '/design dial', '/design edit'],
+  },
+  {
+    id: 'pm-ux-audit',
+    name: 'pm-ux-audit',
+    title: '产品体验走查与可用性审计 (UAT)',
+    desc: '按尼尔森十大可用性原则与四维边缘压力（空态/断网/超长词/375px）走查原型或前端产物，输出带 P0 阻塞裁决的 UAT 缺陷单',
+    category: 'Quality & UX Audit',
+    goldenTrigger: '/uat 对当前原型和产品界面做一次尼尔森可用性走查，找出所有 P0 交互死胡同',
+    slashCommands: ['/uat', '/audit ux'],
+  },
+  {
+    id: 'pm-release-gtm',
+    name: 'pm-release-gtm',
+    title: '发版护栏、灰度放量与 GTM 发布包',
+    desc: '制定上线前 Go/No-Go 门禁、渐进式放量梯度、60 秒熔断回滚预案，以及面向用户的人话 Changelog 与社区首发帖',
+    category: 'Release & Launch',
+    goldenTrigger: '/launch 为当前 V1.0 MVP 制定灰度发布门禁、60 秒回滚预案与人话版 Changelog',
+    slashCommands: ['/launch', '/release flag'],
+  },
 ];
 
 export const SKILL_MAP = new Map(SKILLS.map((s) => [s.id, s]));
