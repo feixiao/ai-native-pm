@@ -84,11 +84,14 @@
 - ❌ **严禁假设存在多角色协同**：严禁给出“交由测试部门验证”、“与运营对齐排期”、“召开跨部门评审会”等脱离单人现实的建议。
 
 ### 5. 生产文档存储与隔离红线 (Workspace Storage & Zero-Pollution Guardrails)
-- ❌ **严禁向仓库根目录或公共 `docs/` 写入新业务文档**：`docs/` 仅保留公开教学用例与自动化评测基准。所有后续使用本仓库技能生成的业务文档、用户访谈、一页纸契约、Micro-Spec、原型 HTML、SQL 埋点等，**一律写入 `workspace/` 本地工作台，严禁直接上传或提交至 Git 远端**。
-- ❌ **严禁跨轨道相互污染 (No Track Contamination)**：企业级 TPM 重度文档（40+页 PRD、RACI、全量状态机）严禁写入 `solo/`；独立开发极窄切片（一页纸契约、Micro-Spec 阶梯）严禁写入 `corporate/`。
-- ❌ **严禁跨项目相互污染 (No Project Contamination)**：每个产品/微服务/垂直工具必须建立独立的 `<project-slug>` 命名空间目录，严禁将两个不同业务线的文件混在同一个文件夹。
-- ❌ **严禁交付物类型相互污染 (No Artifact Contamination)**：调研文档必须入 `01`，规格/契约必须入 `03`，可运行原型 HTML 必须入 `04`，研发契约入 `05`，验收用例入 `06`，数据指标入 `07`。严禁在项目根目录下平铺堆放混合文件。
-- ❌ **严禁活跃区与废弃区相互污染 (No Status Contamination)**：触发 14 天两周死线终止 (Drop-dead) 或已结项归档的项目，必须立即整体移至 `workspace/archive/` 隔离区，保持主工作区极致清爽。
+- ❌ **严禁向本工具仓库根目录或公共 `docs/` 写入新业务文档**：本仓库 `docs/` 仅保留公开教学用例与自动化评测基准。
+- 🎯 **核心落地模式推荐（Spec-with-Code 姿势）**：
+  - **推荐姿势（下沉至目标业务代码库）**：通过 `npx ai-native-pm add --all` 注入目标工程后，所有业务需求、一页契约、Micro-Spec、原型与埋点直接写入目标业务工程的 `./docs/` 规范子目录下（如 `./docs/contract/`、`./docs/specs/`、`./docs/prototypes/`），代码与契约同源，严禁回传或污染本工具库。
+  - **本地沙盒兜底（本仓库 `workspace/`）**：若直接在当前工具库内调试或探索，**一律写入 `workspace/` 且严禁直接上传或提交至 Git 远端**（已配置 `.gitignore` 本地物理隔离）。
+- ❌ **严禁跨轨道相互污染 (No Track Contamination)**：企业级 TPM 重度文档（40+页 PRD、RACI、全量状态机）严禁与独立开发极窄切片（一页纸契约、Micro-Spec 阶梯）混放在同一目录。
+- ❌ **严禁跨项目相互污染 (No Project Contamination)**：沙盒模式下每个业务必须建立独立的 `<project-slug>` 命名空间；业务工程模式下严格限定在自身工程上下文。
+- ❌ **严禁交付物类型相互污染 (No Artifact Contamination)**：调研文档入 `01/research`，规格/契约入 `03/contract` 或 `03/prd-specs`，可运行原型入 `04/prototypes`，研发契约入 `05`，验收用例入 `06`，数据指标入 `07`。严禁在项目根目录下平铺堆放混合文件。
+- ❌ **严禁活跃区与废弃区相互污染 (No Status Contamination)**：触发 14 天两周死线终止 (Drop-dead) 或已结项归档的项目，必须立即整体移至隔离区（沙盒模式入 `workspace/archive/`，业务工程入 `docs/archive/`），保持主工作区极致清爽。
 
 ## 三、 仓库目录架构与职责划分 (Repository Architecture)
 
