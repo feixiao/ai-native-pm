@@ -98,6 +98,7 @@
 ```
 pm/
 ├── 01-pm-handbook/           # 📘 PM 认知手册：思维跃迁、能力模型、工作流、框架速查与权责边界
+│   ├── 00-ai-native-pm-starter-guide.md # AI-Native PM 小白零基础入门指南（四周路线图与核心工具箱）
 │   ├── 01-mindset-shift.md   # 6 大思维跃迁与 21 天练习法
 │   ├── 02-core-skills.md     # T 型能力图谱与架构长板复用
 │   ├── 03-workflow.md        # 7 步需求生命周期与跨角色协同

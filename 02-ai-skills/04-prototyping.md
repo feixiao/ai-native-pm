@@ -133,3 +133,66 @@
 4. **内嵌自发酵传播钩子**：界面右上角提供“一键生成今日调试卡片”弹窗交互模拟。
 5. 直接输出完整、无截断、审美克制的高保真代码。
 ```
+
+---
+
+## 六、 替代与协同传统工具链 (Axure RP / 墨刀 / Figma) 的本地实战与职场应对
+
+很多团队或岗位招聘要求“熟练使用 Axure RP、墨刀、Figma”。在 AI-Native 时代，团队真正需要的不是画图软件的拖拽操作，而是 **信息架构定义、业务状态机与边界穷举、跨职能对齐效率**。
+
+通过 **本地代码原型 (Vibe Prototyping) + 逆向插件 + DialKit 手感调优**，可以在本地完全实现对传统重度原型工具的降维替代与高效协同。
+
+```
+┌────────────────────────────────────────────────────────────────────────┐
+│                        【本地双向落地全景图】                          │
+│                                                                        │
+│   PRD / 功能需求 ──► 本地 Coding Agent (执行 /prototype)               │
+│                            │                                           │
+│                            ▼                                           │
+│                 单文件 `prototype.html`                                │
+│           (Tailwind + 真实数据 + 顶部 4 态调试栏)                      │
+│                │                         │                             │
+│       【替代 Axure/墨刀】           【逆向生成 Figma】                 │
+│                ▼                         ▼                             │
+│     双击浏览器打开直接演示         打开 Figma 安装 `html.to.design`    │
+│   (研发/QA 走查 4 态状态机)        直接抓取本地 HTML 转为 Auto-layout  │
+└────────────────────────────────────────────────────────────────────────┘
+```
+
+### 1. 本地链路一：替代 Axure / 墨刀（单文件代码原型）
+- **痛点击穿**：传统 Axure 维护多级动态面板极其繁琐易错，改版维护成本高，且无法承载真实数据流动；
+- **本地零门槛运行**：无需 `npm install`、`node_modules` 或构建打包。通过 CDN 引入 Tailwind CSS 与 Lucide 图标，单文件双击或执行 `open prototype.html` 即可在浏览器全速运行；
+- **核心抓手（四态调试栏）**：在页面顶部固定注入 `🛠️ PM 评审状态切换器`（正常态、空状态、骨架屏/弱网态、配额拦截/异常态），评审会上点选即可现场验证状态机分支；
+- **图表代码化**：业务流转与时序分支全部使用标准 Mermaid 语法编写并嵌入 Markdown PRD，Git 可版本追踪，彻底替代 Axure 静态流程图。
+
+### 2. 本地链路二：弥补与直接生成 Figma（逆向导入工具链）
+PM 的职责边界在于 **Why & What**，严禁越界替专业 UI/UX 设计师指定十六进制色值与贝塞尔曲线。但若业务场景**必须交付 Figma 格式资产**：
+1. **本地启动轻量静态服务**：
+   ```bash
+   npx serve . # 或 python3 -m http.server 8080
+   ```
+2. **在 Figma 中启动逆向导入插件**：
+   - 打开 Figma，安装并启动 **`html.to.design`**（或 **`Builder.io: Visual Copilot`**）插件；
+   - 输入本地服务地址 `http://localhost:8080/prototype.html`（或直接使用其 Chrome 插件提取本地已打开网页）；
+3. **秒级生成 Auto-layout 设计图层**：
+   - 插件自动解析本地页面的 DOM 与 CSS 盒模型；
+   - 导入后在 Figma 画板上生成全矢量、带标准化 **Auto-layout 容器、矢量图标、规范字阶与分层 Group** 的专业设计稿，无需人肉拉矩形。
+
+### 3. 本地链路三：微观手感调优与减法（DialKit 参数滑块）
+在 Figma 中无法评估抽屉滑出耗时与弹性手感。在本地代码原型中挂载临时悬浮滑块（DialKit 模式）：
+```html
+<!-- 临时手感调试面板 (DialKit HUD) -->
+<div style="position:fixed;bottom:20px;right:20px;background:#0f172a;color:#fff;padding:12px;border-radius:8px;z-index:9999;font-size:12px;box-shadow:0 10px 15px -3px rgba(0,0,0,0.5);">
+  <div class="mb-2 font-bold text-slate-300">🎛️ 手感微调</div>
+  <div>展开耗时: <input type="range" min="100" max="600" value="250" oninput="document.documentElement.style.setProperty('--drawer-dur', this.value+'ms')"></div>
+  <div>毛玻璃模糊: <input type="range" min="0" max="30" value="12" oninput="document.documentElement.style.setProperty('--blur-val', this.value+'px')"></div>
+</div>
+```
+拖拽找到最佳触感数值后，将对应常数固化到正式样式，并删除临时调试面板。
+
+### 4. 职场与面试应对降维话术
+
+| 提问场景 | 传统 PM 的平庸回答 | AI-Native PM 的降维打击回答 |
+| :--- | :--- | :--- |
+| **“你熟练使用 Axure / 墨刀画原型吗？”** | “用过几年，能做动态面板、表单交互与中继器。”（定位为工具熟练工） | **“我熟练掌握 Figma/墨刀的基础画板与流程连线。但在实际研发闭环中，我使用 AI 驱动的单文件可运行原型 (Vibe Prototyping)。我能在 15 分钟内交付带真实数据的 HTML 原型，并在顶部内嵌正常、弱网、空态、异常 4 态调试栏。这种方式让研发和 QA 在需求评审前就跑通 80% 的状态机异常，改动成本比改 Axure 动态面板低 70%。”** |
+| **“没有 UI 设计师，你能出高保真 Figma 稿吗？”** | “我自己学了 Figma，可以拉组件库画高保真。”（耗时且容易被挑刺微观细节） | **“我的交付策略是：用 AI 快速构建符合 Tailwind + Shadcn UI 标准规范的原型，再通过 html.to.design 插件一键逆向同步到 Figma，自动生成 Auto-layout 规范图层；配合 DialKit 面板参数化调优手感，1 天内完成传统设计团队 3~5 天的视觉与交互基线。”** |
